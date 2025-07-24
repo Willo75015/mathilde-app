@@ -10,20 +10,13 @@
   "scope": "/",
   "icons": [
     {
-      "src": "icon-192.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icon-512.svg", 
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     },
     {
       "src": "apple-touch-icon.png",
-      "sizes": "180x180",
+      "sizes": "180x180", 
       "type": "image/png"
     }
   ],
@@ -33,17 +26,6 @@
       "short_name": "Nouvel événement",
       "description": "Créer rapidement un nouvel événement",
       "url": "/?action=create-event",
-      "icons": [{ 
-        "src": "favicon.svg", 
-        "sizes": "96x96",
-        "type": "image/svg+xml"
-      }]
-    },
-    {
-      "name": "Calendrier",
-      "short_name": "Calendrier", 
-      "description": "Voir le planning des événements",
-      "url": "/?page=calendar",
       "icons": [{ 
         "src": "favicon.svg", 
         "sizes": "96x96",
