@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Search, Bell, Settings, User, LogOut, Users, Flower, BarChart3, Home, ShoppingBag, Calendar, Clock } from 'lucide-react'
+import { Menu, X, Search, Bell, Settings, User, LogOut, Users, Flower, BarChart3, Home, ShoppingBag, Calendar } from 'lucide-react'
 import { clsx } from 'clsx'
 import { Clock } from '@/components/ui/Clock'
 import { useEventNavigation } from '@/hooks/useEventNavigation'
