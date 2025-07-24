@@ -1,0 +1,299 @@
+C:\Users\Bill\Desktop\Smart use\
+├── public/
+│   ├── favicon.ico
+│   ├── favicon.svg
+│   ├── apple-touch-icon.png
+│   ├── pwa-192x192.png
+│   ├── pwa-512x512.png
+│   ├── masked-icon.svg
+│   ├── badge-72x72.png
+│   ├── shortcut-new.png
+│   ├── action-view.png
+│   ├── action-dismiss.png
+│   ├── manifest.json
+│   └── sw.js                           # Service Worker intelligent
+│
+├── src/
+│   ├── main.tsx                        # Point d'entrée React
+│   ├── App.tsx                         # Composant racine
+│   ├── App.css
+│   └── vite-env.d.ts
+│
+│   ├── types/
+│   │   └── index.ts                    # Types TypeScript complets
+│   │       ├── BaseEntity
+│   │       ├── Event & EventStatus
+│   │       ├── Client & Address
+│   │       ├── Flower & FlowerCategory
+│   │       ├── AppState & User
+│   │       ├── Analytics & Security
+│   │       ├── PWA & SyncTask
+│   │       └── Validation Schemas (Zod)
+│
+│   ├── contexts/
+│   │   ├── AppContext.tsx              # Context principal avec state management
+│   │   └── ThemeContext.tsx            # Gestion thèmes avancée (light/dark/system)
+│
+│   ├── hooks/
+│   │   ├── usePerformance.ts           # Monitoring performances
+│   │   │   ├── measureFunction()
+│   │   │   ├── useDebounce()
+│   │   │   ├── useThrottle()
+│   │   │   ├── useIntersectionObserver()
+│   │   │   ├── useScrollPosition()
+│   │   │   └── useViewport()
+│   │   └── usePWA.ts                   # Hooks PWA avancés
+│   │       ├── usePWAInstall()
+│   │       ├── useOnlineStatus()
+│   │       ├── useBackgroundSync()
+│   │       └── usePushNotifications()
+│
+│   ├── patterns/
+│   │   ├── Repository.ts               # Design Pattern Repository
+│   │   │   ├── Repository<T> interface
+│   │   │   ├── EventRepository
+│   │   │   └── ClientRepository
+│   │   └── Observer.ts                 # Design Pattern Observer
+│   │       ├── Observer<T> interface
+│   │       ├── Subject<T> interface
+│   │       ├── EventEmitter<T>
+│   │       └── AppStore (Singleton)
+│
+│   ├── utils/
+│   │   ├── validation.ts               # Validation Zod + Sanitization
+│   │   │   ├── EventValidationSchema
+│   │   │   ├── ClientValidationSchema
+│   │   │   ├── DataSanitizer class
+│   │   │   └── ValidationError class
+│   │   └── security.ts                 # Sécurité avancée
+│   │       ├── SecurityManager (AES-256)
+│   │       ├── SecureStorage
+│   │       ├── RateLimiter
+│   │       └── SecurityAuditor
+│
+│   ├── components/
+│   │   ├── ui/                         # Composants UI de base
+│   │   │   ├── Button.tsx              # Bouton avec animations Framer Motion
+│   │   │   ├── Input.tsx               # Input avec validation visuelle
+│   │   │   ├── Modal.tsx
+│   │   │   ├── Card.tsx
+│   │   │   ├── Badge.tsx
+│   │   │   ├── Dropdown.tsx
+│   │   │   ├── Tooltip.tsx
+│   │   │   ├── Toast.tsx
+│   │   │   ├── Spinner.tsx
+│   │   │   ├── Progress.tsx
+│   │   │   ├── Tabs.tsx
+│   │   │   ├── Accordion.tsx
+│   │   │   └── DatePicker.tsx
+│   │   │
+│   │   ├── layout/
+│   │   │   ├── Layout.tsx              # Layout principal responsive
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── Header.tsx
+│   │   │   ├── Navigation.tsx
+│   │   │   └── Footer.tsx
+│   │   │
+│   │   ├── PWA/
+│   │   │   ├── InstallPrompt.tsx       # Prompt d'installation PWA
+│   │   │   ├── OfflineIndicator.tsx    # Indicateur de connexion
+│   │   │   ├── SyncStatus.tsx
+│   │   │   └── UpdatePrompt.tsx
+│   │   │
+│   │   ├── forms/
+│   │   │   ├── EventForm.tsx
+│   │   │   ├── ClientForm.tsx
+│   │   │   ├── FlowerSelector.tsx
+│   │   │   └── FormField.tsx
+│   │   │
+│   │   ├── dashboard/
+│   │   │   ├── StatsCards.tsx
+│   │   │   ├── RecentEvents.tsx
+│   │   │   ├── Calendar.tsx
+│   │   │   ├── QuickActions.tsx
+│   │   │   └── Charts.tsx
+│   │   │
+│   │   ├── events/
+│   │   │   ├── EventList.tsx
+│   │   │   ├── EventCard.tsx
+│   │   │   ├── EventDetails.tsx
+│   │   │   ├── EventCalendar.tsx
+│   │   │   └── EventFilters.tsx
+│   │   │
+│   │   ├── clients/
+│   │   │   ├── ClientList.tsx
+│   │   │   ├── ClientCard.tsx
+│   │   │   ├── ClientDetails.tsx
+│   │   │   └── ClientSearch.tsx
+│   │   │
+│   │   ├── flowers/
+│   │   │   ├── FlowerCatalog.tsx
+│   │   │   ├── FlowerCard.tsx
+│   │   │   ├── FlowerDetails.tsx
+│   │   │   └── SeasonalFlowers.tsx
+│   │   │
+│   │   └── analytics/
+│   │       ├── PerformanceMonitor.tsx
+│   │       ├── SecurityDashboard.tsx
+│   │       ├── UsageStats.tsx
+│   │       └── ErrorBoundary.tsx
+│
+│   ├── pages/
+│   │   ├── Home.tsx                    # Page d'accueil/dashboard
+│   │   ├── Events/
+│   │   │   ├── EventsPage.tsx
+│   │   │   ├── CreateEvent.tsx
+│   │   │   ├── EditEvent.tsx
+│   │   │   └── EventDetails.tsx
+│   │   ├── Clients/
+│   │   │   ├── ClientsPage.tsx
+│   │   │   ├── CreateClient.tsx
+│   │   │   ├── EditClient.tsx
+│   │   │   └── ClientProfile.tsx
+│   │   ├── Calendar/
+│   │   │   └── CalendarPage.tsx
+│   │   ├── Analytics/
+│   │   │   └── AnalyticsPage.tsx
+│   │   ├── Settings/
+│   │   │   ├── SettingsPage.tsx
+│   │   │   ├── ProfileSettings.tsx
+│   │   │   ├── SecuritySettings.tsx
+│   │   │   └── AppPreferences.tsx
+│   │   └── NotFound.tsx
+│
+│   ├── styles/
+│   │   ├── globals.css                 # Styles globaux
+│   │   ├── components.css              # Styles des composants
+│   │   ├── animations.css              # Animations CSS custom
+│   │   └── themes.css                  # Variables de thèmes
+│
+│   ├── assets/
+│   │   ├── images/
+│   │   │   ├── logo.svg
+│   │   │   ├── flowers/
+│   │   │   └── placeholders/
+│   │   ├── icons/
+│   │   │   └── custom-icons.svg
+│   │   └── fonts/
+│   │       └── inter-var.woff2
+│
+│   └── lib/
+│       ├── constants.ts                # Constantes de l'app
+│       ├── api.ts                      # Client API
+│       ├── storage.ts                  # Gestion localStorage/IndexedDB
+│       ├── date.ts                     # Utilitaires dates
+│       ├── format.ts                   # Formatage des données
+│       └── export.ts                   # Export PDF/Excel
+│
+├── tests/
+│   ├── __mocks__/
+│   ├── components/
+│   │   ├── ui/
+│   │   ├── forms/
+│   │   └── layout/
+│   ├── hooks/
+│   ├── utils/
+│   ├── e2e/                            # Tests Playwright
+│   │   ├── auth.spec.ts
+│   │   ├── events.spec.ts
+│   │   ├── clients.spec.ts
+│   │   └── pwa.spec.ts
+│   ├── setup.ts
+│   └── helpers/
+│
+├── docs/
+│   ├── README.md
+│   ├── CONTRIBUTING.md
+│   ├── SECURITY.md
+│   ├── API.md
+│   ├── DEPLOYMENT.md
+│   └── PERFORMANCE.md
+│
+├── config/
+│   ├── jest.config.js
+│   ├── playwright.config.ts
+│   ├── eslint.config.js
+│   └── prettier.config.js
+│
+├── scripts/
+│   ├── build.sh
+│   ├── deploy.sh
+│   ├── test.sh
+│   └── performance-audit.js
+│
+├── .github/
+│   └── workflows/
+│       ├── ci.yml
+│       ├── deploy.yml
+│       └── security-scan.yml
+│
+├── package.json                        # Dépendances et scripts
+├── package-lock.json
+├── tsconfig.json                       # Configuration TypeScript
+├── tsconfig.node.json
+├── vite.config.ts                      # Configuration Vite optimisée
+├── tailwind.config.js                  # Configuration Tailwind CSS
+├── postcss.config.js
+├── .env                                # Variables d'environnement
+├── .env.example
+├── .gitignore
+├── .eslintrc.json                      # Configuration ESLint
+├── .prettierrc                         # Configuration Prettier
+├── .prettierignore
+├── index.html                          # HTML avec headers de sécurité
+└── README.md
+
+ARCHITECTURE HIGHLIGHTS:
+========================
+
+🏗️  STRUCTURE MODULAIRE
+   ├── Séparation claire des responsabilités
+   ├── Design patterns (Repository, Observer, Singleton)
+   ├── Hooks custom réutilisables
+   └── Composants atomiques
+
+⚡  PERFORMANCE OPTIMISÉE
+   ├── Bundle splitting intelligent
+   ├── Lazy loading des composants
+   ├── Memoization avancée
+   ├── Service Worker avec cache strategies
+   └── Monitoring temps réel
+
+🛡️  SÉCURITÉ RENFORCÉE
+   ├── Validation Zod + sanitization DOMPurify
+   ├── Chiffrement AES-256-GCM
+   ├── Headers CSP + protection navigateur
+   ├── Rate limiting + audit automatique
+   └── SecureStorage pour données sensibles
+
+📱  PWA COMPLÈTE
+   ├── Installation native
+   ├── Mode offline 100% fonctionnel
+   ├── Synchronisation background
+   ├── Notifications push
+   └── Mise à jour automatique
+
+🎨  UX/UI EXCELLENTE
+   ├── Animations Framer Motion fluides
+   ├── Dark mode intelligent (light/dark/system)
+   ├── Responsive design parfait
+   ├── Accessibilité WCAG complète
+   └── Composants réutilisables
+
+📊  MONITORING AVANCÉ
+   ├── Tests Jest + Playwright (coverage 80%+)
+   ├── Performance monitoring
+   ├── Analytics utilisateur
+   ├── Logging système
+   └── Error boundaries
+
+TECHNOLOGIES UTILISÉES:
+======================
+- React 18 + TypeScript
+- Vite (build ultra-rapide)
+- Tailwind CSS + Framer Motion
+- Workbox (Service Worker)
+- Zod (validation) + DOMPurify (sanitization)
+- CryptoJS (chiffrement)
+- Jest + Playwright (tests)
+- ESLint + Prettier (qualité code)
