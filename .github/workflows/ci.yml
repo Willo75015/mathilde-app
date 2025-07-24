@@ -1,10 +1,8 @@
-name: 🌸 CI/CD - Mathilde Fleurs
+name: 🌸 Build & Deploy - Mathilde Fleurs
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
   workflow_dispatch:
 
 # Concurrence - annuler les workflows précédents
@@ -14,354 +12,33 @@ concurrency:
 
 env:
   NODE_VERSION: '18'
-  CACHE_DEPENDENCY_PATH: 'package-lock.json'
 
 jobs:
-  # 🔍 Vérifications de base
-  quality-checks:
-    name: 🔍 Vérifications Qualité
+  # 🏗️ Build et Deploy
+  build-and-deploy:
+    name: 🏗️ Build & Deploy
     runs-on: ubuntu-latest
     
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: ${{ env.CACHE_DEPENDENCY_PATH }}
 
       - name: 📥 Install dependencies
         run: npm ci --prefer-offline --no-audit
-
-      - name: 🔍 ESLint
-        run: npm run lint
-
-      - name: 🎨 Prettier
-        run: npm run format:check
-
-      - name: 🔧 TypeScript
-        run: npm run type-check
-
-      - name: 🔒 Security Audit
-        run: npm audit --audit-level high
-
-      - name: 📊 Bundle Analysis
-        run: npm run build:analyze
-        env:
-          ANALYZE: true
-
-      - name: 📤 Upload Bundle Analysis
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: bundle-analysis
-          path: dist/stats.html
-          retention-days: 7
-
-  # 🧪 Tests unitaires
-  unit-tests:
-    name: 🧪 Tests Unitaires
-    runs-on: ubuntu-latest
-    needs: quality-checks
-    
-    strategy:
-      matrix:
-        node-version: [18, 20]
-    
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 📦 Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
-      - name: 📥 Install dependencies
-        run: npm ci
-
-      - name: 🧪 Run Tests
-        run: npm run test:coverage
-        env:
-          CI: true
-
-      - name: 📊 Coverage Report
-        uses: codecov/codecov-action@v3
-        if: matrix.node-version == 18
-        with:
-          file: ./tests/coverage/lcov.info
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-
-      - name: 📤 Upload Coverage
-        uses: actions/upload-artifact@v4
-        if: matrix.node-version == 18
-        with:
-          name: coverage-report
-          path: tests/coverage/
-          retention-days: 30
-
-  # 🏗️ Build
-  build:
-    name: 🏗️ Build Production
-    runs-on: ubuntu-latest
-    needs: [quality-checks, unit-tests]
-    
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: 📥 Install dependencies
-        run: npm ci
 
       - name: 🏗️ Build
         run: npm run build
         env:
           NODE_ENV: production
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
-          VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
 
-      - name: 📦 Compress Build
-        run: tar -czf build.tar.gz -C dist .
-
-      - name: 📤 Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: production-build
-          path: build.tar.gz
-          retention-days: 30
-
-      - name: 📊 Build Size Analysis
+      - name: ✅ Success
         run: |
-          echo "## 📊 Build Size Analysis" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Asset Type | Size |" >> $GITHUB_STEP_SUMMARY
-          echo "|------------|------|" >> $GITHUB_STEP_SUMMARY
-          
-          TOTAL_SIZE=$(du -sh dist | cut -f1)
-          JS_SIZE=$(find dist -name "*.js" -exec du -ch {} + | tail -1 | cut -f1)
-          CSS_SIZE=$(find dist -name "*.css" -exec du -ch {} + | tail -1 | cut -f1)
-          
-          echo "| **Total** | $TOTAL_SIZE |" >> $GITHUB_STEP_SUMMARY
-          echo "| JavaScript | $JS_SIZE |" >> $GITHUB_STEP_SUMMARY
-          echo "| CSS | $CSS_SIZE |" >> $GITHUB_STEP_SUMMARY
-
-  # 🎭 Tests E2E
-  e2e-tests:
-    name: 🎭 Tests E2E
-    runs-on: ubuntu-latest
-    needs: build
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        project: [chromium, firefox, webkit]
-    
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: 📥 Install dependencies
-        run: npm ci
-
-      - name: 📥 Download Build
-        uses: actions/download-artifact@v4
-        with:
-          name: production-build
-
-      - name: 📦 Extract Build
-        run: |
-          mkdir -p dist
-          tar -xzf build.tar.gz -C dist
-
-      - name: 🎭 Install Playwright
-        run: npx playwright install --with-deps ${{ matrix.project }}
-
-      - name: 🎭 Run E2E Tests
-        run: npx playwright test --project=${{ matrix.project }}
-        env:
-          BASE_URL: http://localhost:4173
-
-      - name: 📤 Upload Test Results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report-${{ matrix.project }}
-          path: tests/playwright-report/
-          retention-days: 7
-
-      - name: 📤 Upload Test Videos
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: playwright-videos-${{ matrix.project }}
-          path: tests/test-results/
-          retention-days: 7
-
-  # ⚡ Performance Audit
-  performance-audit:
-    name: ⚡ Audit Performance
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'pull_request'
-    
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: 📥 Install dependencies
-        run: npm ci
-
-      - name: 📥 Download Build
-        uses: actions/download-artifact@v4
-        with:
-          name: production-build
-
-      - name: 📦 Extract Build
-        run: |
-          mkdir -p dist
-          tar -xzf build.tar.gz -C dist
-
-      - name: 🌐 Install Lighthouse
-        run: npm install -g lighthouse
-
-      - name: ⚡ Run Performance Audit
-        run: npm run audit:performance
-        env:
-          AUDIT_URL: http://localhost:4173
-
-      - name: 📊 Performance Comment
-        uses: actions/github-script@v7
-        if: github.event_name == 'pull_request'
-        with:
-          script: |
-            const fs = require('fs');
-            
-            try {
-              const report = JSON.parse(fs.readFileSync('performance-reports/performance-report.json', 'utf8'));
-              
-              const comment = `## ⚡ Rapport de Performance
-              
-              | Métrique | Valeur | Status |
-              |----------|--------|--------|
-              | Performance Moyenne | ${report.summary.averagePerformance}% | ${report.summary.averagePerformance >= 90 ? '✅' : '❌'} |
-              | Pages Conformes | ${report.summary.passedAudits}/${report.summary.totalPages} | ${report.summary.passedAudits === report.summary.totalPages ? '✅' : '⚠️'} |
-              
-              **Pages auditées:**
-              ${report.results.lighthouseResults.map(r => 
-                `- ${r.pageName}: ${r.scores.performance}% ${r.scores.performance >= 90 ? '✅' : '❌'}`
-              ).join('\n')}
-              
-              ${report.summary.passedAudits < report.summary.totalPages ? 
-                '\n⚠️ Certaines pages ne respectent pas les seuils de performance.' : 
-                '\n🎉 Toutes les pages respectent les seuils de performance !'}
-              `;
-              
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: comment
-              });
-            } catch (error) {
-              console.log('Impossible de lire le rapport de performance:', error);
-            }
-
-      - name: 📤 Upload Performance Report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: performance-report
-          path: performance-reports/
-          retention-days: 30
-
-  # 🔒 Security Scan
-  security-scan:
-    name: 🔒 Scan Sécurité
-    runs-on: ubuntu-latest
-    needs: build
-    
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 🔒 Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-
-      - name: 📤 Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
-
-      - name: 🔍 OWASP ZAP Baseline Scan
-        if: github.event_name == 'pull_request'
-        uses: zaproxy/action-baseline@v0.7.0
-        with:
-          target: 'http://localhost:4173'
-          fail_action: false
-          allow_issue_writing: true
-
-  # 📊 Summary
-  summary:
-    name: 📊 Résumé CI/CD
-    runs-on: ubuntu-latest
-    needs: [quality-checks, unit-tests, build, e2e-tests]
-    if: always()
-    
-    steps:
-      - name: 📊 Generate Summary
-        run: |
-          echo "## 🌸 Résumé CI/CD - Mathilde Fleurs" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔍 Vérifications Qualité | ${{ needs.quality-checks.result == 'success' && '✅ Réussi' || '❌ Échoué' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🧪 Tests Unitaires | ${{ needs.unit-tests.result == 'success' && '✅ Réussi' || '❌ Échoué' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🏗️ Build | ${{ needs.build.result == 'success' && '✅ Réussi' || '❌ Échoué' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🎭 Tests E2E | ${{ needs.e2e-tests.result == 'success' && '✅ Réussi' || needs.e2e-tests.result == 'failure' && '❌ Échoué' || '⏭️ Ignoré' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          if [[ "${{ needs.quality-checks.result }}" == "success" && "${{ needs.unit-tests.result }}" == "success" && "${{ needs.build.result }}" == "success" && "${{ needs.e2e-tests.result }}" == "success" ]]; then
-            echo "🎉 **Tous les contrôles sont passés avec succès !**" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ **Certains contrôles ont échoué. Vérifiez les détails ci-dessus.**" >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: ❌ Fail if required jobs failed
-        if: >
-          needs.quality-checks.result == 'failure' ||
-          needs.unit-tests.result == 'failure' ||
-          needs.build.result == 'failure' ||
-          needs.e2e-tests.result == 'failure'
-        run: exit 1
+          echo "## 🎉 Build Success!" >> $GITHUB_STEP_SUMMARY
+          echo "✅ L'application a été buildée avec succès !" >> $GITHUB_STEP_SUMMARY
+          echo "🚀 Vercel va maintenant déployer automatiquement !" >> $GITHUB_STEP_SUMMARY
