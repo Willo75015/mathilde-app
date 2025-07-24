@@ -25,17 +25,25 @@
 <body>
   <div id="root"></div>
   
-  <!-- Service Worker pour production -->
+  <!-- SERVICE WORKER TEMPORAIREMENT DÉSACTIVÉ -->
   <script>
+    console.log('🔧 Service Worker désactivé temporairement pour résoudre les problèmes CSP')
+    
+    // Nettoyer les anciens SW et caches
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(registration => {
-            console.log('✅ SW registered:', registration.scope)
-          })
-          .catch(error => {
-            console.error('❌ SW registration failed:', error)
-          })
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        registrations.forEach(function(registration) {
+          console.log('🧹 Suppression SW existant')
+          registration.unregister()
+        })
+      })
+      
+      // Vider tous les caches
+      caches.keys().then(function(cacheNames) {
+        return Promise.all(cacheNames.map(function(cacheName) {
+          console.log('🧹 Suppression cache:', cacheName)
+          return caches.delete(cacheName)
+        }))
       })
     }
   </script>
