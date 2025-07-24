@@ -3,7 +3,7 @@ import { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 
 // =============================================================================
-// TYPES AMÉLIORÉS
+// 🔐 TYPES AMÉLIORÉS AVEC NOUVELLES TABLES
 // =============================================================================
 
 export interface UserProfile {
@@ -13,27 +13,53 @@ export interface UserProfile {
   email: string
   first_name?: string
   last_name?: string
-  username?: string
   avatar_url?: string
-  phone?: string
-  website?: string
-  preferences: {
-    theme: 'light' | 'dark' | 'system'
-    language: string
-    notifications: {
-      email: boolean
-      push: boolean
-      reminders: boolean
-    }
-    dashboard: {
-      defaultView: string
-      showWelcome: boolean
-    }
-  }
-  role: 'admin' | 'florist' | 'user' | 'client'
+  role: 'admin' | 'florist' | 'client'
+  
+  // Sécurité avancée (nouvelles colonnes)
   is_active: boolean
-  last_login?: string
-  login_count: number
+  email_verified: boolean
+  last_sign_in_at?: string
+  sign_in_count: number
+  failed_attempts: number
+  locked_until?: string
+  
+  // Préférences utilisateur
+  theme: 'light' | 'dark' | 'system'
+  language: 'fr' | 'en'
+  notifications_enabled: boolean
+}
+
+interface UserSession {
+  id: string
+  user_id: string
+  session_token?: string
+  fingerprint: string
+  ip_address?: string
+  user_agent: string
+  country?: string
+  city?: string
+  is_active: boolean
+  signed_out_at?: string
+  failed_attempts: number
+  last_activity: string
+  created_at: string
+  expires_at: string
+}
+
+interface SecurityEvent {
+  id: string
+  user_id?: string
+  event_type: 'login_success' | 'login_failed' | 'logout' | 'password_reset' | 
+              'account_locked' | 'suspicious_activity' | 'token_refresh' |
+              'rate_limit_exceeded' | 'unauthorized_access'
+  severity: 'info' | 'warning' | 'critical'
+  message: string
+  metadata: Record<string, any>
+  ip_address?: string
+  user_agent: string
+  fingerprint: string
+  created_at: string
 }
 
 interface SecurityMetrics {
@@ -41,6 +67,8 @@ interface SecurityMetrics {
   lastFailedAttempt?: Date
   isBlocked: boolean
   blockExpiresAt?: Date
+  sessionCount: number
+  suspiciousActivity: boolean
 }
 
 interface AuthState {
@@ -54,7 +82,7 @@ interface AuthState {
 }
 
 interface AuthContextType extends AuthState {
-  // Méthodes d'authentification de base
+  // Méthodes d'authentification de base (compatibilité existante)
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
@@ -65,7 +93,6 @@ interface AuthContextType extends AuthState {
     password: string
     firstName?: string
     lastName?: string
-    username?: string
   }) => Promise<{ error: AuthError | null }>
   
   signInWithOAuth: (provider: 'google' | 'github' | 'discord') => Promise<{ error: AuthError | null }>
@@ -81,6 +108,12 @@ interface AuthContextType extends AuthState {
   refreshProfile: () => Promise<void>
   refreshSession: () => Promise<void>
   
+  // Nouvelles méthodes de sécurité
+  getSecurityEvents: (limit?: number) => Promise<SecurityEvent[]>
+  getUserSessions: () => Promise<UserSession[]>
+  terminateSession: (sessionId: string) => Promise<void>
+  terminateAllSessions: () => Promise<void>
+  
   // Utilitaires
   clearError: () => void
   isRole: (role: UserProfile['role']) => boolean
@@ -90,129 +123,346 @@ interface AuthContextType extends AuthState {
 }
 
 // =============================================================================
-// RATE LIMITER SÉCURISÉ
+// 🔒 RATE LIMITER AVEC BASE DE DONNÉES
 // =============================================================================
 
-class AuthRateLimiter {
-  private attempts = new Map<string, { count: number; resetTime: number; timestamps: number[] }>()
+class DatabaseRateLimiter {
   private readonly maxAttempts = 5
   private readonly windowMs = 15 * 60 * 1000 // 15 minutes
   private readonly blockDurationMs = 30 * 60 * 1000 // 30 minutes
 
-  isBlocked(identifier: string): boolean {
-    const record = this.attempts.get(identifier)
-    if (!record) return false
+  async isBlocked(fingerprint: string, userId?: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.rpc('check_rate_limit', {
+        p_user_id: userId || null,
+        p_fingerprint: fingerprint,
+        p_max_attempts: this.maxAttempts,
+        p_window_minutes: 15
+      })
 
-    const now = Date.now()
-    
-    // Nettoyer les tentatives anciennes
-    record.timestamps = record.timestamps.filter(time => now - time < this.windowMs)
-    record.count = record.timestamps.length
+      if (error) {
+        console.error('Rate limit check error:', error)
+        return false // En cas d'erreur, ne pas bloquer
+      }
 
-    if (record.count >= this.maxAttempts) {
-      const oldestAttempt = Math.min(...record.timestamps)
-      return (now - oldestAttempt) < this.blockDurationMs
-    }
-
-    return false
-  }
-
-  recordAttempt(identifier: string): SecurityMetrics {
-    const now = Date.now()
-    const record = this.attempts.get(identifier) || { count: 0, resetTime: 0, timestamps: [] }
-    
-    record.timestamps.push(now)
-    record.timestamps = record.timestamps.filter(time => now - time < this.windowMs)
-    record.count = record.timestamps.length
-    
-    this.attempts.set(identifier, record)
-
-    const isBlocked = record.count >= this.maxAttempts
-    const blockExpiresAt = isBlocked 
-      ? new Date(Math.min(...record.timestamps) + this.blockDurationMs)
-      : undefined
-
-    return {
-      failedAttempts: record.count,
-      lastFailedAttempt: new Date(now),
-      isBlocked,
-      blockExpiresAt
+      return !data // La fonction retourne true si autorisé, on inverse
+    } catch (error) {
+      console.error('Rate limit exception:', error)
+      return false
     }
   }
 
-  reset(identifier: string): void {
-    this.attempts.delete(identifier)
+  async recordFailedAttempt(fingerprint: string, userId?: string, eventType: string = 'login_failed'): Promise<SecurityMetrics> {
+    try {
+      // Enregistrer l'événement de sécurité
+      await this.logSecurityEvent(userId, eventType, 'warning', 'Tentative de connexion échouée', {
+        fingerprint,
+        attempt_time: new Date().toISOString()
+      }, fingerprint)
+
+      // Compter les tentatives récentes
+      const { data: events } = await supabase
+        .from('security_events')
+        .select('*')
+        .or(`user_id.eq.${userId},fingerprint.eq.${fingerprint}`)
+        .eq('event_type', eventType)
+        .gte('created_at', new Date(Date.now() - this.windowMs).toISOString())
+        .order('created_at', { ascending: false })
+
+      const failedAttempts = events?.length || 0
+      const lastFailedAttempt = events?.[0] ? new Date(events[0].created_at) : new Date()
+      const isBlocked = failedAttempts >= this.maxAttempts
+      
+      // Si bloqué, mettre à jour le profil utilisateur
+      if (isBlocked && userId) {
+        await supabase.rpc('lock_account', {
+          p_user_id: userId,
+          p_duration_minutes: 30
+        })
+      }
+
+      const blockExpiresAt = isBlocked 
+        ? new Date(lastFailedAttempt.getTime() + this.blockDurationMs)
+        : undefined
+
+      return {
+        failedAttempts,
+        lastFailedAttempt,
+        isBlocked,
+        blockExpiresAt,
+        sessionCount: 0,
+        suspiciousActivity: failedAttempts > 3
+      }
+    } catch (error) {
+      console.error('Record failed attempt error:', error)
+      return {
+        failedAttempts: 0,
+        isBlocked: false,
+        sessionCount: 0,
+        suspiciousActivity: false
+      }
+    }
   }
 
-  getTimeUntilUnblock(identifier: string): number {
-    const record = this.attempts.get(identifier)
-    if (!record || record.count < this.maxAttempts) return 0
+  async reset(fingerprint: string, userId?: string): Promise<void> {
+    try {
+      // Réinitialiser le compte si verrouillé
+      if (userId) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ 
+            failed_attempts: 0,
+            locked_until: null 
+          })
+          .eq('id', userId)
 
-    const oldestAttempt = Math.min(...record.timestamps)
-    const unblockTime = oldestAttempt + this.blockDurationMs
-    return Math.max(0, unblockTime - Date.now())
+        if (error) {
+          console.error('Reset lock error:', error)
+        }
+      }
+
+      // Log de l'événement de reset
+      await this.logSecurityEvent(userId, 'rate_limit_reset', 'info', 'Rate limiting réinitialisé', {
+        fingerprint,
+        reset_time: new Date().toISOString()
+      }, fingerprint)
+    } catch (error) {
+      console.error('Rate limit reset error:', error)
+    }
+  }
+
+  async getTimeUntilUnblock(fingerprint: string, userId?: string): Promise<number> {
+    try {
+      // Vérifier si le compte est verrouillé
+      if (userId) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('locked_until')
+          .eq('id', userId)
+          .single()
+
+        if (profile?.locked_until) {
+          const unblockTime = new Date(profile.locked_until).getTime()
+          return Math.max(0, unblockTime - Date.now())
+        }
+      }
+
+      return 0
+    } catch (error) {
+      console.error('Get time until unblock error:', error)
+      return 0
+    }
+  }
+
+  private async logSecurityEvent(
+    userId: string | null | undefined,
+    eventType: string,
+    severity: 'info' | 'warning' | 'critical',
+    message: string,
+    metadata: Record<string, any> = {},
+    fingerprint: string
+  ): Promise<void> {
+    try {
+      await supabase.rpc('log_security_event', {
+        p_user_id: userId || null,
+        p_event_type: eventType,
+        p_severity: severity,
+        p_message: message,
+        p_metadata: metadata,
+        p_ip_address: null, // Client-side ne peut pas obtenir l'IP
+        p_user_agent: navigator.userAgent,
+        p_fingerprint: fingerprint
+      })
+    } catch (error) {
+      console.error('Log security event error:', error)
+    }
   }
 }
 
 // =============================================================================
-// SECURITY AUDITOR
+// 🔍 SESSION MANAGER
 // =============================================================================
 
-class SecurityAuditor {
-  private static instance: SecurityAuditor
-  private events: Array<{
-    id: string
-    type: string
-    severity: 'low' | 'medium' | 'high' | 'critical'
-    message: string
-    timestamp: Date
-    userId?: string
-    metadata?: any
-  }> = []
+class SessionManager {
+  async createSession(userId: string, fingerprint: string): Promise<string | null> {
+    try {
+      const { data, error } = await supabase
+        .from('user_sessions')
+        .insert({
+          user_id: userId,
+          fingerprint,
+          user_agent: navigator.userAgent,
+          is_active: true,
+          last_activity: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 jours
+        })
+        .select('id')
+        .single()
 
-  static getInstance(): SecurityAuditor {
-    if (!SecurityAuditor.instance) {
-      SecurityAuditor.instance = new SecurityAuditor()
+      if (error) {
+        console.error('Create session error:', error)
+        return null
+      }
+
+      return data.id
+    } catch (error) {
+      console.error('Session creation exception:', error)
+      return null
     }
-    return SecurityAuditor.instance
   }
 
-  log(type: string, severity: 'low' | 'medium' | 'high' | 'critical', message: string, metadata?: any, userId?: string) {
-    const event = {
-      id: crypto.randomUUID(),
-      type,
-      severity,
-      message,
-      timestamp: new Date(),
-      userId,
-      metadata
+  async updateSessionActivity(sessionId: string): Promise<void> {
+    try {
+      await supabase
+        .from('user_sessions')
+        .update({ 
+          last_activity: new Date().toISOString() 
+        })
+        .eq('id', sessionId)
+    } catch (error) {
+      console.error('Update session activity error:', error)
     }
-
-    this.events.push(event)
-    
-    // Limiter à 1000 événements max
-    if (this.events.length > 1000) {
-      this.events = this.events.slice(-500)
-    }
-
-    // Logger en console pour les événements critiques
-    if (severity === 'critical') {
-      console.error('🚨 SECURITY ALERT:', event)
-    } else if (severity === 'high') {
-      console.warn('🔒 Security Event:', event)
-    }
-
-    // En production, envoyer à un service de monitoring
-    // this.sendToMonitoring(event)
   }
 
-  getRecentEvents(limit = 50) {
-    return this.events.slice(-limit)
+  async getUserSessions(userId: string): Promise<UserSession[]> {
+    try {
+      const { data, error } = await supabase
+        .from('user_sessions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Get user sessions error:', error)
+        return []
+      }
+
+      return data || []
+    } catch (error) {
+      console.error('Get user sessions exception:', error)
+      return []
+    }
+  }
+
+  async terminateSession(sessionId: string): Promise<void> {
+    try {
+      await supabase
+        .from('user_sessions')
+        .update({
+          is_active: false,
+          signed_out_at: new Date().toISOString()
+        })
+        .eq('id', sessionId)
+    } catch (error) {
+      console.error('Terminate session error:', error)
+    }
+  }
+
+  async terminateAllSessions(userId: string, exceptSessionId?: string): Promise<void> {
+    try {
+      let query = supabase
+        .from('user_sessions')
+        .update({
+          is_active: false,
+          signed_out_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .eq('is_active', true)
+
+      if (exceptSessionId) {
+        query = query.neq('id', exceptSessionId)
+      }
+
+      await query
+    } catch (error) {
+      console.error('Terminate all sessions error:', error)
+    }
   }
 }
 
 // =============================================================================
-// CONTEXT
+// 📊 SECURITY ANALYTICS
+// =============================================================================
+
+class SecurityAnalytics {
+  async getSecurityEvents(userId?: string, limit: number = 50): Promise<SecurityEvent[]> {
+    try {
+      let query = supabase
+        .from('security_events')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (userId) {
+        query = query.eq('user_id', userId)
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        console.error('Get security events error:', error)
+        return []
+      }
+
+      return data || []
+    } catch (error) {
+      console.error('Get security events exception:', error)
+      return []
+    }
+  }
+
+  async getSecurityMetrics(userId: string, fingerprint: string): Promise<SecurityMetrics> {
+    try {
+      // Compter les tentatives échouées récentes
+      const { data: failedEvents } = await supabase
+        .from('security_events')
+        .select('*')
+        .or(`user_id.eq.${userId},fingerprint.eq.${fingerprint}`)
+        .eq('event_type', 'login_failed')
+        .gte('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString())
+
+      // Compter les sessions actives
+      const { data: sessions } = await supabase
+        .from('user_sessions')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+
+      // Vérifier le profil pour le verrouillage
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('locked_until')
+        .eq('id', userId)
+        .single()
+
+      const failedAttempts = failedEvents?.length || 0
+      const sessionCount = sessions?.length || 0
+      const isBlocked = profile?.locked_until ? new Date(profile.locked_until) > new Date() : false
+      const blockExpiresAt = profile?.locked_until ? new Date(profile.locked_until) : undefined
+
+      return {
+        failedAttempts,
+        lastFailedAttempt: failedEvents?.[0] ? new Date(failedEvents[0].created_at) : undefined,
+        isBlocked,
+        blockExpiresAt,
+        sessionCount,
+        suspiciousActivity: failedAttempts > 3
+      }
+    } catch (error) {
+      console.error('Get security metrics error:', error)
+      return {
+        failedAttempts: 0,
+        isBlocked: false,
+        sessionCount: 0,
+        suspiciousActivity: false
+      }
+    }
+  }
+}
+
+// =============================================================================
+// 🎯 CONTEXT PRINCIPAL
 // =============================================================================
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -226,16 +476,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     error: null,
     securityMetrics: {
       failedAttempts: 0,
-      isBlocked: false
+      isBlocked: false,
+      sessionCount: 0,
+      suspiciousActivity: false
     }
   })
 
-  const rateLimiter = useRef(new AuthRateLimiter()).current
-  const auditor = useRef(SecurityAuditor.getInstance()).current
+  const rateLimiter = useRef(new DatabaseRateLimiter()).current
+  const sessionManager = useRef(new SessionManager()).current
+  const securityAnalytics = useRef(new SecurityAnalytics()).current
   const refreshTimeoutRef = useRef<NodeJS.Timeout>()
 
   // =============================================================================
-  // HELPERS SÉCURISÉS
+  // 🛡️ HELPERS SÉCURISÉS
   // =============================================================================
 
   const setError = useCallback((error: string | null) => {
@@ -247,25 +500,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [])
 
   const getClientFingerprint = useCallback(() => {
-    // Créer un fingerprint basique du client pour le rate limiting
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
-    ctx?.fillText('fingerprint', 10, 10)
+    ctx?.fillText('mathilde-fleurs-fp', 10, 10)
     const canvasFingerprint = canvas.toDataURL()
     
     return btoa(
       navigator.userAgent + 
       navigator.language + 
       screen.width + screen.height + 
+      new Date().getTimezoneOffset() +
       canvasFingerprint
     ).slice(0, 32)
   }, [])
 
-  const logSecurityEvent = useCallback((type: string, severity: 'low' | 'medium' | 'high' | 'critical', message: string, metadata?: any) => {
-    auditor.log(type, severity, message, metadata, state.user?.id)
-  }, [state.user?.id])
-
-  // Récupérer le profil utilisateur avec cache
+  // Récupérer le profil utilisateur optimisé
   const fetchProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
       const { data, error } = await supabase
@@ -275,42 +524,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single()
 
       if (error) {
-        logSecurityEvent('profile_fetch_error', 'medium', `Erreur récupération profil: ${error.message}`, { error })
+        console.error('Profile fetch error:', error)
         return null
       }
 
       return data as UserProfile
     } catch (error) {
-      logSecurityEvent('profile_fetch_exception', 'high', 'Exception lors de la récupération du profil', { error })
+      console.error('Profile fetch exception:', error)
       return null
     }
-  }, [logSecurityEvent])
+  }, [])
 
-  // Mettre à jour la date de dernière connexion
-  const updateLastLogin = useCallback(async (userId: string) => {
-    try {
-      await supabase.rpc('update_last_login', { user_uuid: userId })
-      logSecurityEvent('login_updated', 'low', 'Dernière connexion mise à jour')
-    } catch (error) {
-      logSecurityEvent('login_update_error', 'medium', 'Erreur mise à jour last_login', { error })
-    }
-  }, [logSecurityEvent])
-
-  // Créer une session utilisateur (pour analytics)
-  const createUserSession = useCallback(async (userId: string) => {
-    try {
-      const fingerprint = getClientFingerprint()
-      await supabase.rpc('create_user_session', {
-        user_uuid: userId,
-        ip_addr: null, // En client-side, on ne peut pas obtenir l'IP
-        user_agent_str: navigator.userAgent
-      })
-      
-      logSecurityEvent('session_created', 'low', 'Session utilisateur créée', { fingerprint })
-    } catch (error) {
-      logSecurityEvent('session_creation_error', 'medium', 'Erreur création session', { error })
-    }
-  }, [getClientFingerprint, logSecurityEvent])
+  // Mettre à jour les métriques de sécurité
+  const updateSecurityMetrics = useCallback(async (userId: string) => {
+    const fingerprint = getClientFingerprint()
+    const metrics = await securityAnalytics.getSecurityMetrics(userId, fingerprint)
+    setState(prev => ({ ...prev, securityMetrics: metrics }))
+  }, [getClientFingerprint, securityAnalytics])
 
   // Configuration de la rotation automatique des tokens
   const setupTokenRotation = useCallback((session: Session) => {
@@ -318,28 +548,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearTimeout(refreshTimeoutRef.current)
     }
 
-    // Rafraîchir le token 5 minutes avant expiration
     const expiresIn = session.expires_in || 3600
-    const refreshTime = Math.max((expiresIn - 300) * 1000, 30000) // Min 30s
+    const refreshTime = Math.max((expiresIn - 300) * 1000, 30000) // 5 min avant expiration
 
     refreshTimeoutRef.current = setTimeout(async () => {
       try {
         const { data, error } = await supabase.auth.refreshSession()
         
         if (error) {
-          logSecurityEvent('token_refresh_error', 'high', `Erreur refresh token: ${error.message}`, { error })
+          console.error('Token refresh error:', error)
         } else if (data.session) {
-          logSecurityEvent('token_refreshed', 'low', 'Token rafraîchi automatiquement')
-          setupTokenRotation(data.session) // Programmer le prochain refresh
+          setupTokenRotation(data.session)
+          
+          // Log de l'événement
+          if (state.user) {
+            await rateLimiter.logSecurityEvent(
+              state.user.id,
+              'token_refresh',
+              'info',
+              'Token rafraîchi automatiquement',
+              {},
+              getClientFingerprint()
+            )
+          }
         }
       } catch (error) {
-        logSecurityEvent('token_refresh_exception', 'critical', 'Exception lors du refresh token', { error })
+        console.error('Token refresh exception:', error)
       }
     }, refreshTime)
-  }, [logSecurityEvent])
+  }, [state.user, rateLimiter, getClientFingerprint])
 
   // =============================================================================
-  // EFFECTS
+  // ⚡ EFFECTS
   // =============================================================================
 
   useEffect(() => {
@@ -352,7 +592,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!mounted) return
 
         if (error) {
-          logSecurityEvent('session_init_error', 'high', `Erreur initialisation session: ${error.message}`, { error })
+          console.error('Session init error:', error)
           setError(error.message)
           return
         }
@@ -360,12 +600,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           const profile = await fetchProfile(session.user.id)
           
-          if (mounted) {
+          if (mounted && profile) {
+            // Créer une session en base
+            const fingerprint = getClientFingerprint()
+            const sessionId = await sessionManager.createSession(session.user.id, fingerprint)
+            
             setState(prev => ({
               ...prev,
               session,
               user: session.user,
               profile,
+              sessionId: sessionId || undefined,
               loading: false,
               error: null
             }))
@@ -373,11 +618,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Configurer la rotation des tokens
             setupTokenRotation(session)
             
-            // Mettre à jour last_login et créer session
-            updateLastLogin(session.user.id)
-            createUserSession(session.user.id)
+            // Mettre à jour les métriques de sécurité
+            await updateSecurityMetrics(session.user.id)
             
-            logSecurityEvent('session_restored', 'low', 'Session restaurée avec succès')
+            // Log de restauration de session
+            await rateLimiter.logSecurityEvent(
+              session.user.id,
+              'session_restored',
+              'info',
+              'Session restaurée avec succès',
+              {},
+              fingerprint
+            )
           }
         } else {
           if (mounted) {
@@ -392,7 +644,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } catch (error) {
         if (mounted) {
-          logSecurityEvent('auth_init_exception', 'critical', 'Exception initialisation auth', { error })
+          console.error('Auth initialization error:', error)
           setError('Erreur d\'initialisation de l\'authentification')
         }
       }
@@ -405,56 +657,67 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       async (event, session) => {
         if (!mounted) return
 
-        logSecurityEvent('auth_state_change', 'low', `Changement d'état auth: ${event}`, { event })
-
         if (session?.user) {
           const profile = await fetchProfile(session.user.id)
           
-          if (mounted) {
+          if (mounted && profile) {
+            const fingerprint = getClientFingerprint()
+            let sessionId = state.sessionId
+
+            // Créer nouvelle session si connexion
+            if (event === 'SIGNED_IN') {
+              sessionId = await sessionManager.createSession(session.user.id, fingerprint)
+              await rateLimiter.reset(fingerprint, session.user.id)
+              
+              // Log de connexion
+              await rateLimiter.logSecurityEvent(
+                session.user.id,
+                'login_success',
+                'info',
+                'Utilisateur connecté avec succès',
+                { event },
+                fingerprint
+              )
+            }
+
             setState(prev => ({
               ...prev,
               session,
               user: session.user,
               profile,
+              sessionId: sessionId || prev.sessionId,
               loading: false,
               error: null,
               securityMetrics: {
                 failedAttempts: 0,
-                isBlocked: false
+                isBlocked: false,
+                sessionCount: 0,
+                suspiciousActivity: false
               }
             }))
 
-            // Configurer la rotation des tokens
             setupTokenRotation(session)
-
-            // Actions spécifiques selon l'événement
-            if (event === 'SIGNED_IN') {
-              updateLastLogin(session.user.id)
-              createUserSession(session.user.id)
-              rateLimiter.reset(getClientFingerprint()) // Reset rate limiting
-              logSecurityEvent('user_signed_in', 'low', 'Utilisateur connecté')
-            } else if (event === 'TOKEN_REFRESHED') {
-              logSecurityEvent('token_refreshed', 'low', 'Token rafraîchi')
-            }
+            await updateSecurityMetrics(session.user.id)
           }
         } else {
           if (mounted) {
+            // Terminer la session en base si déconnexion
+            if (event === 'SIGNED_OUT' && state.sessionId) {
+              await sessionManager.terminateSession(state.sessionId)
+            }
+
             setState(prev => ({
               ...prev,
               session: null,
               user: null,
               profile: null,
+              sessionId: undefined,
               loading: false,
               error: null
             }))
 
-            // Nettoyer la rotation des tokens
             if (refreshTimeoutRef.current) {
               clearTimeout(refreshTimeoutRef.current)
-            }
-
-            if (event === 'SIGNED_OUT') {
-              logSecurityEvent('user_signed_out', 'low', 'Utilisateur déconnecté')
             }
           }
         }
@@ -468,20 +731,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearTimeout(refreshTimeoutRef.current)
       }
     }
-  }, [fetchProfile, setupTokenRotation, updateLastLogin, createUserSession, getClientFingerprint, logSecurityEvent, setError])
+  }, [fetchProfile, setupTokenRotation, updateSecurityMetrics, sessionManager, rateLimiter, getClientFingerprint, setError, state.sessionId])
 
   // =============================================================================
-  // MÉTHODES D'AUTHENTIFICATION (compatibilité existante)
+  // 🔐 MÉTHODES D'AUTHENTIFICATION (Compatibilité existante)
   // =============================================================================
 
   const signUp = async (email: string, password: string) => {
     const fingerprint = getClientFingerprint()
     
     // Vérifier le rate limiting
-    if (rateLimiter.isBlocked(fingerprint)) {
-      const timeLeft = rateLimiter.getTimeUntilUnblock(fingerprint)
+    if (await rateLimiter.isBlocked(fingerprint)) {
+      const timeLeft = await rateLimiter.getTimeUntilUnblock(fingerprint)
       const message = `Trop de tentatives. Réessayez dans ${Math.ceil(timeLeft / 60000)} minutes.`
-      logSecurityEvent('signup_rate_limited', 'medium', message, { fingerprint })
       setError(message)
       return { error: new Error(message) }
     }
@@ -498,29 +760,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
       
       if (error) {
-        const securityMetrics = rateLimiter.recordAttempt(fingerprint)
+        const securityMetrics = await rateLimiter.recordFailedAttempt(fingerprint, undefined, 'signup_failed')
         setState(prev => ({ ...prev, securityMetrics, loading: false }))
-        
-        logSecurityEvent('signup_failed', 'medium', `Échec inscription: ${error.message}`, { 
-          email, 
-          error: error.message,
-          fingerprint 
-        })
-        
         setError(error.message)
         return { error }
       }
 
-      logSecurityEvent('signup_success', 'low', 'Inscription réussie', { email })
+      // Log de succès
+      await rateLimiter.logSecurityEvent(
+        null,
+        'signup_success',
+        'info',
+        'Inscription réussie',
+        { email },
+        fingerprint
+      )
+
       setState(prev => ({ ...prev, loading: false }))
       return { error: null }
       
     } catch (error) {
       const err = error as Error
-      const securityMetrics = rateLimiter.recordAttempt(fingerprint)
+      const securityMetrics = await rateLimiter.recordFailedAttempt(fingerprint, undefined, 'signup_failed')
       setState(prev => ({ ...prev, securityMetrics, loading: false }))
-      
-      logSecurityEvent('signup_exception', 'high', 'Exception lors de l\'inscription', { error: err.message })
       setError(err.message)
       return { error: err }
     }
@@ -530,10 +792,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const fingerprint = getClientFingerprint()
     
     // Vérifier le rate limiting
-    if (rateLimiter.isBlocked(fingerprint)) {
-      const timeLeft = rateLimiter.getTimeUntilUnblock(fingerprint)
+    if (await rateLimiter.isBlocked(fingerprint)) {
+      const timeLeft = await rateLimiter.getTimeUntilUnblock(fingerprint)
       const message = `Trop de tentatives de connexion. Réessayez dans ${Math.ceil(timeLeft / 60000)} minutes.`
-      logSecurityEvent('signin_rate_limited', 'high', message, { email, fingerprint })
       setError(message)
       return { error: new Error(message) }
     }
@@ -547,31 +808,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
       
       if (error) {
-        const securityMetrics = rateLimiter.recordAttempt(fingerprint)
+        const securityMetrics = await rateLimiter.recordFailedAttempt(fingerprint, undefined, 'login_failed')
         setState(prev => ({ ...prev, securityMetrics, loading: false }))
-        
-        logSecurityEvent('signin_failed', 'medium', `Échec connexion: ${error.message}`, { 
-          email, 
-          error: error.message,
-          fingerprint 
-        })
-        
         setError(error.message)
         return { error }
       }
 
-      // Succès - reset du rate limiting
-      rateLimiter.reset(fingerprint)
-      logSecurityEvent('signin_success', 'low', 'Connexion réussie', { email })
-      
+      // Succès géré par onAuthStateChange
       return { error: null }
       
     } catch (error) {
       const err = error as Error
-      const securityMetrics = rateLimiter.recordAttempt(fingerprint)
+      const securityMetrics = await rateLimiter.recordFailedAttempt(fingerprint, undefined, 'login_failed')
       setState(prev => ({ ...prev, securityMetrics, loading: false }))
-      
-      logSecurityEvent('signin_exception', 'critical', 'Exception lors de la connexion', { error: err.message })
       setError(err.message)
       return { error: err }
     }
@@ -581,15 +830,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setState(prev => ({ ...prev, loading: true }))
     
     try {
+      // Terminer la session en base
+      if (state.sessionId) {
+        await sessionManager.terminateSession(state.sessionId)
+      }
+
+      // Log de déconnexion
+      if (state.user) {
+        await rateLimiter.logSecurityEvent(
+          state.user.id,
+          'logout',
+          'info',
+          'Déconnexion initiée',
+          {},
+          getClientFingerprint()
+        )
+      }
+
       await supabase.auth.signOut()
-      logSecurityEvent('signout_initiated', 'low', 'Déconnexion initiée')
     } catch (error) {
-      logSecurityEvent('signout_error', 'medium', 'Erreur lors de la déconnexion', { error })
+      console.error('Sign out error:', error)
     }
   }
 
   // =============================================================================
-  // NOUVELLES MÉTHODES ÉTENDUES
+  // 🚀 NOUVELLES MÉTHODES ÉTENDUES
   // =============================================================================
 
   const signUpWithProfile = async (data: {
@@ -597,12 +862,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     password: string
     firstName?: string
     lastName?: string
-    username?: string
   }) => {
     const fingerprint = getClientFingerprint()
     
-    if (rateLimiter.isBlocked(fingerprint)) {
-      const timeLeft = rateLimiter.getTimeUntilUnblock(fingerprint)
+    if (await rateLimiter.isBlocked(fingerprint)) {
+      const timeLeft = await rateLimiter.getTimeUntilUnblock(fingerprint)
       const message = `Trop de tentatives. Réessayez dans ${Math.ceil(timeLeft / 60000)} minutes.`
       setError(message)
       return { error: new AuthError(message) }
@@ -618,29 +882,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             first_name: data.firstName,
-            last_name: data.lastName,
-            username: data.username
+            last_name: data.lastName
           }
         }
       })
       
       if (error) {
-        const securityMetrics = rateLimiter.recordAttempt(fingerprint)
+        const securityMetrics = await rateLimiter.recordFailedAttempt(fingerprint, undefined, 'signup_with_profile_failed')
         setState(prev => ({ ...prev, securityMetrics, loading: false }))
-        logSecurityEvent('signup_with_profile_failed', 'medium', error.message, data)
         setError(error.message)
         return { error }
       }
       
-      logSecurityEvent('signup_with_profile_success', 'low', 'Inscription avec profil réussie', { email: data.email })
+      await rateLimiter.logSecurityEvent(
+        null,
+        'signup_success',
+        'info',
+        'Inscription avec profil réussie',
+        { email: data.email },
+        fingerprint
+      )
+
       setState(prev => ({ ...prev, loading: false }))
       return { error: null }
       
     } catch (error) {
       const err = error as AuthError
-      const securityMetrics = rateLimiter.recordAttempt(fingerprint)
+      const securityMetrics = await rateLimiter.recordFailedAttempt(fingerprint, undefined, 'signup_with_profile_failed')
       setState(prev => ({ ...prev, securityMetrics, loading: false }))
-      logSecurityEvent('signup_with_profile_exception', 'high', err.message, data)
       setError(err.message)
       return { error: err }
     }
@@ -658,17 +927,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
       
       if (error) {
-        logSecurityEvent('oauth_signin_failed', 'medium', `Échec OAuth ${provider}: ${error.message}`, { provider })
+        await rateLimiter.logSecurityEvent(
+          null,
+          'oauth_signin_failed',
+          'warning',
+          `Échec OAuth ${provider}`,
+          { provider, error: error.message },
+          getClientFingerprint()
+        )
         setError(error.message)
         return { error }
       }
       
-      logSecurityEvent('oauth_signin_initiated', 'low', `Connexion OAuth ${provider} initiée`, { provider })
+      await rateLimiter.logSecurityEvent(
+        null,
+        'oauth_signin_initiated',
+        'info',
+        `Connexion OAuth ${provider} initiée`,
+        { provider },
+        getClientFingerprint()
+      )
+
       return { error: null }
       
     } catch (error) {
       const err = error as AuthError
-      logSecurityEvent('oauth_signin_exception', 'high', `Exception OAuth ${provider}`, { provider, error: err.message })
       setError(err.message)
       return { error: err }
     }
@@ -677,8 +960,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signInWithMagicLink = async (email: string) => {
     const fingerprint = getClientFingerprint()
     
-    if (rateLimiter.isBlocked(fingerprint)) {
-      const timeLeft = rateLimiter.getTimeUntilUnblock(fingerprint)
+    if (await rateLimiter.isBlocked(fingerprint)) {
+      const timeLeft = await rateLimiter.getTimeUntilUnblock(fingerprint)
       const message = `Trop de tentatives. Réessayez dans ${Math.ceil(timeLeft / 60000)} minutes.`
       setError(message)
       return { error: new AuthError(message) }
@@ -695,22 +978,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
       
       if (error) {
-        const securityMetrics = rateLimiter.recordAttempt(fingerprint)
+        const securityMetrics = await rateLimiter.recordFailedAttempt(fingerprint, undefined, 'magic_link_failed')
         setState(prev => ({ ...prev, securityMetrics, loading: false }))
-        logSecurityEvent('magic_link_failed', 'medium', error.message, { email })
         setError(error.message)
         return { error }
       }
       
-      logSecurityEvent('magic_link_sent', 'low', 'Magic link envoyé', { email })
+      await rateLimiter.logSecurityEvent(
+        null,
+        'magic_link_sent',
+        'info',
+        'Magic link envoyé',
+        { email },
+        fingerprint
+      )
+
       setState(prev => ({ ...prev, loading: false }))
       return { error: null }
       
     } catch (error) {
       const err = error as AuthError
-      const securityMetrics = rateLimiter.recordAttempt(fingerprint)
+      const securityMetrics = await rateLimiter.recordFailedAttempt(fingerprint, undefined, 'magic_link_failed')
       setState(prev => ({ ...prev, securityMetrics, loading: false }))
-      logSecurityEvent('magic_link_exception', 'high', err.message, { email })
       setError(err.message)
       return { error: err }
     }
@@ -719,8 +1008,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const resetPassword = async (email: string) => {
     const fingerprint = getClientFingerprint()
     
-    if (rateLimiter.isBlocked(fingerprint)) {
-      const timeLeft = rateLimiter.getTimeUntilUnblock(fingerprint)
+    if (await rateLimiter.isBlocked(fingerprint)) {
+      const timeLeft = await rateLimiter.getTimeUntilUnblock(fingerprint)
       const message = `Trop de tentatives. Réessayez dans ${Math.ceil(timeLeft / 60000)} minutes.`
       setError(message)
       return { error: new AuthError(message) }
@@ -734,20 +1023,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
       
       if (error) {
-        const securityMetrics = rateLimiter.recordAttempt(fingerprint)
+        const securityMetrics = await rateLimiter.recordFailedAttempt(fingerprint, undefined, 'password_reset_failed')
         setState(prev => ({ ...prev, securityMetrics, loading: false }))
-        logSecurityEvent('password_reset_failed', 'medium', error.message, { email })
         setError(error.message)
         return { error }
       }
       
-      logSecurityEvent('password_reset_sent', 'low', 'Email de reset envoyé', { email })
+      await rateLimiter.logSecurityEvent(
+        null,
+        'password_reset',
+        'info',
+        'Email de reset envoyé',
+        { email },
+        fingerprint
+      )
+
       setState(prev => ({ ...prev, loading: false }))
       return { error: null }
       
     } catch (error) {
       const err = error as AuthError
-      logSecurityEvent('password_reset_exception', 'high', err.message, { email })
       setError(err.message)
       return { error: err }
     }
@@ -764,18 +1059,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.reauthenticate()
       
       if (error) {
-        logSecurityEvent('reauthentication_failed', 'medium', error.message)
+        await rateLimiter.logSecurityEvent(
+          state.user.id,
+          'reauthentication_failed',
+          'warning',
+          'Échec de réauthentification',
+          { error: error.message },
+          getClientFingerprint()
+        )
         setError(error.message)
         return { error }
       }
       
-      logSecurityEvent('reauthentication_requested', 'low', 'Demande de réauthentification')
+      await rateLimiter.logSecurityEvent(
+        state.user.id,
+        'reauthentication_requested',
+        'info',
+        'Réauthentification demandée',
+        {},
+        getClientFingerprint()
+      )
+
       setState(prev => ({ ...prev, loading: false }))
       return { error: null }
       
     } catch (error) {
       const err = error as AuthError
-      logSecurityEvent('reauthentication_exception', 'high', err.message)
       setError(err.message)
       return { error: err }
     }
@@ -797,25 +1106,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.updateUser(updateData)
       
       if (error) {
-        logSecurityEvent('password_update_failed', 'high', error.message)
+        await rateLimiter.logSecurityEvent(
+          state.user.id,
+          'password_update_failed',
+          'warning',
+          'Échec de mise à jour du mot de passe',
+          { error: error.message },
+          getClientFingerprint()
+        )
         setError(error.message)
         return { error }
       }
       
-      logSecurityEvent('password_updated', 'medium', 'Mot de passe mis à jour')
+      await rateLimiter.logSecurityEvent(
+        state.user.id,
+        'password_update_success',
+        'info',
+        'Mot de passe mis à jour avec succès',
+        {},
+        getClientFingerprint()
+      )
+
       setState(prev => ({ ...prev, loading: false }))
       return { error: null }
       
     } catch (error) {
       const err = error as Error
-      logSecurityEvent('password_update_exception', 'critical', err.message)
       setError(err.message)
       return { error: err }
     }
   }
 
   // =============================================================================
-  // GESTION DU PROFIL
+  // 👤 GESTION DU PROFIL
   // =============================================================================
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
@@ -832,7 +1155,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('id', state.user.id)
 
       if (error) {
-        logSecurityEvent('profile_update_failed', 'medium', error.message, updates)
         setError(error.message)
         return { error: new Error(error.message) }
       }
@@ -844,12 +1166,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading: false
       }))
 
-      logSecurityEvent('profile_updated', 'low', 'Profil mis à jour', Object.keys(updates))
+      await rateLimiter.logSecurityEvent(
+        state.user.id,
+        'profile_updated',
+        'info',
+        'Profil mis à jour',
+        { updated_fields: Object.keys(updates) },
+        getClientFingerprint()
+      )
+
       return { error: null }
       
     } catch (error) {
       const err = error as Error
-      logSecurityEvent('profile_update_exception', 'high', err.message, updates)
       setError(err.message)
       return { error: err }
     }
@@ -857,7 +1186,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshProfile = async () => {
     if (!state.user?.id) return
-
     const profile = await fetchProfile(state.user.id)
     setState(prev => ({ ...prev, profile }))
   }
@@ -867,18 +1195,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase.auth.refreshSession()
       
       if (error) {
-        logSecurityEvent('session_refresh_failed', 'medium', error.message)
+        console.error('Session refresh error:', error)
       } else if (data.session) {
-        logSecurityEvent('session_refreshed_manually', 'low', 'Session rafraîchie manuellement')
         setupTokenRotation(data.session)
       }
     } catch (error) {
-      logSecurityEvent('session_refresh_exception', 'high', 'Exception refresh session', { error })
+      console.error('Session refresh exception:', error)
     }
   }
 
   // =============================================================================
-  // UTILITAIRES
+  // 🔒 NOUVELLES MÉTHODES DE SÉCURITÉ
+  // =============================================================================
+
+  const getSecurityEvents = async (limit: number = 50): Promise<SecurityEvent[]> => {
+    return await securityAnalytics.getSecurityEvents(state.user?.id, limit)
+  }
+
+  const getUserSessions = async (): Promise<UserSession[]> => {
+    if (!state.user?.id) return []
+    return await sessionManager.getUserSessions(state.user.id)
+  }
+
+  const terminateSession = async (sessionId: string): Promise<void> => {
+    await sessionManager.terminateSession(sessionId)
+    
+    if (state.user) {
+      await rateLimiter.logSecurityEvent(
+        state.user.id,
+        'session_terminated',
+        'info',
+        'Session terminée manuellement',
+        { terminated_session_id: sessionId },
+        getClientFingerprint()
+      )
+    }
+  }
+
+  const terminateAllSessions = async (): Promise<void> => {
+    if (!state.user?.id) return
+    
+    await sessionManager.terminateAllSessions(state.user.id, state.sessionId)
+    
+    await rateLimiter.logSecurityEvent(
+      state.user.id,
+      'all_sessions_terminated',
+      'warning',
+      'Toutes les sessions ont été terminées',
+      {},
+      getClientFingerprint()
+    )
+  }
+
+  // =============================================================================
+  // 🛡️ UTILITAIRES
   // =============================================================================
 
   const isRole = (role: UserProfile['role']): boolean => {
@@ -888,9 +1258,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getDisplayName = (): string => {
     if (state.profile?.first_name && state.profile?.last_name) {
       return `${state.profile.first_name} ${state.profile.last_name}`
-    }
-    if (state.profile?.username) {
-      return state.profile.username
     }
     if (state.user?.email) {
       return state.user.email.split('@')[0]
@@ -904,7 +1271,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const permissions = {
       admin: ['*'],
       florist: ['manage_events', 'manage_clients', 'view_stats'],
-      user: ['view_events', 'manage_own_profile'],
       client: ['view_own_events', 'manage_own_profile']
     }
 
@@ -914,15 +1280,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const getTimeUntilUnblock = (): number => {
     const fingerprint = getClientFingerprint()
-    return rateLimiter.getTimeUntilUnblock(fingerprint)
+    return rateLimiter.getTimeUntilUnblock(fingerprint, state.user?.id).then(time => time).catch(() => 0) as any
   }
 
   // =============================================================================
-  // PROVIDER VALUE
+  // 📋 PROVIDER VALUE
   // =============================================================================
 
   const value: AuthContextType = {
-    // État
+    // État (compatible avec l'existant)
     user: state.user,
     profile: state.profile,
     session: state.session,
@@ -931,12 +1297,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     securityMetrics: state.securityMetrics,
     sessionId: state.sessionId,
 
-    // Méthodes existantes (compatibilité)
+    // Méthodes existantes (100% compatibles)
     signUp,
     signIn,
     signOut,
 
-    // Nouvelles méthodes
+    // Nouvelles méthodes étendues
     signUpWithProfile,
     signInWithOAuth,
     signInWithMagicLink,
@@ -948,6 +1314,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateProfile,
     refreshProfile,
     refreshSession,
+
+    // Nouvelles méthodes de sécurité
+    getSecurityEvents,
+    getUserSessions,
+    terminateSession,
+    terminateAllSessions,
 
     // Utilitaires
     clearError,
@@ -973,12 +1345,12 @@ export const useAuth = () => {
 }
 
 // =============================================================================
-// HOOKS SPÉCIALISÉS
+// 🎯 HOOKS SPÉCIALISÉS (compatibilité + nouveautés)
 // =============================================================================
 
 export const useAuthSecurity = () => {
-  const { securityMetrics, getTimeUntilUnblock } = useAuth()
-  return { securityMetrics, getTimeUntilUnblock }
+  const { securityMetrics, getTimeUntilUnblock, getSecurityEvents } = useAuth()
+  return { securityMetrics, getTimeUntilUnblock, getSecurityEvents }
 }
 
 export const useAuthActions = () => {
@@ -1010,4 +1382,9 @@ export const useAuthActions = () => {
 export const useProfile = () => {
   const { profile, updateProfile, refreshProfile, getDisplayName, isRole, canPerformAction } = useAuth()
   return { profile, updateProfile, refreshProfile, getDisplayName, isRole, canPerformAction }
+}
+
+export const useSessionManagement = () => {
+  const { getUserSessions, terminateSession, terminateAllSessions, sessionId } = useAuth()
+  return { getUserSessions, terminateSession, terminateAllSessions, currentSessionId: sessionId }
 }
