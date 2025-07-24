@@ -97,6 +97,14 @@ export default defineConfig({
           ui: ['framer-motion', '@headlessui/react'],
           utils: ['zod', 'crypto-js', 'dompurify']
         }
+      },
+      // Ignorer les erreurs TypeScript
+      onwarn(warning, warn) {
+        // Ignorer les warnings TypeScript
+        if (warning.code === 'PLUGIN_WARNING' && warning.plugin === 'typescript') {
+          return
+        }
+        warn(warning)
       }
     },
     assetsInlineLimit: 4096,

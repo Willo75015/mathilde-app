@@ -80,3 +80,5 @@ public/sw.js.map
 # Test results
 test-results/
 playwright-report/
+
+.vercel

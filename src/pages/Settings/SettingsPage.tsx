@@ -265,7 +265,7 @@ const SettingsPage = () => {
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <User className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p>Configuration du profil disponible prochainement</p>
-              <Button variant="outline" size="sm" className="mt-4" href="/settings/profile">
+              <Button variant="outline" size="sm" className="mt-4" onClick={() => window.location.href='/settings/profile'}>
                 Gérer le profil
               </Button>
             </div>
@@ -280,7 +280,7 @@ const SettingsPage = () => {
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <Shield className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p>Paramètres de sécurité avancés</p>
-              <Button variant="outline" size="sm" className="mt-4" href="/settings/security">
+              <Button variant="outline" size="sm" className="mt-4" onClick={() => window.location.href='/settings/security'}>
                 Configurer la sécurité
               </Button>
             </div>
@@ -295,7 +295,7 @@ const SettingsPage = () => {
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <Palette className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p>Personnalisez votre expérience utilisateur</p>
-              <Button variant="outline" size="sm" className="mt-4" href="/settings/preferences">
+              <Button variant="outline" size="sm" className="mt-4" onClick={() => window.location.href='/settings/preferences'}>
                 Personnaliser l'interface
               </Button>
             </div>
