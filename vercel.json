@@ -1,13 +1,4 @@
 {
-  "buildCommand": "echo 'Ignoring TypeScript errors' && vite build --force",
-  "outputDirectory": "dist",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "framework": "vite",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "buildCommand": "vite build",
+  "outputDirectory": "dist"
 }
