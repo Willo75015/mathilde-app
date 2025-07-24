@@ -1,7 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="32" height="32" rx="6" fill="#10b981"/>
-  <path d="M16 8C13.5 8 12 10.5 12 12.5C12 14.5 13.5 16 16 16C18.5 16 20 14.5 20 12.5C20 10.5 18.5 8 16 8Z" fill="white"/>
-  <path d="M16 16L16 24M16 24L14 22M16 24L18 22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="10" cy="18" r="2" fill="white" opacity="0.7"/>
-  <circle cx="22" cy="20" r="1.5" fill="white" opacity="0.5"/>
+  <!-- Fleur simplifiée -->
+  <path d="M16 8 C12 6, 10 8, 12 12 C10 16, 12 18, 16 14 C20 18, 22 16, 20 12 C22 8, 20 6, 16 8 Z" fill="white"/>
+  <!-- Centre -->
+  <circle cx="16" cy="11" r="2" fill="#fbbf24"/>
+  <!-- Tige -->
+  <rect x="15" y="13" width="2" height="12" fill="#22c55e"/>
+  <!-- Feuille -->
+  <path d="M12 18 C10 16, 8 17, 10 19 C8 21, 10 22, 12 20 Z" fill="#16a34a"/>
 </svg>
