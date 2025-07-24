@@ -12,7 +12,7 @@ interface BadgeProps {
   onRemove?: () => void
 }
 
-const Badge: React.FC<BadgeProps> = ({
+const Badge = ({
   children,
   variant = 'default',
   size = 'md',

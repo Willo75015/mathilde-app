@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react'
+import { forwardRef  } from 'react';
 import { motion } from 'framer-motion'
 import { clsx } from 'clsx'
 import { AlertCircle } from 'lucide-react'
@@ -37,8 +37,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
       // Error state
       'border-red-300 text-red-900 placeholder-red-300': error,
       'focus:ring-red-500 focus:border-red-500': error,
-      'dark:border-red-600 dark:text-red-100': error,
-    },
+      'dark:border-red-600 dark:text-red-100': error},
     className
   )
   

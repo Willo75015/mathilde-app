@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Clock, CheckCircle, AlertTriangle } from 'lucide-react'
 import { useEventTimeSync } from '@/hooks/useEventTimeSync'
 
-export const EventSyncNotification: React.FC = () => {
+export const EventSyncNotification = () => {
   const { overdueEventsCount, todaysEventsCount } = useEventTimeSync()
   const [notifications, setNotifications] = useState<Array<{
     id: string

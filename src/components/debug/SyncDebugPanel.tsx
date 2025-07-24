@@ -2,7 +2,7 @@ import React from 'react'
 import { useEventSync } from '@/hooks/useEventSync'
 
 // Composant debug pour tester la synchronisation
-export const SyncDebugPanel: React.FC<{ eventId?: string }> = ({ eventId }) => {
+export const SyncDebugPanel = ({ eventId }) => {
   const { emitEventSync, getLatestEvent } = useEventSync()
   
   if (!eventId) return null

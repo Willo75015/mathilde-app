@@ -15,7 +15,7 @@ interface GlobalNotificationContextType {
 
 const GlobalNotificationContext = createContext<GlobalNotificationContextType | null>(null)
 
-export const GlobalNotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const GlobalNotificationProvider = ({ children }) => {
   // 🔔 INSTANCE UNIQUE DES NOTIFICATIONS
   const notificationHook = useNotifications()
   const { navigateToEvent } = useEventNavigation()

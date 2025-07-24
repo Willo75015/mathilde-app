@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
+import { Calendar } from 'lucide-react'
 import { useApp } from '@/contexts/AppContext'
 
-const CalendarPage: React.FC = () => {
+constPage: FC = () => {
   const { state } = useApp()
   const [viewMode, setViewMode] = useState<'calendrier' | 'kanban'>('calendrier')
 

@@ -9,7 +9,7 @@ interface ToastProps {
   duration?: number
 }
 
-const Toast: React.FC<ToastProps> = ({ 
+const Toast = ({ 
   message, 
   type, 
   onClose, 

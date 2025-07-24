@@ -1,4 +1,4 @@
-import React, { forwardRef, useState } from 'react'
+import { forwardRef, useState  } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'
 import { clsx } from 'clsx'
 import { Eye, EyeOff, AlertCircle } from 'lucide-react'
@@ -53,8 +53,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
       // Error state
       'border-red-300 text-red-900 placeholder-red-300': error,
       'focus:ring-red-500 focus:border-red-500': error,
-      'dark:border-red-600 dark:text-red-100': error,
-    },
+      'dark:border-red-600 dark:text-red-100': error},
     className
   )
   

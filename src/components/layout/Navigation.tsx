@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, Users, Flower, BarChart3, Home } from 'lucide-react'
+import { Users, Flower, BarChart3, Home, Calendar } from 'lucide-react'
 import { clsx } from 'clsx'
 
 interface NavigationProps {
@@ -8,7 +8,7 @@ interface NavigationProps {
   direction?: 'horizontal' | 'vertical'
 }
 
-const Navigation: React.FC<NavigationProps> = ({ 
+const Navigation = ({ 
   className,
   direction = 'vertical' 
 }) => {

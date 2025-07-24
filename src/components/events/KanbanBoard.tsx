@@ -25,7 +25,7 @@ interface KanbanBoardProps {
   showCreateButtons?: boolean
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({
+export const KanbanBoard = ({
   events,
   onEventStatusChange,
   onEventEdit,

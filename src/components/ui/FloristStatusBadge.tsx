@@ -10,7 +10,7 @@ interface FloristStatusBadgeProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
-const FloristStatusBadge: React.FC<FloristStatusBadgeProps> = ({
+const FloristStatusBadge = ({
   florist,
   assignedEvents = [],
   showDetails = false,

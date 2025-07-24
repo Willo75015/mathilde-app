@@ -11,7 +11,7 @@ import Input from '@/components/ui/Input'
 import Badge from '@/components/ui/Badge'
 import Toast from '@/components/ui/Toast'
 
-const SecuritySettings: React.FC = () => {
+const SecuritySettings = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')

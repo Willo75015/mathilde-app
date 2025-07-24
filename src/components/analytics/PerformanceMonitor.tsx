@@ -1,6 +1,6 @@
 import React from 'react'
 
-const PerformanceMonitor: React.FC = () => {
+const PerformanceMonitor = () => {
   return (
     <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">

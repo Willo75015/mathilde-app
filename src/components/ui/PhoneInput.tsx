@@ -10,7 +10,7 @@ interface PhoneInputProps {
   disabled?: boolean
 }
 
-const PhoneInput: React.FC<PhoneInputProps> = ({
+const PhoneInput = ({
   value,
   onChange,
   className,

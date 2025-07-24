@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { DollarSign, Clock, CheckCircle, AlertTriangle, X, Calendar, FileText } from 'lucide-react'
+import { DollarSign, Clock, CheckCircle, AlertTriangle, X, FileText } from 'lucide-react'
 import { Event, EventStatus } from '@/types'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
@@ -12,7 +12,7 @@ interface PaymentTrackingModalProps {
   onUpdatePaymentStatus: (eventId: string, status: 'paid' | 'overdue' | 'reminder') => void
 }
 
-export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
+export const PaymentTrackingModal = ({
   event,
   isOpen,
   onClose,

@@ -1,3 +1,4 @@
+import React from 'react'
 import { z } from 'zod'
 import DOMPurify from 'dompurify'
 import { EventStatus } from '@/types'
@@ -83,8 +84,7 @@ export class DataSanitizer {
       ALLOWED_ATTR: [], // Aucun attribut autorisé
       KEEP_CONTENT: true, // Garder le contenu texte
       RETURN_DOM: false,
-      RETURN_DOM_FRAGMENT: false,
-      RETURN_DOM_IMPORT: false
+      RETURN_DOM_FRAGMENT: false
     })
     
     // Échapper les caractères spéciaux

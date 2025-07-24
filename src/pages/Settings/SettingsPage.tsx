@@ -12,7 +12,7 @@ import Badge from '@/components/ui/Badge'
 import Tabs from '@/components/ui/Tabs'
 import Toast from '@/components/ui/Toast'
 
-const SettingsPage: React.FC = () => {
+const SettingsPage = () => {
   const { theme, setTheme, isDark } = useTheme()
   const { isInstallable, isInstalled, installApp } = usePWA()
   const [showToast, setShowToast] = useState(false)

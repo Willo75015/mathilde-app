@@ -149,7 +149,7 @@ const checkFloristConflicts = (
  * @param showActions - Afficher les boutons d'action (par défaut: true)
  * @param variant - Variante d'affichage (default, compact, selection)
  */
-const FloristCard: React.FC<FloristCardProps> = ({
+const FloristCard = ({
   florist,
   status = 'available',
   allEvents = [],

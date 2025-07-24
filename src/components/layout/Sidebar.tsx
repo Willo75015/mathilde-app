@@ -1,8 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { clsx } from 'clsx'
-import { 
-  Calendar, Users, Flower, BarChart3, Home,
+import { Users, Flower, BarChart3, Home, Calendar,
   Bell, Search, Settings, User
 } from 'lucide-react'
 
@@ -12,7 +11,7 @@ interface SidebarProps {
   isMobile: boolean
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, isMobile }) => {
+const Sidebar = ({ isOpen, onClose, isMobile }) => {
   // Navigation items
   const navigation = [
     { name: 'Accueil', href: '/', icon: Home, current: true },

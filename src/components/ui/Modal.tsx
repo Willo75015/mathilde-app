@@ -15,7 +15,7 @@ interface ModalProps {
   className?: string
 }
 
-const Modal: React.FC<ModalProps> = ({
+const Modal = ({
   isOpen,
   onClose,
   title,

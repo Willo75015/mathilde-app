@@ -23,7 +23,7 @@ interface ClientsPageProps {
   navigate?: (page: string, params?: any) => void
 }
 
-const ClientsPage: React.FC<ClientsPageProps> = ({ navigate }) => {
+const ClientsPage = ({ navigate }) => {
   const { clients, loadClients, isLoading } = useClients()
   
   // State

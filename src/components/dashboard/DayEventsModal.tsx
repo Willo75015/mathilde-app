@@ -9,7 +9,7 @@ import Badge from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import MoreEventsModal from './MoreEventsModal'
 import EventModal from '@/components/events/EventModal'
-import { FloristWithConflictWarning } from '@/components/ui/FloristWithConflictWarning'
+import FloristWithConflictWarning from '@/components/ui/FloristWithConflictWarning'
 import { Event, EventStatus } from '@/types'
 import { useEvents, useApp } from '@/contexts/AppContext'
 
@@ -36,7 +36,7 @@ const mockFlorists: Florist[] = [
   { id: '4', name: 'Julien Petit', phone: '+33656789012', isConfirmed: false },
 ]
 
-const DayEventsModal: React.FC<DayEventsModalProps> = ({ 
+const DayEventsModal = ({ 
   isOpen, 
   onClose, 
   date, 
@@ -144,7 +144,7 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({
     })
   }
   
-  const EventCard: React.FC<{ event: Event; index: number }> = ({ event, index }) => {
+  const EventCard = ({ event, index }) => {
     const eventFlorists = getEventFlorists(event.id)
     const confirmedFlorists = eventFlorists.filter(f => f.isConfirmed)
     const pendingFlorists = eventFlorists.filter(f => !f.isConfirmed)

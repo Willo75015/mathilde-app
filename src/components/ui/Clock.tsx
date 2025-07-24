@@ -7,7 +7,7 @@ interface ClockProps {
   showIcon?: boolean
 }
 
-export const Clock: React.FC<ClockProps> = ({ 
+export const Clock = ({ 
   format = 'time', 
   showIcon = true
 }) => {

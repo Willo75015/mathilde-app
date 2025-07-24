@@ -13,7 +13,7 @@ interface StatusBadgeProps {
   className?: string
 }
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({
+export const StatusBadge = ({
   status,
   showIcon = false,
   showEmoji = true,

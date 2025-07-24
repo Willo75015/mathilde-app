@@ -1,6 +1,6 @@
 import React from 'react'
 
-const ClientDetails: React.FC = () => {
+const ClientDetails = () => {
   return (
     <div>
       {/* ClientDetails component placeholder */}

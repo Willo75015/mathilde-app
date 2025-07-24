@@ -11,7 +11,7 @@ interface ProgressProps {
   className?: string
 }
 
-const Progress: React.FC<ProgressProps> = ({
+const Progress = ({
   value,
   max = 100,
   size = 'md',

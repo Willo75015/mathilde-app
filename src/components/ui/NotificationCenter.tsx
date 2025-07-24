@@ -8,7 +8,7 @@ interface NotificationCenterProps {
   onNavigateToEvent?: (eventId: string) => void
 }
 
-export const NotificationCenter: React.FC<NotificationCenterProps> = ({
+export const NotificationCenter = ({
   onNavigateToEvent
 }) => {
   const { notifications, removeNotification, clearAllNotifications, navigateToEvent } = useGlobalNotifications()

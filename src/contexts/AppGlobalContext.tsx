@@ -15,7 +15,7 @@ interface AppProviderProps {
 
 const AppProvider = createContext<AppProviderProps | null>(null)
 
-export const AppGlobalProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AppGlobalProvider = ({ children }) => {
   const { navigateToEvent } = useEventNavigation()
   const {
     notifications,

@@ -13,7 +13,7 @@ interface BusinessMetricsSectionProps {
   eventsToInvoice: Event[]
 }
 
-const BusinessMetricsSection: React.FC<BusinessMetricsSectionProps> = ({
+const BusinessMetricsSection = ({
   events = [],        // 🛡️ Valeur par défaut
   clients = [],       // 🛡️ Valeur par défaut
   futureEvents = [],  // 🛡️ Valeur par défaut
@@ -50,16 +50,7 @@ const BusinessMetricsSection: React.FC<BusinessMetricsSectionProps> = ({
     currentMonthRevenue: getCurrentMonthRevenue()
   }
 
-  const MetricCard: React.FC<{
-    icon: React.ReactNode
-    value: string | number
-    label: string
-    bgColor: string
-    iconBgColor: string
-    iconColor: string
-    trend?: number
-    suffix?: string
-  }> = ({ icon, value, label, bgColor, iconBgColor, iconColor, trend, suffix = '' }) => (
+  const MetricCard = ({ icon, value, label, bgColor, iconBgColor, iconColor, trend, suffix = '' }) => (
     <motion.div
       whileHover={{ scale: 1.02 }}
       className={`${bgColor} rounded-lg p-4 shadow-sm`}

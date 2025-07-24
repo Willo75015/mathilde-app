@@ -1,3 +1,4 @@
+import React from 'react'
 import { AppState, Theme } from '@/types'
 
 // Pattern Observer pour la gestion d'état réactive

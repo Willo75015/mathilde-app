@@ -1,13 +1,11 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { 
-  Calendar, Users, Flower, DollarSign, 
-  TrendingUp, TrendingDown, ArrowRight 
-} from 'lucide-react'
+import { Users, Flower, DollarSign, 
+  TrendingUp, TrendingDown, ArrowRight, Clock } from 'lucide-react'
 import Card, { CardContent } from '@/components/ui/Card'
 import { useEvents, useClients } from '@/contexts/AppContext'
 
-const StatsCards: React.FC = () => {
+const StatsCards = () => {
   const { getEventStats } = useEvents()
   const { clients } = useClients()
   
@@ -17,7 +15,7 @@ const StatsCards: React.FC = () => {
     {
       title: 'Événements totaux',
       value: totalEvents,
-      icon: Calendar,
+      icon: Clock,
       color: 'bg-blue-500',
       trend: '+12%',
       trendUp: true

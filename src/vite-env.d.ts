@@ -1,3 +1,4 @@
+import { FC } from 'react';
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
@@ -14,7 +15,7 @@ interface ImportMeta {
 // Déclarations pour les assets
 declare module '*.svg' {
   import React = require('react')
-  export const ReactComponent: React.FC<React.SVGProps<SVGSVGElement>>
+  export const ReactComponent: FC<React.SVGProps<SVGSVGElement>>
   const src: string
   export default src
 }

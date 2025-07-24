@@ -9,7 +9,7 @@ interface ClientPreviewProps {
   onConfirm: () => void
 }
 
-const ClientPreview: React.FC<ClientPreviewProps> = ({ 
+const ClientPreview = ({ 
   clientData, 
   onEdit, 
   onConfirm 

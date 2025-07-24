@@ -19,7 +19,7 @@ interface TimeProviderProps {
   updateInterval?: number
 }
 
-export const TimeProvider: React.FC<TimeProviderProps> = ({ 
+export const TimeProvider = ({ 
   children, 
   updateInterval = 1000 
 }) => {
@@ -116,7 +116,7 @@ export const useTime = () => {
 }
 
 // Hook spécialisé pour la synchronisation calendrier
-export const useCalendarSync = () => {
+export const useSync = () => {
   const { currentDate, setCurrentDate, isToday } = useTime()
   
   return {

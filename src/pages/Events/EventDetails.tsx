@@ -17,7 +17,7 @@ interface EventDetailsPageProps {
   eventId: string
 }
 
-const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ eventId }) => {
+const EventDetailsPage = ({ eventId }) => {
   const { events, updateEvent } = useEvents()
   const { clients } = useClients()
   const [event, setEvent] = useState<Event | null>(null)

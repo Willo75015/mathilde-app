@@ -14,7 +14,7 @@ interface EditEventProps {
   eventId: string
 }
 
-const EditEvent: React.FC<EditEventProps> = ({ eventId }) => {
+const EditEvent = ({ eventId }) => {
   const { events, updateEvent, deleteEvent, isLoading } = useEvents()
   const [event, setEvent] = useState<Event | null>(null)
   const [showToast, setShowToast] = useState(false)

@@ -10,7 +10,7 @@ interface TooltipProps {
   className?: string
 }
 
-const Tooltip: React.FC<TooltipProps> = ({
+const Tooltip = ({
   children,
   content,
   position = 'top',

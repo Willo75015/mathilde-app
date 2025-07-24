@@ -12,7 +12,7 @@ import { NotificationContainer } from '@/components/ui/Notification'
 // 🎯 EXEMPLE D'INTÉGRATION COMPLÈTE DU WORKFLOW DE FACTURATION
 // Ce composant montre comment connecter tous les éléments ensemble
 
-export const EventWorkflowExample: React.FC = () => {
+export const EventWorkflowExample = () => {
   const { events } = useApp()
   const { archiveAndInvoiceEvent, updatePaymentStatus } = useBillingWorkflow()
   const { notifications, removeNotification, showSuccess, showError, showInfo } = useNotifications()

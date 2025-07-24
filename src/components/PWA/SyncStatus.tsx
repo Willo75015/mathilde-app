@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { RefreshCw, Wifi, WifiOff } from 'lucide-react'
 import { useBackgroundSync, useOnlineStatus } from '@/hooks/usePWA'
 
-export const SyncStatus: React.FC = () => {
+export const SyncStatus = () => {
   const { pendingSync } = useBackgroundSync()
   const isOnline = useOnlineStatus()
   

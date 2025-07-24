@@ -1,3 +1,4 @@
+import React from 'react'
 // 🎯 STORAGE MANAGER - Gestion persistance et synchronisation
 // Résout les problèmes de sync entre onglets et perte de données F5
 

@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Calendar, Users, Flower, BarChart3, Settings } from 'lucide-react'
+import { Plus, Users, Flower, BarChart3, Settings, Clock } from 'lucide-react'
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 
@@ -10,7 +10,7 @@ interface QuickActionsProps {
   onCreateEvent?: () => void
 }
 
-const QuickActions: React.FC<QuickActionsProps> = ({ 
+const QuickActions = ({ 
   navigate, 
   onCreateClient, 
   onCreateEvent 
@@ -64,7 +64,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
     {
       title: 'Nouvel événement',
       description: 'Créer un événement',
-      icon: Calendar,
+      icon: Clock,
       color: 'bg-blue-600 hover:bg-blue-700',
       action: 'new-event'
     },

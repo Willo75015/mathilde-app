@@ -25,7 +25,7 @@ interface EventsPageProps {
   navigate?: (page: string, params?: any) => void
 }
 
-const EventsPage: React.FC<EventsPageProps> = ({ navigate }) => {
+const EventsPage = ({ navigate }) => {
   const { events, loadEvents, isLoading, updateEvent, createEvent } = useEvents()
   const statusCounts = useStatusCounts(events)
   

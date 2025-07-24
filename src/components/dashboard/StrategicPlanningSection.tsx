@@ -13,7 +13,7 @@ interface StrategicPlanningSectionProps {
   onEventEdit?: (event: Event) => void // 🆕 Handler pour ouvrir le modal de modification
 }
 
-const StrategicPlanningSection: React.FC<StrategicPlanningSectionProps> = ({
+const StrategicPlanningSection = ({
   futureEvents,
   navigate,
   onEventEdit

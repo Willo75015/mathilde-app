@@ -1,6 +1,6 @@
 import React from 'react'
 
-const ClientCard: React.FC = () => {
+const ClientCard = () => {
   return (
     <div>
       {/* ClientCard component placeholder */}

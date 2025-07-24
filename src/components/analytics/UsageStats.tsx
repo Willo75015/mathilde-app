@@ -1,7 +1,7 @@
 import React from 'react'
 import { BarChart3, Users, Calendar, TrendingUp } from 'lucide-react'
 
-const UsageStats: React.FC = () => {
+const UsageStats = () => {
   return (
     <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
       <div className="flex items-center space-x-2 mb-4">

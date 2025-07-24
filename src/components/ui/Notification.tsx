@@ -14,7 +14,7 @@ export interface NotificationProps {
   onClose: (id: string) => void
 }
 
-const Notification: React.FC<NotificationProps> = ({
+const Notification = ({
   id,
   type,
   title,
@@ -104,7 +104,7 @@ interface NotificationContainerProps {
   onRemove: (id: string) => void
 }
 
-export const NotificationContainer: React.FC<NotificationContainerProps> = ({
+export const NotificationContainer = ({
   notifications,
   onRemove
 }) => {

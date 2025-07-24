@@ -17,7 +17,7 @@ interface EventDashboardProps {
   className?: string
 }
 
-const EventDashboard: React.FC<EventDashboardProps> = ({
+const EventDashboard = ({
   events,
   onCreateEvent,
   onEdit,

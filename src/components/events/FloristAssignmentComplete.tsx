@@ -15,7 +15,7 @@ interface FloristAssignmentCompleteProps {
   onAddFlorist: (florist: any) => void
 }
 
-export const FloristAssignmentComplete: React.FC<FloristAssignmentCompleteProps> = ({
+export const FloristAssignmentComplete = ({
   editedEvent,
   allEvents,
   onUpdateFloristStatus,

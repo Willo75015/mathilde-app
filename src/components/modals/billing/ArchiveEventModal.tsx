@@ -12,7 +12,7 @@ interface ArchiveEventModalProps {
   onArchiveAndInvoice: (eventId: string) => void
 }
 
-export const ArchiveEventModal: React.FC<ArchiveEventModalProps> = ({
+export const ArchiveEventModal = ({
   event,
   isOpen,
   onClose,

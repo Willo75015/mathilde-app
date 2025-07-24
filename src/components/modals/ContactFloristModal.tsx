@@ -23,7 +23,7 @@ interface ContactFloristModalProps {
   onClose: () => void
 }
 
-export const ContactFloristModal: React.FC<ContactFloristModalProps> = ({
+export const ContactFloristModal = ({
   florist,
   event,
   floristStatus,

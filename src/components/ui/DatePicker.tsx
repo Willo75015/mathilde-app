@@ -13,7 +13,7 @@ interface DatePickerProps {
   className?: string
 }
 
-const DatePicker: React.FC<DatePickerProps> = ({
+const DatePicker = ({
   value,
   onChange,
   placeholder = 'Sélectionner une date',

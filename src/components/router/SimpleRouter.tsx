@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Calendar } from 'lucide-react'
 import Home from '@/pages/Home'
 import EventsPage from '@/pages/Events/EventsPage'
 import ClientsPage from '@/pages/Clients/ClientsPage'
@@ -12,7 +13,7 @@ interface SimpleRouterProps {
   currentPage: PageName
 }
 
-const SimpleRouter: React.FC<SimpleRouterProps> = ({ currentPage }) => {
+const SimpleRouter = ({ currentPage }) => {
   switch (currentPage) {
     case 'home':
       return <Home />

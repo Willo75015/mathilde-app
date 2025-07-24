@@ -1,3 +1,4 @@
+import React from 'react'
 /**
  * 📊 MATHILDE FLEURS - GESTIONNAIRE D'EXPORT
  * Export PDF et Excel avec mise en forme professionnelle

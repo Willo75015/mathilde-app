@@ -1,3 +1,4 @@
+import React from 'react'
 import CryptoJS from 'crypto-js'
 import { SecurityAudit, SecurityEventType, SecuritySeverity } from '@/types'
 
@@ -49,8 +50,8 @@ export class SecurityManager {
       
       const encrypted = this.algorithm.encrypt(data, derivedKey, {
         iv: iv,
-        mode: CryptoJS.mode.GCM,
-        padding: CryptoJS.pad.NoPadding
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
       })
       
       // Combiner salt + iv + données chiffrées
@@ -81,8 +82,8 @@ export class SecurityManager {
       
       const decrypted = this.algorithm.decrypt(encrypted, derivedKey, {
         iv: iv,
-        mode: CryptoJS.mode.GCM,
-        padding: CryptoJS.pad.NoPadding
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
       })
       
       return decrypted.toString(CryptoJS.enc.Utf8)

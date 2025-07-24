@@ -1,6 +1,6 @@
 import React from 'react'
 
-const ClientSearch: React.FC = () => {
+const ClientSearch = () => {
   return (
     <div>
       {/* ClientSearch component placeholder */}

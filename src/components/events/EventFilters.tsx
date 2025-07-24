@@ -1,6 +1,6 @@
 import React from 'react'
 
-const EventFilters: React.FC = () => {
+const EventFilters = () => {
   return (
     <div>
       {/* EventFilters component placeholder */}

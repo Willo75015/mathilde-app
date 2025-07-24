@@ -27,7 +27,7 @@ interface ClientFormProps {
   submitLabel?: string
 }
 
-const ClientForm: React.FC<ClientFormProps> = ({ 
+const ClientForm = ({ 
   initialData,
   onSubmit: externalOnSubmit,
   onSuccess, 

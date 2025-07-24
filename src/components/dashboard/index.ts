@@ -7,7 +7,6 @@ export { default as BusinessMetricsSection } from './BusinessMetricsSection'
 // Export des composants dashboard existants
 export { default as StatsCards } from './StatsCards'
 export { default as RecentEvents } from './RecentEvents'
-export { default as Calendar } from './Calendar'
 export { default as QuickActions } from './QuickActions'
 export { default as Charts } from './Charts'
 export { default as DayEventsModal } from './DayEventsModal'

@@ -1,6 +1,6 @@
 import React from 'react'
 
-const FlowerDetails: React.FC = () => {
+const FlowerDetails = () => {
   return (
     <div>
       {/* FlowerDetails component placeholder */}

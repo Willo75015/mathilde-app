@@ -20,7 +20,7 @@ interface HomeProps {
   navigate?: (page: string, params?: any) => void
 }
 
-const Home: React.FC<HomeProps> = ({ navigate }) => {
+const Home = ({ navigate }) => {
   const { state, actions } = useApp()
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [selectedEventForEdit, setSelectedEventForEdit] = useState<Event | null>(null)

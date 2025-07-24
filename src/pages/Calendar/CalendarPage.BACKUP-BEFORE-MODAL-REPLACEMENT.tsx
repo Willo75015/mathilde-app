@@ -10,7 +10,7 @@ interface CalendarPageProps {
 
 type ViewMode = 'calendrier' | 'kanban'
 
-const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
+const CalendarPage = ({ navigate }) => {
   const { state, actions } = useApp()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState<string | null>(null)

@@ -13,7 +13,7 @@ interface InvoicingSectionProps {
   navigate?: (page: string, params?: any) => void
 }
 
-const InvoicingSection: React.FC<InvoicingSectionProps> = ({
+const InvoicingSection = ({
   eventsToInvoice,
   allEvents,
   navigate

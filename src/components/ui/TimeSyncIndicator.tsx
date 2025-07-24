@@ -9,7 +9,7 @@ interface TimeSyncIndicatorProps {
   onEventClick?: (eventId: string) => void
 }
 
-export const TimeSyncIndicator: React.FC<TimeSyncIndicatorProps> = ({ 
+export const TimeSyncIndicator = ({ 
   showDetails = false,
   onEventClick 
 }) => {

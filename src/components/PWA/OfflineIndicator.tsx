@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { WifiOff, Wifi } from 'lucide-react'
 import { useOnlineStatus } from '@/hooks/usePWA'
 
-export const OfflineIndicator: React.FC = () => {
+export const OfflineIndicator = () => {
   const isOnline = useOnlineStatus()
   const [showOfflineMessage, setShowOfflineMessage] = React.useState(false)
   

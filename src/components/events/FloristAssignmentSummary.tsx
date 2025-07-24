@@ -12,7 +12,7 @@ interface FloristAssignmentSummaryProps {
  * Composant pour afficher un résumé propre des assignations de fleuristes
  * SUPPRIME l'affichage des statuts "en attente" et "refusé" comme demandé
  */
-export const FloristAssignmentSummary: React.FC<FloristAssignmentSummaryProps> = ({
+export const FloristAssignmentSummary = ({
   event,
   variant = 'compact',
   showMissing = true

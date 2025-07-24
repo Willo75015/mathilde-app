@@ -15,7 +15,7 @@ interface EditClientModalProps {
   clientId: string | null
 }
 
-const EditClientModal: React.FC<EditClientModalProps> = ({ 
+const EditClientModal = ({ 
   isOpen, 
   onClose, 
   clientId 

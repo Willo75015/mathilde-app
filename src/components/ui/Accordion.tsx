@@ -17,7 +17,7 @@ interface AccordionProps {
   className?: string
 }
 
-const Accordion: React.FC<AccordionProps> = ({
+const Accordion = ({
   items,
   allowMultiple = false,
   defaultOpen = [],

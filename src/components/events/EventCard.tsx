@@ -55,7 +55,7 @@ interface EventCardProps {
   className?: string
 }
 
-export const EventCard: React.FC<EventCardProps> = ({
+export const EventCard = ({
   event,
   view = 'list',
   onClick,

@@ -1,3 +1,4 @@
+import React from 'react'
 // 🚨 SYSTÈME D'URGENCE INTELLIGENT
 // Logique pour prioriser les événements selon les vrais besoins
 

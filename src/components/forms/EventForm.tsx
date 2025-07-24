@@ -44,7 +44,7 @@ interface EventFormProps {
   submitLabel?: string
 }
 
-const EventForm: React.FC<EventFormProps> = ({ 
+const EventForm = ({ 
   onSubmit: onSubmitProp, 
   onSuccess, 
   onCancel, 

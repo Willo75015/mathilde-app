@@ -1,3 +1,4 @@
+import React from 'react'
 // 📅 GESTION DE LA VISIBILITÉ TEMPORELLE DES ÉVÉNEMENTS
 // Logique pour masquer les événements payés après la fin du mois
 

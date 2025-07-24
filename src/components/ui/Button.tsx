@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react'
+import { forwardRef  } from 'react';
 import { motion, MotionProps } from 'framer-motion'
 import { clsx } from 'clsx'
 import { Loader2 } from 'lucide-react'

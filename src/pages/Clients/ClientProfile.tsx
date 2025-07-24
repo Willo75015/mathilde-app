@@ -18,7 +18,7 @@ interface ClientProfileProps {
   navigate?: (page: string, params?: any) => void
 }
 
-const ClientProfile: React.FC<ClientProfileProps> = ({ clientId, navigate }) => {
+const ClientProfile = ({ clientId, navigate }) => {
   const { clients } = useClients()
   const { getEventsByClient } = useEvents()
   const [client, setClient] = useState<Client | null>(null)

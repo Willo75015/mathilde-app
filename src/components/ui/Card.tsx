@@ -11,7 +11,7 @@ interface CardProps {
   onClick?: () => void
 }
 
-const Card: React.FC<CardProps> = ({
+const Card = ({
   children,
   className,
   variant = 'default',
@@ -78,37 +78,25 @@ const Card: React.FC<CardProps> = ({
 }
 
 // Composants sous-éléments pour une structure claire
-export const CardHeader: React.FC<{ 
-  children: React.ReactNode
-  className?: string 
-}> = ({ children, className }) => (
+export const CardHeader = ({ children, className }) => (
   <div className={clsx('border-b border-gray-200 dark:border-gray-700 pb-3 mb-3', className)}>
     {children}
   </div>
 )
 
-export const CardTitle: React.FC<{ 
-  children: React.ReactNode
-  className?: string 
-}> = ({ children, className }) => (
+export const CardTitle = ({ children, className }) => (
   <h3 className={clsx('text-lg font-semibold text-gray-900 dark:text-white', className)}>
     {children}
   </h3>
 )
 
-export const CardContent: React.FC<{ 
-  children: React.ReactNode
-  className?: string 
-}> = ({ children, className }) => (
+export const CardContent = ({ children, className }) => (
   <div className={clsx('text-gray-600 dark:text-gray-300', className)}>
     {children}
   </div>
 )
 
-export const CardFooter: React.FC<{ 
-  children: React.ReactNode
-  className?: string 
-}> = ({ children, className }) => (
+export const CardFooter = ({ children, className }) => (
   <div className={clsx('border-t border-gray-200 dark:border-gray-700 pt-3 mt-3', className)}>
     {children}
   </div>

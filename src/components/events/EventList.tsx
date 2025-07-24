@@ -17,7 +17,7 @@ interface EventListProps {
   emptyMessage?: string
 }
 
-const EventList: React.FC<EventListProps> = ({ 
+const EventList = ({ 
   events, 
   isLoading = false,
   onEdit,

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Download, X, Smartphone } from 'lucide-react'
 import { usePWAInstall } from '@/hooks/usePWA'
 
-export const InstallPrompt: React.FC = () => {
+export const InstallPrompt = () => {
   const { isInstallable, installApp } = usePWAInstall()
   const [isVisible, setIsVisible] = React.useState(true)
   

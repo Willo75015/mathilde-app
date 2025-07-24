@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react'
-import { AppState, Event, Client, EventStatus, Theme, Florist } from '@/types'
+import { createContext, useContext, useState, useEffect, useRef } from 'react'
+import { AppState, Event, Client, EventStatus, Theme, Florist, FloristAvailability } from '@/types'
 import { mockEvents, mockClients } from '@/lib/mockData'
 
 // Interface du contexte ULTRA-STABLE
@@ -31,11 +31,18 @@ const defaultFlorists: Florist[] = [
     lastName: 'Billsantec',
     email: 'bill@mathilde-fleurs.com',
     phone: '+33 6 12 34 56 78',
-    specialties: ['Mariage', 'Événement corporatif', 'Anniversaire'],
-    experience: 'Expert',
-    availability: 'available',
+    experience: 15,
     rating: 4.9,
-    isMainFlorist: true,
+    hourlyRate: 35,
+    availability: FloristAvailability.AVAILABLE,
+    location: 'Paris 11e',
+    completedEvents: 150,
+    avatar: '/avatars/bill.jpg',
+    skills: ['Mariage', 'Événement corporatif', 'Anniversaire'],
+    languages: ['French', 'English'],
+    certifications: ['CAP Fleuriste', 'BP Fleuriste'],
+    createdAt: new Date(),
+    updatedAt: new Date(),
     unavailabilityPeriods: []
   },
   {
@@ -44,11 +51,18 @@ const defaultFlorists: Florist[] = [
     lastName: 'Dubois',
     email: 'marie.dubois@mathilde-fleurs.com',
     phone: '+33 6 23 45 67 89',
-    specialties: ['Mariage', 'Événement corporatif'],
-    experience: 'Expert',
-    availability: 'available',
+    experience: 8,
     rating: 4.8,
-    isMainFlorist: false,
+    hourlyRate: 30,
+    availability: FloristAvailability.AVAILABLE,
+    location: 'Paris 10e',
+    completedEvents: 85,
+    avatar: '/avatars/marie.jpg',
+    skills: ['Mariage', 'Événement corporatif'],
+    languages: ['French'],
+    certifications: ['CAP Fleuriste'],
+    createdAt: new Date(),
+    updatedAt: new Date(),
     unavailabilityPeriods: []
   },
   {
@@ -57,11 +71,18 @@ const defaultFlorists: Florist[] = [
     lastName: 'Renault',
     email: 'paul.renault@mathilde-fleurs.com',
     phone: '+33 6 34 56 78 90',
-    specialties: ['Anniversaire', 'Événement corporatif'],
-    experience: 'Intermédiaire',
-    availability: 'available',
+    experience: 5,
     rating: 4.5,
-    isMainFlorist: false,
+    hourlyRate: 25,
+    availability: FloristAvailability.AVAILABLE,
+    location: 'Paris 12e',
+    completedEvents: 42,
+    avatar: '/avatars/paul.jpg',
+    skills: ['Anniversaire', 'Événement corporatif'],
+    languages: ['French'],
+    certifications: ['CAP Fleuriste'],
+    createdAt: new Date(),
+    updatedAt: new Date(),
     unavailabilityPeriods: []
   },
   {
@@ -70,11 +91,18 @@ const defaultFlorists: Florist[] = [
     lastName: 'Moreau',
     email: 'jean.moreau@mathilde-fleurs.com',
     phone: '+33 6 45 67 89 01',
-    specialties: ['Baptême', 'Anniversaire'],
-    experience: 'Expert',
-    availability: 'available',
+    experience: 10,
     rating: 4.7,
-    isMainFlorist: false,
+    hourlyRate: 32,
+    availability: FloristAvailability.AVAILABLE,
+    location: 'Paris 9e',
+    completedEvents: 98,
+    avatar: '/avatars/jean.jpg',
+    skills: ['Baptême', 'Anniversaire'],
+    languages: ['French'],
+    certifications: ['CAP Fleuriste', 'BP Fleuriste'],
+    createdAt: new Date(),
+    updatedAt: new Date(),
     unavailabilityPeriods: []
   },
   {
@@ -83,11 +111,18 @@ const defaultFlorists: Florist[] = [
     lastName: 'Durand',
     email: 'sophie.durand@mathilde-fleurs.com',
     phone: '+33 6 56 78 90 12',
-    specialties: ['Mariage', 'Baptême'],
-    experience: 'Expert',
-    availability: 'available',
+    experience: 12,
     rating: 4.9,
-    isMainFlorist: false,
+    hourlyRate: 34,
+    availability: FloristAvailability.AVAILABLE,
+    location: 'Paris 3e',
+    completedEvents: 120,
+    avatar: '/avatars/sophie.jpg',
+    skills: ['Mariage', 'Baptême'],
+    languages: ['French', 'English'],
+    certifications: ['CAP Fleuriste', 'BP Fleuriste'],
+    createdAt: new Date(),
+    updatedAt: new Date(),
     unavailabilityPeriods: []
   },
   {
@@ -96,17 +131,24 @@ const defaultFlorists: Florist[] = [
     lastName: 'Martin',
     email: 'jean.martin@mathilde-fleurs.com',
     phone: '+33 6 67 89 01 23',
-    specialties: ['Anniversaire', 'Événement corporatif'],
-    experience: 'Intermédiaire',
-    availability: 'available',
+    experience: 6,
     rating: 4.6,
-    isMainFlorist: false,
+    hourlyRate: 28,
+    availability: FloristAvailability.AVAILABLE,
+    location: 'Paris 8e',
+    completedEvents: 55,
+    avatar: '/avatars/martin.jpg',
+    skills: ['Anniversaire', 'Événement corporatif'],
+    languages: ['French'],
+    certifications: ['CAP Fleuriste'],
+    createdAt: new Date(),
+    updatedAt: new Date(),
     unavailabilityPeriods: []
   }
 ]
 
 // PROVIDER ULTRA-STABLE - AUCUN EFFET DE BORD POSSIBLE
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppProvider = ({ children }) => {
   // États simples
   const [events, setEvents] = useState<Event[]>([])
   const [clients, setClients] = useState<Client[]>([])

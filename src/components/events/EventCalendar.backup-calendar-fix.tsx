@@ -7,7 +7,7 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import { clsx } from 'clsx'
 
-const EventCalendar: React.FC = () => {
+const EventCalendar = () => {
   const { events } = useEvents()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)

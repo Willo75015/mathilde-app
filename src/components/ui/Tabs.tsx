@@ -16,7 +16,7 @@ interface TabsProps {
   variant?: 'default' | 'pills' | 'underline'
 }
 
-const Tabs: React.FC<TabsProps> = ({
+const Tabs = ({
   tabs,
   defaultTab,
   className,

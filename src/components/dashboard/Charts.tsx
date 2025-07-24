@@ -21,7 +21,7 @@ const statusData = [
   { status: 'Annulés', count: 5, color: '#EF4444' }
 ]
 
-const Charts: React.FC = () => {
+const Charts = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Graphique des événements par mois */}

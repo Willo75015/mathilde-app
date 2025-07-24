@@ -1,7 +1,7 @@
 import React from 'react'
-import { Shield, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
+import { Shield, AlertTriangle, CheckCircle } from 'lucide-react'
 
-const SecurityDashboard: React.FC = () => {
+const SecurityDashboard = () => {
   return (
     <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
       <div className="flex items-center space-x-2 mb-4">

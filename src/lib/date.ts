@@ -1,3 +1,4 @@
+import React from 'react'
 /**
  * 📅 MATHILDE FLEURS - UTILITAIRES DE DATES
  * Gestion complète des dates avec formatage français et logique métier
@@ -403,7 +404,7 @@ export class DateUtils {
   /**
    * Obtenir les dates d'événements pour un calendrier
    */
-  static getCalendarDates(year: number, month: number): Date[] {
+  static getDates(year: number, month: number): Date[] {
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const startDate = this.startOfWeek(firstDay)

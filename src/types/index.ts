@@ -1,3 +1,4 @@
+import React from 'react'
 // Export des statuts Kanban synchronisés
 export * from './kanban-status'
 

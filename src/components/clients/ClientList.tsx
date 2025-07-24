@@ -20,7 +20,7 @@ interface ClientListProps {
   onContactClient?: (clientId: string) => void
 }
 
-const ClientList: React.FC<ClientListProps> = ({ 
+const ClientList = ({ 
   clients, 
   viewMode = 'list', 
   isLoading = false,
@@ -186,7 +186,7 @@ const ClientList: React.FC<ClientListProps> = ({
 }
 
 // Composant pour la vue carte
-const ClientCard: React.FC<{ 
+const ClientCard: FC<{ 
   client: Client; 
   onEditClient?: (clientId: string) => void;
   onDeleteClient?: (clientId: string) => void;
@@ -369,7 +369,7 @@ const ClientCard: React.FC<{
 }
 
 // Composant pour la vue liste
-const ClientRow: React.FC<{ 
+const ClientRow: FC<{ 
   client: Client; 
   onEditClient?: (clientId: string) => void;
   onDeleteClient?: (clientId: string) => void;
@@ -568,7 +568,7 @@ const ClientRow: React.FC<{
 }
 
 // 🆕 Composant de contrôles de pagination
-const PaginationControls: React.FC<{
+const PaginationControls: FC<{
   currentPage: number
   totalPages: number
   totalClients: number

@@ -16,7 +16,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | null>(null)
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThemeProvider = ({ children }) => {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
     // Vérifier d'abord si on est côté client
     if (typeof window === 'undefined') return ThemeMode.LIGHT

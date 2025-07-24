@@ -1,6 +1,6 @@
 import React from 'react'
 
-const FlowerCard: React.FC = () => {
+const FlowerCard = () => {
   return (
     <div>
       {/* FlowerCard component placeholder */}

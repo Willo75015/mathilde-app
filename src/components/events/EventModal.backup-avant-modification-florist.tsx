@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  X, Edit, Calendar, MapPin, DollarSign, Phone, 
+  X, Edit, MapPin, DollarSign, Phone, 
   User, Clock, FileText, Users, CheckCircle, 
   XCircle, AlertCircle, MessageSquare, Trash2,
   Plus
@@ -35,7 +35,7 @@ interface EventModalProps {
   initialView?: 'details' | 'assignment'
 }
 
-const EventModal: React.FC<EventModalProps> = ({
+const EventModal = ({
   event,
   client,
   isOpen,
@@ -888,7 +888,7 @@ interface FloristCardProps {
   onRemove: () => void
 }
 
-const FloristCard: React.FC<FloristCardProps> = ({ florist, status, onStatusChange, onRemove }) => {
+const FloristCard = ({ florist, status, onStatusChange, onRemove }) => {
   return (
     <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
       <div className="flex items-center space-x-3">

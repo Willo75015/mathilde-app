@@ -238,7 +238,7 @@ const initialState: AppState = {
 }
 
 // Provider optimisé avec actions stables
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState)
   
   // Instance du StorageManager

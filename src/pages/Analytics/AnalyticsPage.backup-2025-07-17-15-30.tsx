@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { 
-  BarChart3, TrendingUp, Download, RefreshCw, Calendar,
-  Users, Euro, Flower2, Filter, CalendarDays, Home, Shield,
+  BarChart3, TrendingUp, Download, RefreshCw,
+  Users, Euro, Flower2, FilterDays, Home, Shield,
   Clock, CreditCard
 } from 'lucide-react'
 import { useEvents, useClients } from '@/contexts/AppContext'
@@ -20,7 +20,7 @@ import Tabs from '@/components/ui/Tabs'
 type AnalyticsTheme = 'missions' | 'clients' | 'facturation' | 'paiement' | 'ca-total' | 'panier-moyen'
 type DateRangeType = 'day' | 'week' | 'month' | 'year' | 'custom'
 
-const AnalyticsPage: React.FC = () => {
+const AnalyticsPage = () => {
   const { events, isLoading: eventsLoading } = useEvents()
   const { clients, isLoading: clientsLoading } = useClients()
   const { metrics } = usePerformance()
@@ -41,7 +41,7 @@ const AnalyticsPage: React.FC = () => {
     { 
       id: 'missions', 
       label: 'Nouvelles missions', 
-      icon: Calendar,
+      icon: Clock,
       color: 'emerald',
       bgGradient: 'from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20',
       borderColor: 'border-emerald-200 dark:border-emerald-800',

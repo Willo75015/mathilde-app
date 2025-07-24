@@ -18,7 +18,7 @@ interface FloristListProps {
   className?: string
 }
 
-const FloristList: React.FC<FloristListProps> = ({ 
+const FloristList = ({ 
   florists, 
   onCall, 
   maxVisible = 5,

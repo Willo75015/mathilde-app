@@ -1,6 +1,6 @@
 import React from 'react'
 
-const EventDetails: React.FC = () => {
+const EventDetails = () => {
   return (
     <div>
       {/* EventDetails component placeholder */}

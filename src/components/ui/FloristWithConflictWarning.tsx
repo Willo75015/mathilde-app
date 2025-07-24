@@ -30,7 +30,7 @@ interface FloristWithConflictWarningProps {
  * 🔄 MIGRATION: Ce composant utilise maintenant le nouveau FloristCard réutilisable
  * Toutes les fonctionnalités d'affichage des missions sont automatiquement incluses
  */
-const FloristWithConflictWarning: React.FC<FloristWithConflictWarningProps> = ({
+const FloristWithConflictWarning = ({
   florist,
   allEvents,
   currentEventId = '',

@@ -13,7 +13,7 @@ interface CreateClientProps {
   navigate?: (page: string, params?: any) => void
 }
 
-const CreateClient: React.FC<CreateClientProps> = ({ navigate }) => {
+const CreateClient = ({ navigate }) => {
   const { createClient, isLoading } = useClients()
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')

@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Menu, X, Search, Bell, Settings, User, LogOut,
-  Calendar, Users, Flower, BarChart3, Home, ShoppingBag
-} from 'lucide-react'
+import { Menu, X, Search, Bell, Settings, User, LogOut, Users, Flower, BarChart3, Home, ShoppingBag, Calendar, Clock } from 'lucide-react'
 import { clsx } from 'clsx'
 import { Clock } from '@/components/ui/Clock'
 import { useEventNavigation } from '@/hooks/useEventNavigation'
@@ -28,7 +25,7 @@ const useSimpleViewport = () => {
   return { width }
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, navigate, currentPage: propCurrentPage }) => {
+const Layout = ({ children, navigate, currentPage: propCurrentPage }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(propCurrentPage || 'home')

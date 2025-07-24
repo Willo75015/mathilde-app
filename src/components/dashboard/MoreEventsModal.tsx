@@ -7,7 +7,7 @@ import {
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
-import { FloristWithConflictWarning } from '@/components/ui/FloristWithConflictWarning'
+import FloristWithConflictWarning from '@/components/ui/FloristWithConflictWarning'
 import { Event, EventStatus } from '@/types'
 import { useApp } from '@/contexts/AppContext'
 
@@ -34,7 +34,7 @@ const mockFlorists: Florist[] = [
   { id: '4', name: 'Julien Petit', phone: '+33656789012', isConfirmed: false },
 ]
 
-const MoreEventsModal: React.FC<MoreEventsModalProps> = ({ 
+const MoreEventsModal = ({ 
   isOpen, 
   onClose, 
   date, 
@@ -111,7 +111,7 @@ const MoreEventsModal: React.FC<MoreEventsModalProps> = ({
     })
   }
   
-  const EventCompactCard: React.FC<{ event: Event; index: number }> = ({ event, index }) => {
+  const EventCompactCard = ({ event, index }) => {
     const eventFlorists = getEventFlorists(event.id)
     const confirmedFlorists = eventFlorists.filter(f => f.isConfirmed)
     

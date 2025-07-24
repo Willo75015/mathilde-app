@@ -11,7 +11,7 @@ interface EventArchiveSectionProps {
   className?: string
 }
 
-const EventArchiveSection: React.FC<EventArchiveSectionProps> = ({
+const EventArchiveSection = ({
   events,
   onViewEvent,
   className = ''

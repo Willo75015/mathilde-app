@@ -12,9 +12,10 @@ import Modal from '@/components/ui/Modal'
 
 interface EditClientProps {
   clientId: string
+  navigate?: (page: string, params?: any) => void
 }
 
-const EditClient: React.FC<EditClientProps> = ({ clientId }) => {
+const EditClient = ({ clientId, navigate }) => {
   const { clients, updateClient, deleteClient, isLoading } = useClients()
   const { getEventsByClient } = useEvents()
   const [client, setClient] = useState<Client | null>(null)

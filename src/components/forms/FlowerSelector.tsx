@@ -46,7 +46,7 @@ const mockFlowers: FlowerType[] = [
   }
 ]
 
-const FlowerSelector: React.FC<FlowerSelectorProps> = ({
+const FlowerSelector = ({
   selectedFlowers,
   onSelectionChange
 }) => {

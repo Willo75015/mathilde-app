@@ -15,7 +15,7 @@ interface CreateClientModalProps {
   onSuccess?: (client: Client) => void
 }
 
-const CreateClientModal: React.FC<CreateClientModalProps> = ({
+const CreateClientModal = ({
   isOpen,
   onClose,
   onSuccess

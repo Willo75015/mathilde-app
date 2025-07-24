@@ -11,7 +11,7 @@ interface HeaderProps {
   onNavigateToEvent?: (eventId: string) => void
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuClick, isMobile, onNavigateToEvent }) => {
+const Header = ({ onMenuClick, isMobile, onNavigateToEvent }) => {
   const { isDark, toggleTheme } = useTheme()
 
   return (

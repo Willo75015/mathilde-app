@@ -5,7 +5,7 @@ interface HomeProps {
   navigate?: (page: string, params?: any) => void
 }
 
-const Home: React.FC<HomeProps> = ({ navigate }) => {
+const Home = ({ navigate }) => {
   return (
     <div className="p-8">
       <motion.div

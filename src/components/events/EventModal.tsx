@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  X, Edit, Calendar, MapPin, DollarSign, Phone, 
+  X, Edit, MapPin, DollarSign, Phone, 
   User, Clock, FileText, Users, CheckCircle, 
   XCircle, AlertCircle, MessageSquare, Trash2,
   Plus
@@ -113,7 +113,7 @@ interface EventModalProps {
   initialView?: 'details' | 'assignment'
 }
 
-const EventModal: React.FC<EventModalProps> = ({
+const EventModal = ({
   event,
   client,
   isOpen,
@@ -1406,7 +1406,7 @@ interface FloristCardProps {
   preWrittenMessage?: string // 🆕 Message pré-écrit
 }
 
-const FloristCard: React.FC<FloristCardProps> = ({
+const FloristCard = ({
   florist,
   status,
   allEvents,

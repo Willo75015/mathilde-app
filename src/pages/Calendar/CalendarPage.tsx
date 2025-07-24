@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Calendar, Clock, User, MapPin, Euro, Plus, CheckCircle, AlertCircle, Kanban as KanbanIcon, Edit, Trash2, X, DollarSign, Phone } from 'lucide-react'
 import { useApp } from '@/contexts/AppContext'
-import { useCalendarSync } from '@/contexts/TimeContext'
+import { useTime } from '@/contexts/TimeContext'
 import { useEventTimeSync } from '@/hooks/useEventTimeSync'
 import { KANBAN_COLUMNS, EventStatus, getKanbanColumn, getStatusLabel } from '@/types'
 import EventModal from '@/components/events/EventModal'
@@ -14,9 +14,9 @@ interface CalendarPageProps {
 
 type ViewMode = 'calendrier' | 'kanban'
 
-const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
+const CalendarPage = ({ navigate }) => {
   const { state, actions } = useApp()
-  const { currentDate, setCurrentDate, navigateMonth, isToday } = useCalendarSync()
+  const { currentDate, setCurrentDate, isToday } = useTime()
   const { getAutoEventStatus, syncEventStatuses } = useEventTimeSync()
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [selectedClient, setSelectedClient] = useState<any>(null)
@@ -277,7 +277,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
   }
 
   // Fonction pour naviguer dans les mois (maintenant synchronisée)
-  // navigateMonth est fourni par useCalendarSync()
+  // navigateMonth est fourni par useTime()
   
   // Générer les jours du mois
   const getDaysInMonth = (date: Date) => {

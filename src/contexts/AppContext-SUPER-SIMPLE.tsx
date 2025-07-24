@@ -1,5 +1,5 @@
 // 🚨 SUPER EMERGENCY - VERSION MINIMALE SANS BOUCLES
-import React, { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState  } from 'react';
 import { mockEvents, mockClients } from '@/lib/mockData'
 
 const AppContext = createContext(null)

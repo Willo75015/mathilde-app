@@ -15,7 +15,7 @@ interface EventReadOnlyModalProps {
   onEdit: () => void
 }
 
-const EventReadOnlyModal: React.FC<EventReadOnlyModalProps> = ({
+const EventReadOnlyModal = ({
   event,
   client,
   isOpen,

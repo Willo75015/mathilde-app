@@ -17,7 +17,7 @@ interface SimpleDayEventsModalProps {
   onDeleteEvent?: (eventId: string) => void
 }
 
-const SimpleDayEventsModal: React.FC<SimpleDayEventsModalProps> = ({
+const SimpleDayEventsModal = ({
   isOpen,
   onClose,
   date,

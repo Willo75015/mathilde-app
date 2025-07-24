@@ -20,7 +20,7 @@ interface UrgentEventsSectionProps {
   navigate?: (page: string, params?: any) => void
 }
 
-const UrgentEventsSection: React.FC<UrgentEventsSectionProps> = ({
+const UrgentEventsSection = ({
   urgentEvents,
   totalUrgentCount,
   showMoreUrgent,

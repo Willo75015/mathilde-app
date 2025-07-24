@@ -17,7 +17,7 @@ interface CalendarProps {
   onCreateEvent?: () => void
 }
 
-const Calendar: React.FC<CalendarProps> = ({ navigate, onCreateEvent }) => {
+const Calendar = ({ navigate, onCreateEvent }) => {
   const { events, updateEvent } = useEvents()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState<{ date: Date; events: any[] } | null>(null)

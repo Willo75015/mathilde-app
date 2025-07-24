@@ -7,7 +7,7 @@ import { StorageManager } from '@/lib/storage'
 // ... tout le code reste pareil SAUF les useEffect ...
 
 // Provider EMERGENCY - SANS USEEFFECT
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, {
     ...initialState,
     events: mockEvents,

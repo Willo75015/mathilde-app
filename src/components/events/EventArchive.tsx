@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { 
-  Archive, Calendar, Filter, Search, SortAsc, SortDesc, 
+  Archive, Filter, Search, SortAsc, SortDesc, 
   CheckCircle, CheckCircle2, XCircle, Clock, Download, RefreshCw, Receipt 
 } from 'lucide-react'
 import { useEvents } from '@/contexts/AppContext'
@@ -25,7 +25,7 @@ interface EventArchiveProps {
   onClose: () => void
 }
 
-const EventArchive: React.FC<EventArchiveProps> = ({ onClose }) => {
+const EventArchive = ({ onClose }) => {
   const { events, isLoading } = useEvents()
   
   // États pour les filtres
@@ -273,9 +273,9 @@ const EventArchive: React.FC<EventArchiveProps> = ({ onClose }) => {
               <div className="flex flex-wrap gap-2">
                 {[
                   { value: 'today', label: 'Aujourd\'hui', icon: Clock },
-                  { value: 'week', label: 'Cette semaine', icon: Calendar },
-                  { value: 'month', label: 'Ce mois', icon: Calendar },
-                  { value: 'year', label: 'Cette année', icon: Calendar },
+                  { value: 'week', label: 'Cette semaine', icon: Clock },
+                  { value: 'month', label: 'Ce mois', icon: Clock },
+                  { value: 'year', label: 'Cette année', icon: Clock },
                   { value: 'custom', label: 'Personnalisé', icon: Filter }
                 ].map(({ value, label, icon: Icon }) => (
                   <Button

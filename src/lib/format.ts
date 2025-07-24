@@ -1,3 +1,4 @@
+import React from 'react'
 /**
  * 🎨 MATHILDE FLEURS - UTILITAIRES DE FORMATAGE
  * Formatage intelligent des données pour l'affichage utilisateur

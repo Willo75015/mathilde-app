@@ -11,7 +11,7 @@ interface RecentEventsProps {
   navigate?: (page: string, params?: any) => void
 }
 
-const RecentEvents: React.FC<RecentEventsProps> = ({ navigate }) => {
+const RecentEvents = ({ navigate }) => {
   const { events } = useEvents()
   const { clients } = useClients()
   const [showMore, setShowMore] = useState(false)

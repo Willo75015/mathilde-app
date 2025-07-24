@@ -1,3 +1,4 @@
+import React from 'react'
 /**
  * 🌐 MATHILDE FLEURS - CLIENT API INTELLIGENT
  * Client HTTP robuste avec retry, cache et gestion d'erreurs

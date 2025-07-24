@@ -18,7 +18,7 @@ interface EditFloristModalProps {
   onSave: (updatedFlorist: Partial<Florist>) => void
 }
 
-const EditFloristModal: React.FC<EditFloristModalProps> = ({
+const EditFloristModal = ({
   isOpen,
   onClose,
   florist,

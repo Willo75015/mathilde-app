@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Clock, CheckCircle, AlertCircle, Calendar as CalendarIcon, Kanban, Plus, X, MapPin, User, Euro, Archive, DollarSign, Smile, Bell, Edit, Settings, Phone } from 'lucide-react'
+import { Clock, CheckCircle, AlertCircleasIcon, Kanban, Plus, X, MapPin, User, Euro, Archive, DollarSign, Smile, Bell, Edit, Settings, Phone, Calendar } from 'lucide-react'
 import { useApp } from '@/contexts/AppContext'
 
-const CalendarPage: React.FC = () => {
+constPage: FC = () => {
   const [viewMode, setViewMode] = useState<'calendrier' | 'kanban'>('calendrier')
   const [showNotification, setShowNotification] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('')
@@ -11,7 +11,7 @@ const CalendarPage: React.FC = () => {
   const { state, actions } = useApp()
   const events = state.events
 
-  console.log('📅 CalendarPage - Événements depuis state global:', {
+  console.log('📅Page - Événements depuis state global:', {
     count: events.length,
     source: 'AppContext'
   })

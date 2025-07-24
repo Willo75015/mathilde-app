@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Download, X } from 'lucide-react'
 import Button from '@/components/ui/Button'
 
-export const UpdatePrompt: React.FC = () => {
+export const UpdatePrompt = () => {
   const [showUpdate, setShowUpdate] = useState(false)
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null)
   

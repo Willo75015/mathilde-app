@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Calendar, Target, AlertTriangle, Euro, X, Clock, MapPin, User
+import { Target, AlertTriangle, Euro, X, Clock, MapPin, User
 } from 'lucide-react'
 import { Event, EventStatus } from '@/types'
 import Card from '@/components/ui/Card'
@@ -13,7 +12,7 @@ interface EventMetricsProps {
   onNavigateToEvent?: (eventId: string) => void
 }
 
-const EventMetrics: React.FC<EventMetricsProps> = ({ 
+const EventMetrics = ({ 
   events, 
   className = '',
   onNavigateToEvent 
@@ -64,7 +63,7 @@ const EventMetrics: React.FC<EventMetricsProps> = ({
       title: "Aujourd'hui",
       value: metrics.todayCount,
       subtitle: 'événements',
-      icon: Calendar,
+      icon: Clock,
       bgColor: 'bg-blue-50',
       iconColor: 'text-blue-600',
       events: metrics.todayEvents,

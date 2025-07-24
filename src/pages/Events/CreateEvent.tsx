@@ -9,7 +9,7 @@ import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Toast from '@/components/ui/Toast'
 
-const CreateEvent: React.FC = () => {
+const CreateEvent = () => {
   const { createEvent, isLoading } = useEvents()
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')

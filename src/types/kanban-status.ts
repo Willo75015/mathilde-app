@@ -1,3 +1,5 @@
+import React from 'react'
+import { Clock } from 'lucide-react'
 // 🎯 STATUTS KANBAN SYNCHRONISÉS - ÉVÉNEMENTS & CALENDRIER
 // Configuration unifiée des statuts pour toute l'application
 

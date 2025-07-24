@@ -8,7 +8,7 @@ interface SpinnerProps {
   className?: string
 }
 
-const Spinner: React.FC<SpinnerProps> = ({
+const Spinner = ({
   size = 'md',
   color = 'primary',
   className

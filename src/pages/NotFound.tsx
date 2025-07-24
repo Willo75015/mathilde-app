@@ -1,13 +1,11 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { 
-  Home, ArrowLeft, Search, Flower2, Calendar, 
-  Users, Mail, Phone, MapPin
-} from 'lucide-react'
+import { Home, ArrowLeft, Search, Flower2, 
+  Users, Mail, Phone, MapPin, Clock } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 
-const NotFound: React.FC = () => {
+const NotFound = () => {
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -51,7 +49,7 @@ const NotFound: React.FC = () => {
     {
       title: 'Événements',
       description: 'Gérer vos événements fleuris',
-      icon: Calendar,
+      icon: Clock,
       href: '/events',
       color: 'bg-green-500'
     },
@@ -65,7 +63,7 @@ const NotFound: React.FC = () => {
     {
       title: 'Calendrier',
       description: 'Planning de vos rendez-vous',
-      icon: Calendar,
+      icon: Clock,
       href: '/calendar',
       color: 'bg-orange-500'
     }

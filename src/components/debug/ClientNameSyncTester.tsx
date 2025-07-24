@@ -7,7 +7,7 @@ import { RefreshCw, CheckCircle, AlertTriangle, Users } from 'lucide-react'
 import { useEvents, useClients } from '@/contexts/AppContext'
 import Button from '@/components/ui/Button'
 
-const ClientNameSyncTester: React.FC = () => {
+const ClientNameSyncTester = () => {
   const { events, syncClientNames } = useEvents()
   const { clients } = useClients()
   

@@ -10,7 +10,7 @@ import Input from '@/components/ui/Input'
 import Toast from '@/components/ui/Toast'
 import Modal from '@/components/ui/Modal'
 
-const ProfileSettings: React.FC = () => {
+const ProfileSettings = () => {
   const [profileData, setProfileData] = useState({
     firstName: 'Mathilde',
     lastName: 'Dupont',

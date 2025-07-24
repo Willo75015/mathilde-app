@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, FC } from 'react'
+import { Calendar } from 'lucide-react';
 import Layout from '@/components/layout/Layout'
 import Home from '@/pages/Home'
 import EventsPage from '@/pages/Events/EventsPage'
@@ -15,7 +16,7 @@ import InstallPrompt from '@/components/PWA/InstallPrompt'
 import EventSyncNotification from '@/components/ui/EventSyncNotification'
 import './App.css'
 
-const App: React.FC = () => {
+const App = () => {
   const { state } = useApp()
   const [currentPage, setCurrentPage] = useState('home')
   const [pageParams, setPageParams] = useState<Record<string, any>>({})

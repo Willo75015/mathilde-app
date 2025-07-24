@@ -103,8 +103,14 @@ export const useBackgroundSync = () => {
     
     // Programmer la synchronisation
     if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
-      const registration = await navigator.serviceWorker.ready
-      await registration.sync.register('background-sync')
+      try {
+        const registration = await navigator.serviceWorker.ready
+        if (registration.sync) {
+          await registration.sync.register('background-sync')
+        }
+      } catch (error) {
+        console.warn('Background sync not available:', error)
+      }
     }
   }, [])
   

@@ -12,7 +12,7 @@ interface EventActionButtonsProps {
   disabled?: boolean
 }
 
-export const EventActionButtons: React.FC<EventActionButtonsProps> = ({
+export const EventActionButtons = ({
   event,
   onComplete,
   onArchive,

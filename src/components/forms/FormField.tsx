@@ -11,7 +11,7 @@ interface FormFieldProps {
   className?: string
 }
 
-const FormField: React.FC<FormFieldProps> = ({
+const FormField = ({
   label,
   error,
   hint,
