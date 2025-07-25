@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Plus } from 'lucide-react'
-import { useApp } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
+import { useDashboard } from '@/contexts/DashboardContext' // 🔥 NOUVEAU: Context dashboard optimisé
 import { Event, EventStatus } from '@/types'
 import EventModal from '../components/events/EventModal'
 import EventReadOnlyModal from '../components/events/EventReadOnlyModal'
@@ -21,25 +22,32 @@ interface HomeProps {
 }
 
 const Home = ({ navigate }) => {
-  const { state, actions } = useApp()
+  const context = useApp()
+  const dashboard = useDashboard() // 🔥 NOUVEAU: Context dashboard optimisé
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [selectedEventForEdit, setSelectedEventForEdit] = useState<Event | null>(null)
   const [selectedEventForFlorist, setSelectedEventForFlorist] = useState<Event | null>(null)
-  const [showMoreUrgent, setShowMoreUrgent] = useState(false)
   const [isCreateEventModalOpen, setIsCreateEventModalOpen] = useState(false)
-
-  // 🚨 Événements urgents : Affichage intelligent selon la demande de Bill
-  const urgentEvents = useMemo(() => {
-    // 🎯 LOGIQUE BILL : Montrer TOUS les événements urgents par défaut
-    // Le bouton "voir plus/moins" sert uniquement si on veut les compacter après 6
-    const maxCount = showMoreUrgent ? 100 : 6 // 6 max en vue normale, tous en mode "plus"
-    return SmartUrgencyCalculator.getUrgentEvents(state.events, maxCount)
-  }, [state.events, showMoreUrgent])
   
-  // Compter le total d'événements urgents disponibles
-  const totalUrgentCount = useMemo(() => {
-    return SmartUrgencyCalculator.getUrgentEvents(state.events, 100).length // Récupérer tous pour compter
-  }, [state.events])
+  // Guard: si le contexte n'est pas prêt, afficher un loading
+  if (!context) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">Chargement...</div>
+      </div>
+    )
+  }
+  
+  const { state, actions } = context
+
+  // 🔥 UTILISATION DU NOUVEAU DASHBOARD CONTEXT
+  const {
+    state: dashboardState,
+    dispatch: dashboardDispatch,
+    totalUrgentCount,
+    criticalEventsCount,
+    refreshAll
+  } = dashboard
 
   // Événements à facturer (terminés non facturés)
   const eventsToInvoice = useMemo(() => {

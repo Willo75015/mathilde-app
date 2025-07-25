@@ -1,5 +1,5 @@
-import { useState, useEffect, FC } from 'react'
-import { Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react'
+import { Calendar } from 'lucide-react'
 import Layout from '@/components/layout/Layout'
 import Home from '@/pages/Home'
 import EventsPage from '@/pages/Events/EventsPage'
@@ -10,18 +10,22 @@ import ClientProfile from '@/pages/Clients/ClientProfile'
 import FleuristePage from '@/pages/Fleuriste'
 import CalendarPage from '@/pages/Calendar'
 import AnalyticsPage from '@/pages/Analytics/AnalyticsPage'
-import { useApp } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
+import { useAuth } from '@/contexts/AuthContext'
+import { DashboardProvider } from '@/contexts/DashboardContext' // 🔥 NOUVEAU: Provider dashboard
+import AuthModal from '@/components/auth/AuthModal'
 import OfflineIndicator from '@/components/PWA/OfflineIndicator'
 import InstallPrompt from '@/components/PWA/InstallPrompt'
 import EventSyncNotification from '@/components/ui/EventSyncNotification'
 import './App.css'
 
 const App = () => {
-  const { state } = useApp()
+  const context = useApp()
+  const { user, loading } = useAuth()
   const [currentPage, setCurrentPage] = useState('home')
   const [pageParams, setPageParams] = useState<Record<string, any>>({})
 
-  // Gestion de la navigation
+  // Navigation effect DOIT être avant les guards
   useEffect(() => {
     const handleNavigation = (e: CustomEvent) => {
       setCurrentPage(e.detail.page)
@@ -31,6 +35,31 @@ const App = () => {
     window.addEventListener('navigate', handleNavigation as EventListener)
     return () => window.removeEventListener('navigate', handleNavigation as EventListener)
   }, [])
+
+  // Guard: si le contexte n'est pas prêt, afficher un loading
+  if (!context) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-gray-500">Chargement de l'application...</div>
+      </div>
+    )
+  }
+
+  const { state } = context
+
+  // Si l'utilisateur n'est pas connecté et que l'auth a fini de charger, afficher la page d'auth
+  if (!user && !loading) {
+    return <AuthModal />
+  }
+
+  // Si l'auth est en cours de chargement
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-gray-500">Vérification de l'authentification...</div>
+      </div>
+    )
+  }
 
   // Fonction de navigation
   const navigate = (page: string, params?: any) => {
@@ -76,9 +105,11 @@ const App = () => {
       <InstallPrompt />
       <EventSyncNotification />
       
-      <Layout navigate={navigate} currentPage={currentPage}>
-        {renderCurrentPage()}
-      </Layout>
+      <DashboardProvider>
+        <Layout navigate={navigate} currentPage={currentPage}>
+          {renderCurrentPage()}
+        </Layout>
+      </DashboardProvider>
       
       {state.error && (
         <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
@@ -91,3 +122,4 @@ const App = () => {
 }
 
 export default App
+

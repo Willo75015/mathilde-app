@@ -1,18 +1,10 @@
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "composite": true,
-    "skipLibCheck": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "types": ["node"]
+    "strict": true
   },
-  "include": [
-    "vite.config.ts",
-    "tailwind.config.js",
-    "postcss.config.js",
-    "config/**/*",
-    "scripts/**/*"
-  ]
+  "include": ["vite.config.ts"]
 }
