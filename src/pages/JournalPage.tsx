@@ -29,3 +29,4 @@ const JournalPage = () => {
 };
 
 export default JournalPage;
+

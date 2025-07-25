@@ -127,3 +127,4 @@ export const useEventStatusNotifications = ({ events, onShowNotification }: Noti
 }
 
 export default useEventStatusNotifications
+

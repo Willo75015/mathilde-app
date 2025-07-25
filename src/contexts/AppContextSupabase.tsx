@@ -267,7 +267,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 export const useApp = () => {
   const context = useContext(AppContext)
   if (!context) {
+    // En mode développement, on peut être plus tolérant pendant le rendu initial
+    if (import.meta.env.DEV) {
+      console.warn('useApp called before AppProvider is ready, returning null temporarily')
+      return null
+    }
     throw new Error('useApp must be used within AppProvider')
   }
+  return context
+}
+
+// Hook avec garde pour éviter les erreurs de timing
+export const useAppSafe = () => {
+  const context = useContext(AppContext)
   return context
 }

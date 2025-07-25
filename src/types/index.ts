@@ -65,7 +65,6 @@ export interface Event extends BaseEntity {
   clientPhone?: string // Téléphone du client pour cet événement
   budget: number
   status: EventStatus
-  flowers: FlowerSelection[]
   assignedFlorists?: EventFlorist[]
   floristsRequired?: number
   notes?: string
@@ -140,37 +139,7 @@ export interface Address {
 
 export interface ClientPreferences {
   favoriteColors: string[]
-  favoriteFlowers: string[]
   allergies?: string[]
-}
-
-// Fleurs
-export interface Flower {
-  id: string
-  name: string
-  category: FlowerCategory
-  color: string
-  seasonality: Season[]
-  pricePerUnit: number
-  stock: number
-  description?: string
-  imageUrl?: string
-}
-
-export interface FlowerSelection {
-  flowerId: string
-  quantity: number
-  notes?: string
-}
-
-export enum FlowerCategory {
-  ROSES = 'roses',
-  TULIPS = 'tulips',
-  CARNATIONS = 'carnations',
-  LILIES = 'lilies',
-  ORCHIDS = 'orchids',
-  SEASONAL = 'seasonal',
-  EXOTIC = 'exotic'
 }
 
 export enum Season {
@@ -185,7 +154,6 @@ export interface AppState {
   user: User | null
   events: Event[]
   clients: Client[]
-  flowers: Flower[]
   florists: Florist[]
   isLoading: boolean
   error: string | null
@@ -299,10 +267,6 @@ export const EventSchema = z.object({
   clientId: z.string().uuid(),
   budget: z.number().positive(),
   status: z.nativeEnum(EventStatus),
-  flowers: z.array(z.object({
-    flowerId: z.string().uuid(),
-    quantity: z.number().positive()
-  })),
   florists: z.array(z.object({
     id: z.string(),
     name: z.string(),
@@ -323,3 +287,4 @@ export const ClientSchema = z.object({
     country: z.string().default('France')
   })
 })
+

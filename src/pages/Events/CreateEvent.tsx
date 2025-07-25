@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Save, Calendar, MapPin, Users, Flower2 } from 'lucide-react'
-import { useEvents } from '@/contexts/AppContext'
+import { useApp } from "@/contexts/AppContextSupabase"
 import { Event, EventStatus } from '@/types'
 import { EventValidationSchema, DataSanitizer } from '@/utils/validation'
 import EventForm from '@/components/forms/EventForm'
@@ -200,3 +200,4 @@ const CreateEvent = () => {
 }
 
 export default CreateEvent
+

@@ -33,3 +33,4 @@ const SimpleRouter = ({ currentPage }) => {
 }
 
 export default SimpleRouter
+

@@ -1,6 +1,6 @@
 import { supabase, handleSupabaseError, Tables, Inserts, Updates } from '@/lib/supabase'
 import { Repository } from '@/patterns/Repository'
-import { Event, Client, Flower, EventStatus } from '@/types'
+import { Event, Client, EventStatus } from '@/types'
 
 // Repository pour les événements avec Supabase
 export class SupabaseEventRepository implements Repository<Event> {
@@ -9,7 +9,7 @@ export class SupabaseEventRepository implements Repository<Event> {
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .order('date', { ascending: true })
+        .order('event_date', { ascending: true })
       
       if (error) throw error
       
@@ -44,13 +44,12 @@ export class SupabaseEventRepository implements Repository<Event> {
         .insert({
           title: eventData.title,
           description: eventData.description,
-          date: eventData.date.toISOString(),
-          time: eventData.time,
+          event_date: eventData.date.toISOString().split('T')[0],
+          event_time: eventData.time,
           location: eventData.location,
           client_id: eventData.clientId,
           budget: eventData.budget,
           status: eventData.status,
-          flowers: eventData.flowers,
           notes: eventData.notes,
           images: eventData.images,
           reminder_sent: false,
@@ -74,13 +73,12 @@ export class SupabaseEventRepository implements Repository<Event> {
       
       if (eventData.title !== undefined) updateData.title = eventData.title
       if (eventData.description !== undefined) updateData.description = eventData.description
-      if (eventData.date !== undefined) updateData.date = eventData.date.toISOString()
-      if (eventData.time !== undefined) updateData.time = eventData.time
+      if (eventData.date !== undefined) updateData.event_date = eventData.date.toISOString().split('T')[0]
+      if (eventData.time !== undefined) updateData.event_time = eventData.time
       if (eventData.location !== undefined) updateData.location = eventData.location
       if (eventData.clientId !== undefined) updateData.client_id = eventData.clientId
       if (eventData.budget !== undefined) updateData.budget = eventData.budget
       if (eventData.status !== undefined) updateData.status = eventData.status
-      if (eventData.flowers !== undefined) updateData.flowers = eventData.flowers
       if (eventData.notes !== undefined) updateData.notes = eventData.notes
       if (eventData.images !== undefined) updateData.images = eventData.images
       
@@ -119,7 +117,7 @@ export class SupabaseEventRepository implements Repository<Event> {
         .from('events')
         .select('*')
         .eq('client_id', clientId)
-        .order('date', { ascending: true })
+        .order('event_date', { ascending: true })
       
       if (error) throw error
       
@@ -135,9 +133,9 @@ export class SupabaseEventRepository implements Repository<Event> {
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .gte('date', startDate.toISOString())
-        .lte('date', endDate.toISOString())
-        .order('date', { ascending: true })
+        .gte('event_date', startDate.toISOString())
+        .lte('event_date', endDate.toISOString())
+        .order('event_date', { ascending: true })
       
       if (error) throw error
       
@@ -156,13 +154,12 @@ export class SupabaseEventRepository implements Repository<Event> {
       updatedAt: new Date(data.updated_at),
       title: data.title,
       description: data.description,
-      date: new Date(data.date),
-      time: data.time,
+      date: new Date(data.event_date),
+      time: data.event_time,
       location: data.location,
       clientId: data.client_id,
       budget: data.budget,
       status: data.status as EventStatus,
-      flowers: data.flowers || [],
       notes: data.notes,
       images: data.images
     }
@@ -176,7 +173,6 @@ export class SupabaseClientRepository implements Repository<Client> {
       const { data, error } = await supabase
         .from('clients')
         .select('*')
-        .eq('is_active', true)
         .order('last_name', { ascending: true })
       
       if (error) throw error
@@ -216,8 +212,7 @@ export class SupabaseClientRepository implements Repository<Client> {
           phone: clientData.phone,
           address: clientData.address,
           preferences: clientData.preferences,
-          notes: clientData.notes,
-          is_active: true
+          notes: clientData.notes
         })
         .select()
         .single()
@@ -259,13 +254,9 @@ export class SupabaseClientRepository implements Repository<Client> {
   
   async delete(id: string): Promise<void> {
     try {
-      // Soft delete - on marque juste comme inactif
-      const { error } = await supabase
-        .from('clients')
-        .update({ is_active: false })
-        .eq('id', id)
-      
-      if (error) throw error
+      // Soft delete non supporté - pas de colonne is_active
+      // TODO: Implémenter soft delete avec une autre approche
+      throw new Error('Soft delete not implemented - column is_active does not exist')
     } catch (error) {
       throw new Error(handleSupabaseError(error))
     }
@@ -277,7 +268,6 @@ export class SupabaseClientRepository implements Repository<Client> {
         .from('clients')
         .select('*')
         .eq('email', email)
-        .eq('is_active', true)
         .single()
       
       if (error) throw error
@@ -309,3 +299,4 @@ export class SupabaseClientRepository implements Repository<Client> {
 // Export singleton instances
 export const eventRepository = new SupabaseEventRepository()
 export const clientRepository = new SupabaseClientRepository()
+

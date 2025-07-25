@@ -91,3 +91,4 @@ export const useStatusCounts = (events: any[]) => {
 }
 
 export default StatusBadge
+

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { Event, EventStatus } from '@/types'
-import { useApp } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
 
 // Hook spécialisé pour la gestion du workflow de facturation
 export const useBillingWorkflow = () => {
@@ -200,3 +200,4 @@ export const useBillingWorkflow = () => {
 }
 
 export default useBillingWorkflow
+

@@ -4,7 +4,7 @@ import { Calendar, MapPin, User, ArrowRight } from 'lucide-react'
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
-import { useEvents, useClients } from '@/contexts/AppContext'
+import { useApp } from "@/contexts/AppContextSupabase"
 import { EventStatus } from '@/types'
 
 interface RecentEventsProps {
@@ -293,3 +293,5 @@ const RecentEvents = ({ navigate }) => {
 }
 
 export default RecentEvents
+
+

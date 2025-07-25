@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { MessageSquare, Send, X } from 'lucide-react'
 import Button from '../ui/Button'
 import Modal from '../ui/Modal'
-import { useApp } from '../../contexts/AppContext'
+import { useAppSafe } from '../../contexts/AppContextSupabase'
 
 interface ContactFloristModalProps {
   florist: {
@@ -30,9 +30,16 @@ export const ContactFloristModal = ({
   isOpen,
   onClose
 }) => {
-  const { actions } = useApp()
+  const context = useAppSafe()
   const [message, setMessage] = useState('')
   const [isSending, setIsSending] = useState(false)
+  
+  // Guard: si le contexte n'est pas prêt, ne pas rendre le modal
+  if (!context) {
+    return null
+  }
+  
+  const { actions } = context
 
   // Générer le message pré-écrit selon le statut
   React.useEffect(() => {
@@ -175,3 +182,4 @@ export const ContactFloristModal = ({
 }
 
 export default ContactFloristModal
+

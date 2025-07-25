@@ -142,3 +142,4 @@ export const ArchiveEventModal = ({
 }
 
 export default ArchiveEventModal
+

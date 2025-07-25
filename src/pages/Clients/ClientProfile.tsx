@@ -4,7 +4,7 @@ import {
   ArrowLeft, Edit, Mail, Phone, MapPin, Calendar,
   Plus, Filter, TrendingUp, Euro, Star
 } from 'lucide-react'
-import { useClients, useEvents } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
 import { Client } from '@/types'
 import ClientDetails from '@/components/clients/ClientDetails'
 import EventList from '@/components/events/EventList'
@@ -407,3 +407,5 @@ const ClientProfile = ({ clientId, navigate }) => {
 }
 
 export default ClientProfile
+
+

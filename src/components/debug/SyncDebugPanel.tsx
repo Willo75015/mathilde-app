@@ -30,3 +30,4 @@ export const SyncDebugPanel = ({ eventId }) => {
 }
 
 export default SyncDebugPanel
+

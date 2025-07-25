@@ -40,3 +40,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 )
 
 console.log('✅ Application initialisée avec succès!')
+

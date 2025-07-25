@@ -1,4 +1,0 @@
-import React, { createContext, useContext, useReducer, useMemo, useCallback, useEffect } from 'react'
-import { AppState, Event, Client, EventStatus, Theme } from '@/types'
-import { mockEvents, mockClients } from '@/lib/mockData'
-import { StorageManager } from '@/lib/storage'

@@ -10,3 +10,4 @@ const ClientDetails = () => {
 }
 
 export default ClientDetails
+

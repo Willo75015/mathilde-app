@@ -5,7 +5,7 @@ import {
   Edit3, Trash2, Eye, MessageSquare, DollarSign, ChevronLeft, ChevronRight 
 } from 'lucide-react'
 import { Client } from '@/types'
-import { useClients } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
@@ -379,7 +379,8 @@ const ClientRow: FC<{
   const comments = (client as any).comments || ''
   const managerPayment = (client as any).managerPayment || 0
   const freelancePayment = (client as any).freelancePayment || 0
-  const { deleteClient } = useClients()
+  const { actions } = useApp()
+  const { deleteClient } = actions
 
   const handleEdit = () => {
     if (onEditClient) {
@@ -619,3 +620,4 @@ const PaginationControls: FC<{
 }
 
 export default ClientList
+

@@ -9,7 +9,7 @@ import Badge from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import FloristWithConflictWarning from '@/components/ui/FloristWithConflictWarning'
 import { Event, EventStatus } from '@/types'
-import { useApp } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
 
 interface MoreEventsModalProps {
   isOpen: boolean
@@ -298,3 +298,4 @@ const MoreEventsModal = ({
 }
 
 export default MoreEventsModal
+

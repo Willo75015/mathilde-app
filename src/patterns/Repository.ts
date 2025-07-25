@@ -148,3 +148,4 @@ export class ClientRepository implements Repository<Client> {
     return clients.find(client => client.email === email) || null
   }
 }
+

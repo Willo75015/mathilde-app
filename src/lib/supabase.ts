@@ -34,6 +34,14 @@ export const handleSupabaseError = (error: any) => {
     return 'Session expirée, veuillez vous reconnecter'
   }
   
+  if (error?.message?.includes('Email not confirmed') || error?.message?.includes('email_not_confirmed')) {
+    return 'Email not confirmed'
+  }
+  
+  if (error?.message?.includes('Too Many Requests') || error?.message?.includes('after 2 seconds')) {
+    return 'Trop de tentatives. Veuillez attendre quelques secondes avant de réessayer.'
+  }
+  
   if (error?.message?.includes('duplicate')) {
     return 'Cette donnée existe déjà'
   }
@@ -49,3 +57,4 @@ export const handleSupabaseError = (error: any) => {
 export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
 export type Inserts<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert']
 export type Updates<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
+

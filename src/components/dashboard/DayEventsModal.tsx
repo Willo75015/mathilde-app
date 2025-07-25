@@ -11,7 +11,7 @@ import MoreEventsModal from './MoreEventsModal'
 import EventModal from '@/components/events/EventModal'
 import FloristWithConflictWarning from '@/components/ui/FloristWithConflictWarning'
 import { Event, EventStatus } from '@/types'
-import { useEvents, useApp } from '@/contexts/AppContext'
+import { useApp } from "@/contexts/AppContextSupabase"
 
 interface DayEventsModalProps {
   isOpen: boolean
@@ -458,3 +458,4 @@ const DayEventsModal = ({
 }
 
 export default DayEventsModal
+

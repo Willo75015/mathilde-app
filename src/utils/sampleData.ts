@@ -197,3 +197,4 @@ export const initializeSampleData = () => {
     console.log('🌸 Événements d\'exemple ajoutés:', sampleEvents.length)
   }
 }
+

@@ -42,18 +42,10 @@ export default defineConfig({
         ]
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
+        // Désactiver temporairement le cache des fonts pour éviter CSP conflict
         runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365
-              }
-            }
-          },
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
             handler: 'CacheFirst',
@@ -65,9 +57,7 @@ export default defineConfig({
               }
             }
           }
-        ],
-        skipWaiting: true,
-        clientsClaim: true
+        ]
       }
     })] : [])
   ],

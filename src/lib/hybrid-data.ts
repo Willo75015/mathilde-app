@@ -139,7 +139,7 @@ export class HybridDataManager {
         address: client.address,
         preferences: client.preferences,
         notes: client.notes,
-        isActive: client.is_active,
+        isActive: true, // Default active since no is_active column
         createdAt: new Date(client.created_at),
         updatedAt: new Date(client.updated_at)
       }))
@@ -233,8 +233,7 @@ export class HybridDataManager {
           phone: client.phone,
           address: client.address,
           preferences: client.preferences,
-          notes: client.notes,
-          is_active: client.isActive !== false
+          notes: client.notes
         }
         
         const { error } = await supabase
@@ -276,3 +275,4 @@ export class HybridDataManager {
 
 // Instance globale
 export const hybridData = HybridDataManager.getInstance()
+

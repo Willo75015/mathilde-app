@@ -195,3 +195,4 @@ export class SmartUrgencyCalculator {
 }
 
 export default SmartUrgencyCalculator
+

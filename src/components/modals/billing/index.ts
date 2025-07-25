@@ -14,3 +14,4 @@ export interface PaymentStatus {
   daysSinceInvoiced: number
   urgencyLevel: 'normal' | 'warning' | 'critical'
 }
+

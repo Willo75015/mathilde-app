@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { User, Save, X, Mail, Phone, MapPin, MessageSquare } from 'lucide-react'
-import { useClients } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
 import { Client } from '@/types'
 import { ClientValidationSchema, DataSanitizer } from '@/utils/validation'
 import ClientForm from '@/components/forms/ClientForm'
@@ -244,3 +244,5 @@ const CreateClientModal = ({
 }
 
 export default CreateClientModal
+
+

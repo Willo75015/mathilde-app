@@ -226,3 +226,4 @@ export const PaymentTrackingModal = ({
 }
 
 export default PaymentTrackingModal
+

@@ -81,3 +81,4 @@ const Header = ({ onMenuClick, isMobile, onNavigateToEvent }) => {
 }
 
 export default Header
+

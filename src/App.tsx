@@ -13,6 +13,7 @@ import AnalyticsPage from '@/pages/Analytics/AnalyticsPage'
 import { useApp } from '@/contexts/AppContextSupabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardProvider } from '@/contexts/DashboardContext' // 🔥 NOUVEAU: Provider dashboard
+import { CalendarProvider } from '@/contexts/CalendarContext' // 🔥 NOUVEAU: Provider calendar
 import AuthModal from '@/components/auth/AuthModal'
 import OfflineIndicator from '@/components/PWA/OfflineIndicator'
 import InstallPrompt from '@/components/PWA/InstallPrompt'
@@ -91,7 +92,11 @@ const App = () => {
       case 'fleuriste':
         return <FleuristePage navigate={navigate} />
       case 'calendar':
-        return <CalendarPage navigate={navigate} />
+        return (
+          <CalendarProvider>
+            <CalendarPage navigate={navigate} />
+          </CalendarProvider>
+        )
       case 'analytics':
         return <AnalyticsPage navigate={navigate} />
       default:

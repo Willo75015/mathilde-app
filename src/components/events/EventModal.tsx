@@ -11,7 +11,8 @@ import Button from '../ui/Button'
 import PhoneInput from '../ui/PhoneInput'
 import ContactFloristModal from '../modals/ContactFloristModal'
 import { useEventSync, useModalEventSync } from '../../hooks/useEventSync'
-import { useApp } from '../../contexts/AppContext'
+import { useAppSafe } from '../../contexts/AppContextSupabase'
+import { useMemo } from 'react' // Import manquant pour useMemo
 
 // 🆕 Fonctions utilitaires pour détecter les conflits de fleuristes
 const checkFloristConflicts = (
@@ -124,7 +125,14 @@ const EventModal = ({
   const [currentView, setCurrentView] = useState<'details' | 'assignment'>(initialView)
   
   // 🆕 Récupérer tous les événements pour la détection de conflits
-  const { state } = useApp()
+  const context = useAppSafe()
+  
+  // Guard: si le contexte n'est pas encore prêt, ne pas rendre le modal
+  if (!context) {
+    return null
+  }
+  
+  const { state } = context
   const allEvents = state.events
   
   // Hooks de synchronisation
@@ -172,7 +180,6 @@ const EventModal = ({
           clientPhone: '',
           budget: 0,
           status: 'draft' as any,
-          flowers: [],
           floristsRequired: 2,
           assignedFlorists: [],
           createdAt: new Date(),
@@ -263,15 +270,23 @@ const EventModal = ({
 
   if (!editedEvent) return null
 
-  // Utiliser editedEvent pour les calculs - AVEC FALLBACKS INTELLIGENTS
-  const requiredFlorists = editedEvent?.floristsRequired || event?.floristsRequired || 2
-  console.log('🔍 FLEURISTES REQUIS:', {
-    editedEventRequired: editedEvent?.floristsRequired,
-    eventRequired: event?.floristsRequired,
-    finalRequired: requiredFlorists,
-    eventTitle: editedEvent?.title || event?.title
-  })
-  const confirmedCount = assignments.filter(a => a.status === 'confirmed').length
+  // Mémoiser les calculs pour éviter les re-renders constants
+  const requiredFlorists = useMemo(() => {
+    const result = editedEvent?.floristsRequired || event?.floristsRequired || 2
+    // Log seulement si la valeur change réellement
+    console.log('🔍 FLEURISTES REQUIS:', {
+      editedEventRequired: editedEvent?.floristsRequired,
+      eventRequired: event?.floristsRequired,
+      finalRequired: result,
+      eventTitle: editedEvent?.title || event?.title
+    })
+    return result
+  }, [editedEvent?.floristsRequired, event?.floristsRequired, editedEvent?.title, event?.title])
+  
+  const confirmedCount = useMemo(() => 
+    assignments.filter(a => a.status === 'confirmed').length, 
+    [assignments]
+  )
   const progressPercentage = Math.min((confirmedCount / requiredFlorists) * 100, 100)
 
   const assignedFloristIds = assignments.map(a => a.floristId)
@@ -585,8 +600,8 @@ Mathilde Fleurs`
       // Synchroniser les assignations avec l'événement
       const updatedEvent = {
         ...editedEvent,
-        // Générer un nouvel ID si c'est une création
-        id: isCreating ? `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` : (editedEvent?.id || event?.id || `event-${Date.now()}`),
+        // Laisser Supabase générer l'ID automatiquement pour les créations
+        ...(isCreating ? {} : { id: editedEvent?.id || event?.id }),
         assignedFlorists: assignments.map(assignment => ({
           floristId: assignment.floristId,
           floristName: allFlorists.find(f => f.id === assignment.floristId)?.name || '',
@@ -667,8 +682,8 @@ Mathilde Fleurs`
       // Synchroniser les assignations avec l'événement
       const updatedEvent = {
         ...editedEvent,
-        // Générer un nouvel ID si c'est une création
-        id: isCreating ? `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` : (editedEvent?.id || event?.id || `event-${Date.now()}`),
+        // Laisser Supabase générer l'ID automatiquement pour les créations
+        ...(isCreating ? {} : { id: editedEvent?.id || event?.id }),
         assignedFlorists: assignments.map(assignment => ({
           floristId: assignment.floristId,
           floristName: allFlorists.find(f => f.id === assignment.floristId)?.name || '',
@@ -759,9 +774,10 @@ Mathilde Fleurs`
   }
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div
+          key="event-modal-backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -844,7 +860,17 @@ Mathilde Fleurs`
                         </label>
                         <input
                           type="date"
-                          value={editedEvent?.date || event?.date instanceof Date ? editedEvent?.date || event?.date.toISOString().split('T')[0] : editedEvent?.date || event?.date}
+                          value={(() => {
+                            const dateValue = editedEvent?.date || event?.date;
+                            if (!dateValue) return '';
+                            if (dateValue instanceof Date) {
+                              return dateValue.toISOString().split('T')[0];
+                            }
+                            if (typeof dateValue === 'string' && dateValue.includes('T')) {
+                              return dateValue.split('T')[0];
+                            }
+                            return dateValue;
+                          })()}
                           onChange={(e) => updateEventField('date', new Date(e.target.value))}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
                         />
@@ -1669,3 +1695,4 @@ Mathilde`
 }
 
 export default EventModal
+

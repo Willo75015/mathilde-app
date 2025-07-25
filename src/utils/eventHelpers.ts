@@ -228,3 +228,4 @@ export function getStatusText(status: EventStatus): string {
       return status
   }
 }
+

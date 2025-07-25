@@ -431,3 +431,4 @@ if (typeof window !== 'undefined') {
   console.log('   - window.testUrgentEvents()')
   console.log('   - window.createUrgentTests() → NOUVEAUX tests urgence avec DRAFT')
 }
+

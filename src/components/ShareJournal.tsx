@@ -13,3 +13,4 @@ const ShareJournal = ({ containerRef }) => {
 };
 
 export default ShareJournal;
+

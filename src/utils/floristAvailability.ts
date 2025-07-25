@@ -64,3 +64,4 @@ export const validateEventDate = (
   
   return { isValid: true }
 }
+

@@ -42,3 +42,4 @@ const CreateEventModal = ({
 }
 
 export default CreateEventModal
+

@@ -159,3 +159,4 @@ export const ALLOWED_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
 export const canTransitionTo = (from: EventStatus, to: EventStatus): boolean => {
   return ALLOWED_TRANSITIONS[from].includes(to)
 }
+

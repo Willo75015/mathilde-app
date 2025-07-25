@@ -699,3 +699,4 @@ const FleuristePage = ({ navigate }) => {
 }
 
 export default FleuristePage
+

@@ -13,7 +13,7 @@ import { useAutoStatusTransition } from '@/hooks/useAutoStatusTransition'
 import { useStatusChangeNotifications } from '@/hooks/useStatusChangeNotifications'
 import { useEventStatusNotifier } from '@/hooks/useEventStatusNotifier'
 import { useGlobalNotifications } from '@/contexts/GlobalNotificationContext'
-import { useEvents } from '@/contexts/AppContext' // 🆕 Ajout pour utiliser updateEventWithStatusDates
+import { useApp } from "@/contexts/AppContextSupabase"
 import { EventVisibilityManager } from '@/lib/event-visibility'
 
 interface KanbanBoardProps {
@@ -575,3 +575,4 @@ export const KanbanBoard = ({
 }
 
 export default KanbanBoard
+

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { EventStatus } from '@/types'
-import { useApp } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
 import { useBillingWorkflow } from '@/hooks/useBillingWorkflow'
 import { useNotifications } from '@/hooks/useNotifications'
 import { useEventStatusNotifications } from '@/hooks/useEventStatusNotifications'
@@ -240,3 +240,4 @@ export const EventWorkflowExample = () => {
 }
 
 export default EventWorkflowExample
+

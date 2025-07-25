@@ -4,7 +4,7 @@ import {
   Plus, Search, Filter, User, Grid, List,
   Download, RefreshCw, UserPlus, Mail, Phone
 } from 'lucide-react'
-import { useClients } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
 import { initializeSampleData } from '@/utils/sampleData'
 import ClientList from '@/components/clients/ClientList'
 import { CreateClientModal, EditClientModal } from '@/components/modals'
@@ -24,7 +24,9 @@ interface ClientsPageProps {
 }
 
 const ClientsPage = ({ navigate }) => {
-  const { clients, loadClients, isLoading } = useClients()
+  const { state, actions } = useApp()
+  const { clients, isLoading } = state
+  const { loadClients } = actions
   
   // State
   const [viewMode, setViewMode] = useState<ViewMode>('list')
@@ -464,3 +466,4 @@ const ClientsPage = ({ navigate }) => {
 }
 
 export default ClientsPage
+

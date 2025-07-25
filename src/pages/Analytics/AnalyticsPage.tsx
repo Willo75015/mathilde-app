@@ -5,7 +5,7 @@ import {
   Users, Euro, Flower2, FilterDays, Home, Shield,
   Clock, CreditCard, Target, Award
 } from 'lucide-react'
-import { useEvents, useClients } from '@/contexts/AppContext'
+import { useApp } from "@/contexts/AppContextSupabase"
 import { useEventTimeSync } from '@/hooks/useEventTimeSync'
 import { usePerformance } from '@/hooks/usePerformance'
 import PerformanceMonitor from '@/components/analytics/PerformanceMonitor'
@@ -1233,3 +1233,5 @@ const AnalyticsPage = ({ navigate }) => {
 }
 
 export default AnalyticsPage
+
+

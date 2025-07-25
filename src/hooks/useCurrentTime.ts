@@ -13,3 +13,4 @@ export const useCurrentTime = (updateInterval: number = 1000) => {
   
   return currentTime
 }
+

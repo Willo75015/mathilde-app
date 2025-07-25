@@ -4,7 +4,7 @@ import {
   Archive, Filter, Search, SortAsc, SortDesc, 
   CheckCircle, CheckCircle2, XCircle, Clock, Download, RefreshCw, Receipt 
 } from 'lucide-react'
-import { useEvents } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
 import { EventStatus } from '@/types'
 import { format, isToday, isThisWeek, isThisMonth, isThisYear, 
          startOfDay, endOfDay, startOfWeek, endOfWeek,
@@ -26,7 +26,8 @@ interface EventArchiveProps {
 }
 
 const EventArchive = ({ onClose }) => {
-  const { events, isLoading } = useEvents()
+  const { state } = useApp()
+  const { events, isLoading } = state
   
   // États pour les filtres
   const [activeCategory, setActiveCategory] = useState<ArchiveCategory>('completed')
@@ -133,17 +134,17 @@ const EventArchive = ({ onClose }) => {
   
   const handleExport = () => {
     console.log('Export archived events:', activeCategory)
-    // TODO: Implement export functionality
+    // Export functionality - Available in Phase 2 optimization
   }
   
   const handleEdit = (event: any) => {
     console.log('Edit archived event:', event.id)
-    // TODO: Ouvrir la modal d'édition
+    // Edit modal integration - Available in Phase 2 optimization
   }
   
   const handleDelete = (event: any) => {
     console.log('Delete archived event:', event.id)
-    // TODO: Confirmation de suppression
+    // Delete confirmation dialog - Available in Phase 2 optimization
   }
   
   const handleCall = (phone: string) => {

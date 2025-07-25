@@ -10,3 +10,4 @@ const FlowerCatalog = () => {
 }
 
 export default FlowerCatalog
+

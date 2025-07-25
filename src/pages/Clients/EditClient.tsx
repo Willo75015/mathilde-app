@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Save, Trash2, User, Calendar } from 'lucide-react'
-import { useClients, useEvents } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
 import { Client } from '@/types'
 import { ClientValidationSchema, DataSanitizer } from '@/utils/validation'
 import ClientForm from '@/components/forms/ClientForm'
@@ -344,3 +344,5 @@ const EditClient = ({ clientId, navigate }) => {
 }
 
 export default EditClient
+
+

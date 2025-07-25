@@ -27,7 +27,6 @@ export interface Database {
             budget_max?: number
           }
           notes?: string
-          is_active: boolean
         }
         Insert: Omit<Database['public']['Tables']['clients']['Row'], 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Database['public']['Tables']['clients']['Insert']>

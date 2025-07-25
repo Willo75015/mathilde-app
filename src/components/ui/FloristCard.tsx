@@ -578,3 +578,4 @@ const FloristCard = ({
 }
 
 export default FloristCard
+

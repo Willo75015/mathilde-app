@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Save, User, Mail, Phone, MapPin, MessageSquare, DollarSign } from 'lucide-react'
-import { useClients } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
 import { Client } from '@/types'
 import { ClientValidationSchema, DataSanitizer } from '@/utils/validation'
 import Button from '@/components/ui/Button'
@@ -370,3 +370,5 @@ const EditClientModal = ({
 }
 
 export default EditClientModal
+
+

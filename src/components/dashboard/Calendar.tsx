@@ -9,7 +9,7 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import SimpleDayEventsModal from './SimpleDayEventsModal'
 import EventModal from '@/components/events/EventModal'
-import { useEvents } from '@/contexts/AppContext'
+import { useApp } from "@/contexts/AppContextSupabase"
 import { EventStatus } from '@/types'
 
 interface CalendarProps {
@@ -349,3 +349,4 @@ const Calendar = ({ navigate, onCreateEvent }) => {
 }
 
 export default Calendar
+

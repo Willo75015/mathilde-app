@@ -5,7 +5,7 @@ import {
   Phone, Mail, Euro, Clock, Flower2, Camera,
   CheckCircle2, AlertCircle, XCircle, Loader2
 } from 'lucide-react'
-import { useEvents, useClients } from '@/contexts/AppContext'
+import { useApp } from "@/contexts/AppContextSupabase"
 import { Event, EventStatus } from '@/types'
 import EventDetails from '@/components/events/EventDetails'
 import Button from '@/components/ui/Button'
@@ -504,3 +504,5 @@ const EventDetailsPage = ({ eventId }) => {
 }
 
 export default EventDetailsPage
+
+

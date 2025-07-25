@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Users, Flower, DollarSign, 
   TrendingUp, TrendingDown, ArrowRight, Clock } from 'lucide-react'
 import Card, { CardContent } from '@/components/ui/Card'
-import { useEvents, useClients } from '@/contexts/AppContext'
+import { useApp } from "@/contexts/AppContextSupabase"
 
 const StatsCards = () => {
   const { getEventStats } = useEvents()
@@ -102,3 +102,5 @@ const StatsCards = () => {
 }
 
 export default StatsCards
+
+

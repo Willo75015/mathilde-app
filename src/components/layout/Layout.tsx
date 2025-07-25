@@ -5,6 +5,7 @@ import { clsx } from 'clsx'
 import { Clock } from '@/components/ui/Clock'
 import { useEventNavigation } from '@/hooks/useEventNavigation'
 import { useEventTimeSync } from '@/hooks/useEventTimeSync'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -32,6 +33,7 @@ const Layout = ({ children, navigate, currentPage: propCurrentPage }) => {
   const [isDark, setIsDark] = useState(false)
   const { width } = useSimpleViewport()
   const { navigateToEvent } = useEventNavigation()
+  const { signOut } = useAuth()
   
   // 🆕 Initialiser la synchronisation des événements
   useEventTimeSync()
@@ -49,6 +51,15 @@ const Layout = ({ children, navigate, currentPage: propCurrentPage }) => {
   ]
   
   const toggleTheme = () => setIsDark(!isDark)
+  
+  const handleLogout = async () => {
+    try {
+      await signOut()
+      // Redirection sera gérée automatiquement par le contexte Auth
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error)
+    }
+  }
   
   // Synchroniser avec la prop currentPage
   useEffect(() => {
@@ -186,6 +197,14 @@ const Layout = ({ children, navigate, currentPage: propCurrentPage }) => {
               {isDark ? '🌞 Clair' : '🌙 Sombre'}
             </button>
             
+            <button 
+              onClick={handleLogout}
+              className="px-3 py-2 text-red-400 hover:text-red-600 dark:hover:text-red-300 rounded transition-colors"
+              title="Se déconnecter"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+            
             <button className="px-3 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded transition-colors">
               <Settings className="w-4 h-4" />
             </button>
@@ -261,6 +280,14 @@ const Layout = ({ children, navigate, currentPage: propCurrentPage }) => {
                   {isDark ? '🌞' : '🌙'}
                 </button>
                 
+                <button 
+                  onClick={handleLogout}
+                  className="px-3 py-2 text-red-400 hover:text-red-600 dark:hover:text-red-300 rounded transition-colors"
+                  title="Se déconnecter"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+                
                 <button className="px-3 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded transition-colors">
                   <Settings className="w-4 h-4" />
                 </button>
@@ -305,6 +332,14 @@ const Layout = ({ children, navigate, currentPage: propCurrentPage }) => {
             {/* Right Section */}
             <div className="flex items-center space-x-2">
               <Clock format="datetime" showIcon={true} />
+              
+              <button 
+                onClick={handleLogout}
+                className="p-2 text-red-400 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                title="Se déconnecter"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
               
               <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                 <User className="w-5 h-5" />

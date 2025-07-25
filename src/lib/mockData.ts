@@ -450,3 +450,4 @@ export const mockClients: Client[] = [
     updatedAt: new Date('2025-07-10')
   }
 ]
+

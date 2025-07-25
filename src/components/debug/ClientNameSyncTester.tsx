@@ -4,7 +4,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { RefreshCw, CheckCircle, AlertTriangle, Users } from 'lucide-react'
-import { useEvents, useClients } from '@/contexts/AppContext'
+import { useApp } from "@/contexts/AppContextSupabase"
 import Button from '@/components/ui/Button'
 
 const ClientNameSyncTester = () => {
@@ -198,3 +198,5 @@ const ClientNameSyncTester = () => {
 }
 
 export default ClientNameSyncTester
+
+

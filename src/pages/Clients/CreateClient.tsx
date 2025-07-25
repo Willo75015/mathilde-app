@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Save, User, MapPin, Phone, Mail } from 'lucide-react'
-import { useClients } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
 import { Client } from '@/types'
 import { ClientValidationSchema, DataSanitizer } from '@/utils/validation'
 import ClientForm from '@/components/forms/ClientForm'
@@ -14,7 +14,9 @@ interface CreateClientProps {
 }
 
 const CreateClient = ({ navigate }) => {
-  const { createClient, isLoading } = useClients()
+  const { state, actions } = useApp()
+  const { isLoading } = state
+  const { createClient } = actions
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState<'success' | 'error'>('success')
@@ -216,3 +218,4 @@ const CreateClient = ({ navigate }) => {
 }
 
 export default CreateClient
+

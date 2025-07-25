@@ -134,3 +134,4 @@ export const EventSyncNotification = () => {
 }
 
 export default EventSyncNotification
+

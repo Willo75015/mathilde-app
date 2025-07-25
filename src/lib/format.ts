@@ -554,3 +554,4 @@ export default DataFormatter
 
 // Types d'export pour TypeScript
 export type { FormatOptions, CurrencyCode, PhoneFormat, TextCase, NameFormat }
+

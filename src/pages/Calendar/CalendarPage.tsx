@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Calendar, Clock, User, MapPin, Euro, Plus, CheckCircle, AlertCircle, Kanban as KanbanIcon, Edit, Trash2, X, DollarSign, Phone } from 'lucide-react'
-import { useApp } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
 import { useTime } from '@/contexts/TimeContext'
+import { useCalendar } from '@/contexts/CalendarContext' // 🔥 NOUVEAU: Hook Calendar Context
 import { useEventTimeSync } from '@/hooks/useEventTimeSync'
 import { KANBAN_COLUMNS, EventStatus, getKanbanColumn, getStatusLabel } from '@/types'
 import EventModal from '@/components/events/EventModal'
@@ -12,94 +13,64 @@ interface CalendarPageProps {
   navigate: (page: string, params?: any) => void
 }
 
-type ViewMode = 'calendrier' | 'kanban'
-
 const CalendarPage = ({ navigate }) => {
-  const { state, actions } = useApp()
+  const { state: appState, actions } = useApp()
   const { currentDate, setCurrentDate, isToday } = useTime()
   const { getAutoEventStatus, syncEventStatuses } = useEventTimeSync()
-  const [selectedDay, setSelectedDay] = useState<string | null>(null)
-  const [selectedClient, setSelectedClient] = useState<any>(null)
-  const [viewMode, setViewMode] = useState<ViewMode>('calendrier')
-
-  // 🆕 États pour EventModal
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false)
-  const [selectedEvent, setSelectedEvent] = useState<any>(null)
-  
-  // 🆕 État pour la surbrillance des événements similaires
-  const [highlightedEventTitle, setHighlightedEventTitle] = useState<string | null>(null)
-
-  // 🆕 État pour le menu déroulant des fleuristes
-  const [expandedFloristsEventId, setExpandedFloristsEventId] = useState<string | null>(null)
-
-  // 🆕 HOOKS ET ÉTATS POUR LE WORKFLOW DE FACTURATION  
   const { notifications, removeNotification, showSuccess, showError } = useNotifications()
   
-  const [selectedEventForArchive, setSelectedEventForArchive] = useState<any>(null)
-  const [selectedEventForPayment, setSelectedEventForPayment] = useState<any>(null)
-  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false)
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+  // 🔥 NOUVEAU: Utilisation du CalendarContext au lieu des useState locaux
+  const {
+    state,
+    eventsForSelectedDay,
+    eventsForCurrentMonth,
+    cancelledEventsForMonth,
+    clientsOfMonth,
+    calendarMetrics,
+    setViewMode,
+    selectDay,
+    selectClient,
+    handleEventClick,
+    handleCreateEvent,
+    highlightEventTitle,
+    toggleFloristsExpansion,
+    handleArchiveAndInvoice,
+    handlePaymentTracking,
+    closeAllModals,
+    refreshCalendar
+  } = useCalendar()
 
-  // Récupérer les événements depuis le state global
-  const events = state.events || []
+  // Récupérer les événements depuis le state global (gardé pour compatibilité)
+  const events = appState.events || []
 
-  // 🆕 Handlers pour EventModal
-  const handleEventClick = (event: any) => {
-    setSelectedEvent(event)
-    setIsEventModalOpen(true)
-  }
-
-  const handleCreateEvent = () => {
-    setSelectedEvent(null) // Mode création
-    setIsEventModalOpen(true)
-  }
-
+  // 🔥 HANDLERS DÉDIÉS (utilisant CalendarContext + AppContext)
   const handleEventSave = (editedEvent: any, keepModalOpen: boolean = false) => {
     console.log('🎯 CALENDAR - Sauvegarde événement:', editedEvent, { keepModalOpen })
-    console.log('🎯 CALENDAR - Événement sélectionné:', selectedEvent)
+    console.log('🎯 CALENDAR - Événement sélectionné:', state.selectedEvent)
     
-    // 🔧 CORRECTION ROBUSTE : Vérifier si on modifie un événement existant
-    const isModification = selectedEvent && selectedEvent.id && !selectedEvent.id.startsWith('temp-')
+    const isModification = state.selectedEvent && state.selectedEvent.id && !state.selectedEvent.id.startsWith('temp-')
     
     if (isModification) {
-      console.log('📝 CALENDAR - MODIFICATION événement existant:', selectedEvent.id)
-      // Utiliser l'ID de l'événement sélectionné, pas celui du formulaire
-      actions.updateEvent(selectedEvent.id, {
+      console.log('📝 CALENDAR - MODIFICATION événement existant:', state.selectedEvent.id)
+      actions.updateEvent(state.selectedEvent.id, {
         ...editedEvent,
-        id: selectedEvent.id // Forcer l'ID correct
+        id: state.selectedEvent.id
       })
     } else {
       console.log('🆕 CALENDAR - CRÉATION nouvel événement')
-      // Supprimer complètement l'ID pour éviter tout conflit
       const { id, createdAt, updatedAt, ...eventDataForCreation } = editedEvent
       actions.createEvent(eventDataForCreation)
     }
     
-    // 🔥 NOUVEAU : Fermer le modal seulement si demandé
     if (!keepModalOpen) {
-      setIsEventModalOpen(false)
-      setSelectedEvent(null)
+      closeAllModals()
     }
-  }
-
-  // 🆕 HANDLERS POUR LE WORKFLOW DE FACTURATION
-  const handleArchiveAndInvoice = (event: any) => {
-    console.log('🎯 CALENDAR - Ouverture modale archivage pour:', event.title)
-    setSelectedEventForArchive(event)
-    setIsArchiveModalOpen(true)
-  }
-
-  const handlePaymentTracking = (event: any) => {
-    console.log('🎯 CALENDAR - Ouverture modale paiement pour:', event.title)
-    setSelectedEventForPayment(event)
-    setIsPaymentModalOpen(true)
   }
 
   const handleArchiveConfirm = async (eventId: string) => {
     try {
       console.log('💼 CALENDAR - Archivage et facturation:', eventId)
       
-      // 🔧 CORRECTION: Utiliser directement les actions du contexte existant
       if (actions.updateEvent) {
         const updates = {
           status: EventStatus.INVOICED,
@@ -110,24 +81,14 @@ const CalendarPage = ({ navigate }) => {
         }
         
         actions.updateEvent(eventId, updates)
-        
-        showSuccess(
-          `Événement archivé et facturé avec succès !`,
-          'Facturation créée'
-        )
-        
-        setIsArchiveModalOpen(false)
-        setSelectedEventForArchive(null)
+        showSuccess('Événement archivé et facturé avec succès !', 'Facturation créée')
+        closeAllModals()
       } else {
         throw new Error('Fonction de mise à jour non disponible')
       }
-      
     } catch (error) {
       console.error('❌ CALENDAR - Erreur archivage:', error)
-      showError(
-        `Erreur lors de l'archivage: ${error.message}`,
-        'Erreur de facturation'
-      )
+      showError(`Erreur lors de l'archivage: ${error.message}`, 'Erreur de facturation')
     }
   }
 
@@ -135,7 +96,6 @@ const CalendarPage = ({ navigate }) => {
     try {
       console.log('💰 CALENDAR - Mise à jour paiement:', eventId, status)
       
-      // 🔧 CORRECTION: Utiliser directement les actions du contexte existant
       if (actions.updateEvent) {
         if (status === 'paid') {
           const updates = {
@@ -145,32 +105,21 @@ const CalendarPage = ({ navigate }) => {
             paymentMethod: 'transfer',
             updatedAt: new Date()
           }
-          
           actions.updateEvent(eventId, updates)
+          showSuccess('Paiement marqué comme reçu !', 'Paiement confirmé')
+        } else if (status === 'overdue') {
+          showError('Paiement en retard détecté', 'Attention paiement')
+        } else if (status === 'reminder') {
+          showSuccess('Rappel de paiement envoyé', 'Rappel envoyé')
         }
         
-        const messages = {
-          paid: 'Paiement enregistré avec succès !',
-          overdue: 'Événement marqué comme en retard',
-          reminder: 'Relance client enregistrée'
-        }
-        
-        showSuccess(messages[status], 'Paiement mis à jour')
-        
-        if (status === 'paid') {
-          setIsPaymentModalOpen(false)
-          setSelectedEventForPayment(null)
-        }
+        closeAllModals()
       } else {
         throw new Error('Fonction de mise à jour non disponible')
       }
-      
     } catch (error) {
       console.error('❌ CALENDAR - Erreur paiement:', error)
-      showError(
-        `Erreur lors de la mise à jour: ${error.message}`,
-        'Erreur de paiement'
-      )
+      showError(`Erreur lors de la mise à jour: ${error.message}`, 'Erreur de paiement')
     }
   }
 
@@ -657,7 +606,7 @@ const CalendarPage = ({ navigate }) => {
             return (
               <div
                 key={day}
-                onClick={() => setSelectedDay(day.toString())}
+                onClick={() => selectDay(day.toString())}
                 className={`p-2 min-h-[100px] border border-gray-200 rounded cursor-pointer hover:bg-gray-50 transition-colors ${
                   isTodaySync ? 'bg-green-50 border-green-200' : ''
                 }`}
@@ -749,8 +698,8 @@ const CalendarPage = ({ navigate }) => {
               </div>
               <button
                 onClick={() => {
-                  setSelectedDay(null)
-                  setSelectedClient(null)
+                  selectDay(null)
+                  selectClient(null)
                 }}
                 className="text-gray-400 hover:text-gray-600 transition-colors p-2"
               >
@@ -1243,7 +1192,7 @@ const CalendarPage = ({ navigate }) => {
               <button
                 onClick={() => setViewMode('calendrier')}
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
-                  viewMode === 'calendrier'
+                  state.viewMode === 'calendrier'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
@@ -1254,7 +1203,7 @@ const CalendarPage = ({ navigate }) => {
               <button
                 onClick={() => setViewMode('kanban')}
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
-                  viewMode === 'kanban'
+                  state.viewMode === 'kanban'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
@@ -1315,10 +1264,10 @@ const CalendarPage = ({ navigate }) => {
       </div>
 
       {/* Contenu principal selon la vue */}
-      {viewMode === 'calendrier' ? renderCalendarView() : renderKanbanView()}
+      {state.viewMode === 'calendrier' ? renderCalendarView() : renderKanbanView()}
 
       {/* 🆕 SECTION ÉVÉNEMENTS ANNULÉS - Affiché seulement en mode calendrier */}
-      {viewMode === 'calendrier' && (
+      {state.viewMode === 'calendrier' && (
         <div className="mt-6 bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <X className="w-5 h-5 text-red-500 mr-2" />
@@ -1489,33 +1438,24 @@ const CalendarPage = ({ navigate }) => {
 
       {/* 🎯 EVENTMODAL pour création/édition */}
       <EventModal
-        event={selectedEvent}
-        isOpen={isEventModalOpen}
-        onClose={() => {
-          setIsEventModalOpen(false)
-          setSelectedEvent(null)
-        }}
+        event={state.selectedEvent}
+        isOpen={state.isEventModalOpen}
+        onClose={closeAllModals}
         onEdit={handleEventSave}
       />
 
       {/* 🆕 MODALES DE WORKFLOW DE FACTURATION */}
       <ArchiveEventModal
-        event={selectedEventForArchive}
-        isOpen={isArchiveModalOpen}
-        onClose={() => {
-          setIsArchiveModalOpen(false)
-          setSelectedEventForArchive(null)
-        }}
+        event={state.selectedEventForArchive}
+        isOpen={state.isArchiveModalOpen}
+        onClose={closeAllModals}
         onArchiveAndInvoice={handleArchiveConfirm}
       />
 
       <PaymentTrackingModal
-        event={selectedEventForPayment}
-        isOpen={isPaymentModalOpen}
-        onClose={() => {
-          setIsPaymentModalOpen(false)
-          setSelectedEventForPayment(null)
-        }}
+        event={state.selectedEventForPayment}
+        isOpen={state.isPaymentModalOpen}
+        onClose={closeAllModals}
         onUpdatePaymentStatus={handlePaymentStatusUpdate}
       />
     </div>
@@ -1523,3 +1463,4 @@ const CalendarPage = ({ navigate }) => {
 }
 
 export default CalendarPage
+

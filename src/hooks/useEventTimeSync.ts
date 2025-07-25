@@ -1,11 +1,18 @@
 import { useEffect, useCallback } from 'react'
 import { useTime } from '@/contexts/TimeContext'
-import { useApp } from '@/contexts/AppContext'
+import { useAppSafe } from '@/contexts/AppContextSupabase'
 import { EventStatus } from '@/types'
 
 export const useEventTimeSync = () => {
   const { currentTime, currentDate } = useTime()
-  const { state, actions } = useApp()
+  const context = useAppSafe()
+  
+  // Guard: si le contexte n'est pas encore prêt, retourner sans erreur
+  if (!context) {
+    return
+  }
+  
+  const { state, actions } = context
   
   // Fonction pour calculer le statut automatique d'un événement selon l'heure
   const getAutoEventStatus = useCallback((event: any) => {
@@ -218,3 +225,4 @@ export const useEventTimeStatus = (eventId: string) => {
     daysUntilEvent: Math.ceil(timeUntilEvent / (1000 * 60 * 60 * 24))
   }
 }
+

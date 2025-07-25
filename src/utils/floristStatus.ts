@@ -213,3 +213,4 @@ export const useFloristStatus = (florist: Florist, assignedEvents: Event[] = [])
     isAvailable: statusCalculation.currentStatus === FloristAvailability.AVAILABLE
   }
 }
+

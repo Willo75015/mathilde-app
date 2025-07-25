@@ -10,7 +10,7 @@ import Dropdown from '@/components/ui/Dropdown'
 import DatePicker from '@/components/ui/DatePicker'
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { EventValidationSchema } from '@/utils/validation'
-import { useEvents, useClients, useFlorists } from '@/contexts/AppContext'
+import { useApp } from "@/contexts/AppContextSupabase"
 import { EventStatus } from '@/types'
 import { validateEventDate } from '@/utils/floristAvailability'
 
@@ -293,3 +293,5 @@ const EventForm = ({
 }
 
 export default EventForm
+
+

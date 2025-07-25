@@ -596,3 +596,4 @@ export type { ApiResponse, ApiError, RequestConfig, ApiClientConfig }
 
 // Export par défaut
 export default apiClient
+

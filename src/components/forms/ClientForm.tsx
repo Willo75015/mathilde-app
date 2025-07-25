@@ -10,7 +10,7 @@ import Textarea from '@/components/ui/Textarea'
 import Button from '@/components/ui/Button'
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { ClientValidationSchema } from '@/utils/validation'
-import { useClients } from '@/contexts/AppContext'
+import { useApp } from '@/contexts/AppContextSupabase'
 import { Client } from '@/types'
 
 // Schema de validation pour le formulaire
@@ -259,3 +259,5 @@ const ClientForm = ({
 }
 
 export default ClientForm
+
+

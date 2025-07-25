@@ -197,3 +197,4 @@ export class StorageManager {
     return `${(total / 1024).toFixed(2)} KB`
   }
 }
+

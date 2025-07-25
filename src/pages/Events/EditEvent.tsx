@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Save, Trash2, Copy, Share } from 'lucide-react'
-import { useEvents } from '@/contexts/AppContext'
+import { useApp } from "@/contexts/AppContextSupabase"
 import { Event } from '@/types'
 import { EventValidationSchema, DataSanitizer } from '@/utils/validation'
 import EventForm from '@/components/forms/EventForm'
@@ -315,3 +315,4 @@ const EditEvent = ({ eventId }) => {
 }
 
 export default EditEvent
+

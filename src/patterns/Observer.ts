@@ -66,3 +66,4 @@ export class AppStore {
     this.eventEmitter.unsubscribe(observer)
   }
 }
+

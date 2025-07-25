@@ -184,3 +184,4 @@ const EventArchiveSection = ({
 }
 
 export default EventArchiveSection
+

@@ -12,3 +12,4 @@ const AppPreferences = () => {
 }
 
 export default AppPreferences
+

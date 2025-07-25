@@ -106,3 +106,4 @@ export const useStatusChangeNotifications = ({ events }: UseStatusChangeNotifica
 }
 
 export default useStatusChangeNotifications
+

@@ -210,3 +210,4 @@ const SimpleDayEventsModal = ({
 }
 
 export default SimpleDayEventsModal
+

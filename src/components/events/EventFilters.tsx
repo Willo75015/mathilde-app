@@ -10,3 +10,4 @@ const EventFilters = () => {
 }
 
 export default EventFilters
+
