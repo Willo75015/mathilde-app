@@ -14,6 +14,7 @@ import { useApp } from '@/contexts/AppContextSupabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardProvider } from '@/contexts/DashboardContext' // 🔥 NOUVEAU: Provider dashboard
 import { CalendarProvider } from '@/contexts/CalendarContext' // 🔥 NOUVEAU: Provider calendar
+import { ClientProvider } from '@/contexts/ClientContext' // 🔥 NOUVEAU: Provider clients CRM
 import AuthModal from '@/components/auth/AuthModal'
 import OfflineIndicator from '@/components/PWA/OfflineIndicator'
 import InstallPrompt from '@/components/PWA/InstallPrompt'
@@ -82,13 +83,29 @@ const App = () => {
       case 'events/details':
         return <EventsPage navigate={navigate} />
       case 'clients':
-        return <ClientsPage navigate={navigate} />
+        return (
+          <ClientProvider>
+            <ClientsPage navigate={navigate} />
+          </ClientProvider>
+        )
       case 'clients/create':
-        return <CreateClient navigate={navigate} />
+        return (
+          <ClientProvider>
+            <CreateClient navigate={navigate} />
+          </ClientProvider>
+        )
       case 'clients/edit':
-        return <EditClient navigate={navigate} clientId={pageParams.clientId} />
+        return (
+          <ClientProvider>
+            <EditClient navigate={navigate} clientId={pageParams.clientId} />
+          </ClientProvider>
+        )
       case 'clients/profile':
-        return <ClientProfile navigate={navigate} clientId={pageParams.clientId} />
+        return (
+          <ClientProvider>
+            <ClientProfile navigate={navigate} clientId={pageParams.clientId} />
+          </ClientProvider>
+        )
       case 'fleuriste':
         return <FleuristePage navigate={navigate} />
       case 'calendar':
