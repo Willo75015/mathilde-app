@@ -17,6 +17,8 @@ import { CalendarProvider } from '@/contexts/CalendarContext' // 🔥 NOUVEAU: P
 import { ClientProvider } from '@/contexts/ClientContext' // 🔥 NOUVEAU: Provider clients CRM
 import { FloristProvider } from '@/contexts/FloristContext' // 🔥 NOUVEAU: Provider florists team management
 import { AnalyticsProvider } from '@/contexts/AnalyticsContext' // 🔥 CHUNK 7: Provider analytics business intelligence
+import { GlobalCoordinatorProvider } from '@/contexts/GlobalCoordinator' // 🚀 CHUNK 8: Orchestration centrale
+import MathildeAppProviders from '@/components/providers/MathildeAppProviders' // 🚀 CHUNK 8: Architecture optimisée
 import AuthModal from '@/components/auth/AuthModal'
 import OfflineIndicator from '@/components/PWA/OfflineIndicator'
 import InstallPrompt from '@/components/PWA/InstallPrompt'
@@ -85,43 +87,19 @@ const App = () => {
       case 'events/details':
         return <EventsPage navigate={navigate} />
       case 'clients':
-        return (
-          <ClientProvider>
-            <ClientsPage navigate={navigate} />
-          </ClientProvider>
-        )
+        return <ClientsPage navigate={navigate} />
       case 'clients/create':
-        return (
-          <ClientProvider>
-            <CreateClient navigate={navigate} />
-          </ClientProvider>
-        )
+        return <CreateClient navigate={navigate} />
       case 'clients/edit':
-        return (
-          <ClientProvider>
-            <EditClient navigate={navigate} clientId={pageParams.clientId} />
-          </ClientProvider>
-        )
+        return <EditClient navigate={navigate} clientId={pageParams.clientId} />
       case 'clients/profile':
-        return (
-          <ClientProvider>
-            <ClientProfile navigate={navigate} clientId={pageParams.clientId} />
-          </ClientProvider>
-        )
+        return <ClientProfile navigate={navigate} clientId={pageParams.clientId} />
       case 'fleuriste':
-        return (
-          <FloristProvider>
-            <FleuristePage navigate={navigate} />
-          </FloristProvider>
-        )
+        return <FleuristePage navigate={navigate} />
       case 'calendar':
-        return (
-          <CalendarProvider>
-            <CalendarPage navigate={navigate} />
-          </CalendarProvider>
-        )
+        return <CalendarPage navigate={navigate} />
       case 'analytics':
-        return <AnalyticsProvider><AnalyticsPage navigate={navigate} /></AnalyticsProvider>
+        return <AnalyticsPage navigate={navigate} />
       default:
         return <Home navigate={navigate} />
     }
@@ -133,11 +111,12 @@ const App = () => {
       <InstallPrompt />
       <EventSyncNotification />
       
-      <DashboardProvider>
+      {/* 🚀 CHUNK 8: ARCHITECTURE OPTIMISÉE avec GlobalCoordinator */}
+      <MathildeAppProviders>
         <Layout navigate={navigate} currentPage={currentPage}>
           {renderCurrentPage()}
         </Layout>
-      </DashboardProvider>
+      </MathildeAppProviders>
       
       {state.error && (
         <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
