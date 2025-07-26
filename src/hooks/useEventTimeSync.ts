@@ -143,7 +143,14 @@ export const useEventTimeSync = () => {
     
     return state.events.filter(event => {
       const eventDate = new Date(event.date)
-      const isOverdue = eventDate < now
+      
+      // 🔧 FIX: Comparer les DATES seulement, pas les heures
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate())
+      
+      // Un événement est en retard seulement si sa DATE est antérieure à aujourd'hui
+      const isOverdue = eventDay < today
+      
       const isNotCompleted = getAutoEventStatus(event) !== EventStatus.COMPLETED &&
                             getAutoEventStatus(event) !== EventStatus.CANCELLED &&
                             getAutoEventStatus(event) !== EventStatus.INVOICED &&
