@@ -16,6 +16,7 @@ import { DashboardProvider } from '@/contexts/DashboardContext' // 🔥 NOUVEAU:
 import { CalendarProvider } from '@/contexts/CalendarContext' // 🔥 NOUVEAU: Provider calendar
 import { ClientProvider } from '@/contexts/ClientContext' // 🔥 NOUVEAU: Provider clients CRM
 import { FloristProvider } from '@/contexts/FloristContext' // 🔥 NOUVEAU: Provider florists team management
+import { AnalyticsProvider } from '@/contexts/AnalyticsContext' // 🔥 CHUNK 7: Provider analytics business intelligence
 import AuthModal from '@/components/auth/AuthModal'
 import OfflineIndicator from '@/components/PWA/OfflineIndicator'
 import InstallPrompt from '@/components/PWA/InstallPrompt'
@@ -120,7 +121,7 @@ const App = () => {
           </CalendarProvider>
         )
       case 'analytics':
-        return <AnalyticsPage navigate={navigate} />
+        return <AnalyticsProvider><AnalyticsPage navigate={navigate} /></AnalyticsProvider>
       default:
         return <Home navigate={navigate} />
     }
