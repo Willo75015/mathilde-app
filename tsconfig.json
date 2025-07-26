@@ -14,15 +14,11 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Configuration pour build production - PERMISSIVE */
-    "strict": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": false,
-    "noImplicitAny": false,
-    "noImplicitReturns": false,
-    "noImplicitThis": false,
-    "noUncheckedIndexedAccess": false,
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
 
     /* Path mapping pour imports absolus */
     "baseUrl": ".",
@@ -43,18 +39,13 @@
     "types": ["vite/client", "@testing-library/jest-dom", "vitest/globals"]
   },
   "include": [
-    "src/**/*"
+    "src",
+    "tests"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "build",
-    "**/*.spec.ts",
-    "**/*.test.ts",
-    "**/*.spec.tsx",
-    "**/*.test.tsx",
-    "**/backup*/**/*",
-    "**/test*/**/*"
+    "build"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

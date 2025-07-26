@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef, useMemo } from 'react'
 import { Event } from '@/types'
-import { useApp } from '@/contexts/AppContextSupabase'
+import { useApp } from '@/contexts/AppContext'
 
 // Hook pour synchroniser les événements entre tous les modals et composants
 export const useEventSync = () => {
@@ -138,4 +138,3 @@ export const useModalEventSync = (eventId: string | null, modalName: string) => 
     }, [latestEvent])
   }
 }
-

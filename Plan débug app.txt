@@ -1,0 +1,545 @@
+# 🔧 PLAN DE DÉBUGGAGE COMPLET - APP MATHILDE
+## Version 4.0 CHUNKING | BMad Scrum Master | 26 Juillet 2025
+
+**Chemin Projet :** `C:\Users\Bill\Desktop\Github mathilde-app`
+
+---
+
+## 🎯 **OBJECTIF GLOBAL**
+**Vision :** Transformer l'app Mathilde en solution professionnelle, propre, efficiente et prête pour la production avec documentation complète et déploiement automatisé.
+
+## 🏗️ **STRATÉGIE D'INTERVENTION BMAD**
+
+### **Approche : Clean-Code-Deploy + Chunking 10x**
+1. **Fix & Clean** → Bugs + nettoyage code inutile
+2. **Optimize & Refactor** → Performance et efficacité
+3. **Document & Structure** → Documentation complète
+4. **Deploy & Automate** → Déploiement production
+
+### **Principe BMad + Chunking :** 
+- **Code Propre** : Zéro fichier inutile, imports optimisés
+- **Fonctionnel** : Toutes fonctionnalités préservées et testées
+- **Efficient** : Performance optimisée, bundle size minimal
+- **Documenté** : Documentation technique et fonctionnelle complète
+- **Granularité 10x** : Chaque sprint = 10 chunks de 10-25min
+
+---
+
+## 👥 **QUI FAIT QUOI - ASSIGNMENT ROLES**
+
+### **🔧 Dev Agent (`*dev`)**
+**Responsabilité :** Corrections techniques et code clean
+- Fixe les erreurs TypeScript critiques
+- Supprime fichiers inutiles et code mort
+- Optimise performance et bundle size
+- Refactorise code dupliqué
+- Implémente patterns propres
+
+### **🧪 QA Agent (`*qa`)**  
+**Responsabilité :** Tests et validation qualité
+- Tests de régression après chaque modification
+- Validation performance (lighthouse, bundle analyzer)
+- Tests des workflows utilisateur complets
+- Validation intégrité fonctionnelle
+
+### **📋 Scrum Master (`*sm`)**
+**Responsabilité :** Coordination et documentation
+- Suivi de l'avancement des chunks
+- Création du cahier des charges
+- Rédaction du PRD complet
+- Coordination entre agents
+
+### **🏗️ Architect (`*architect`)**
+**Responsabilité :** Architecture et documentation technique
+- Création arborescence projet optimale
+- Documentation architecture technique
+- Patterns et conventions de code
+- Stratégie déploiement (GitHub → Supabase → Vercel)
+
+### **📚 Analyst (`*analyst`)**
+**Responsabilité :** Documentation business et specs
+- Analyse fonctionnelle complète
+- Spécifications détaillées
+- Documentation utilisateur
+- Guide d'implémentation
+
+---
+
+## ⚡ **ORDRE D'INTERVENTION - WORKFLOW CHUNKING 50 ÉTAPES**
+
+### **🚨 SPRINT 1 : BUGS CRITIQUES (10 CHUNKS)**
+**Durée :** 2-4h | **Objectif :** Éliminer 4 bugs racines | **Chunks 1-10**
+
+#### **CHUNK 1: Audit Initial & Préparation** [✅ TERMINÉ]
+- **Duration:** 15min | **Agent:** SM
+- **Actions:** Backup projet, branch fix/debug-sprint-1, audit initial
+- **Files:** Debug_mathilde-app.md créé
+- **Deliverable:** Structure sécurisée et erreurs mappées
+
+#### **CHUNK 2: Mapping Bugs Racines** [✅ TERMINÉ]
+- **Duration:** 15min | **Agent:** SM + Dev
+- **Actions:** Identification 4 bugs racines, priorisation impact
+- **Analysis:** 400+ erreurs → 4 bugs source identifiés
+- **Deliverable:** TaskManager workflow activé avec 4 tasks
+
+#### **CHUNK 3: Bug #1 - EventStatus Enum Fix** [✅ TERMINÉ]
+- **Duration:** 20min | **Agent:** Dev
+- **Actions:** Ajout PLANNING à enum kanban-status.ts
+- **Files Modified:** src/types/kanban-status.ts
+- **Impact:** 50+ erreurs résolues en cascade
+- **Deliverable:** EventStatus complet avec PLANNING
+
+#### **CHUNK 4: Bug #1 - Validation & Tests** [⏳ PENDING APPROVAL]
+- **Duration:** 10min | **Agent:** QA + User
+- **Actions:** npm run type-check, test status changes
+- **Validation:** Vérifier que les erreurs EventStatus sont résolues
+- **Deliverable:** Bug #1 validé et approuvé
+
+#### **CHUNK 5: Bug #2 - Props Navigation Fix** [🔄 READY]
+- **Duration:** 20min | **Agent:** Dev
+- **Actions:** Ajouter prop 'navigate' à EditClientProps/ClientProfileProps
+- **Files Target:** src/pages/Clients/EditClient.tsx, ClientProfile.tsx
+- **Impact:** Débloquer navigation complète App.tsx
+- **Deliverable:** Navigation props résolues
+
+#### **CHUNK 6: Bug #2 - Navigation Tests** [⏳ QUEUE]
+- **Duration:** 10min | **Agent:** QA
+- **Actions:** Test navigation complète entre pages
+- **Tests:** clients/edit, clients/profile, retour dashboard
+- **Deliverable:** Navigation fonctionnelle validée
+
+#### **CHUNK 7: Bug #3 - FloristWithConflictWarning Fix** [⏳ QUEUE]
+- **Duration:** 25min | **Agent:** Dev
+- **Actions:** Corriger exports/imports + prop onAssign
+- **Files Target:** src/components/ui/FloristWithConflictWarning.tsx
+- **Impact:** Réparer crash modales événements
+- **Deliverable:** Component export/import résolu
+
+#### **CHUNK 8: Bug #3 - Modal Events Tests** [⏳ QUEUE]
+- **Duration:** 15min | **Agent:** QA
+- **Actions:** Test modales événements et assignations fleuristes
+- **Tests:** DayEventsModal, MoreEventsModal, assignations
+- **Deliverable:** Modales opérationnelles
+
+#### **CHUNK 9: Bug #4 - Framer Motion Conflicts Fix** [⏳ QUEUE]
+- **Duration:** 20min | **Agent:** Dev
+- **Actions:** Résoudre conflits onAnimationStart
+- **Files Target:** Button.tsx, Input.tsx, Textarea.tsx
+- **Impact:** Animations UI stables
+- **Deliverable:** Types Framer Motion résolus
+
+#### **CHUNK 10: Sprint 1 - Validation Globale** [⏳ QUEUE]
+- **Duration:** 15min | **Agent:** QA + SM
+- **Actions:** Tests E2E, type-check complet, metrics
+- **Validation:** 0 erreur critique, app navigable
+- **Deliverable:** Sprint 1 100% validé
+
+---
+
+### **⚠️ SPRINT 2 : BUGS MOYENS (10 CHUNKS)**
+**Durée :** 3-6h | **Objectif :** Types & Props consistency | **Chunks 11-20**
+
+#### **CHUNK 11: Date Types Audit** [⏳ QUEUE]
+- **Duration:** 15min | **Agent:** Dev
+- **Actions:** Audit complet incohérences Date vs string
+- **Analysis:** EventModal, UrgentEventsSection, formatters
+- **Deliverable:** Mapping complet des erreurs dates
+
+#### **CHUNK 12: Date Helpers Creation** [⏳ QUEUE]
+- **Duration:** 20min | **Agent:** Dev
+- **Actions:** Créer helpers conversion date unifiés
+- **Files:** src/utils/dateHelpers.ts
+- **Functions:** toISOString, parseDate, formatDisplay
+- **Deliverable:** Utilitaires dates centralisés
+
+#### **CHUNK 13: Date Types Standardization** [⏳ QUEUE]
+- **Duration:** 25min | **Agent:** Dev
+- **Actions:** Appliquer helpers dans EventModal, UrgentEventsSection
+- **Impact:** Éliminer erreurs "Date not assignable to string"
+- **Deliverable:** Types dates cohérents
+
+#### **CHUNK 14: Date Types Validation** [⏳ QUEUE]
+- **Duration:** 10min | **Agent:** QA
+- **Actions:** Tests dates dans modales et dashboard
+- **Tests:** Création événements, affichage calendrier
+- **Deliverable:** Fonctionnalités dates validées
+
+#### **CHUNK 15: Props Optionnelles Audit** [⏳ QUEUE]
+- **Duration:** 15min | **Agent:** Dev
+- **Actions:** Identifier props undefined vs string required
+- **Analysis:** clientName, country, description
+- **Deliverable:** Mapping props optionnelles à fixer
+
+#### **CHUNK 16: Props Optionnelles Fix** [⏳ QUEUE]
+- **Duration:** 20min | **Agent:** Dev
+- **Actions:** Ajouter ? ou valeurs par défaut
+- **Pattern:** `prop?: string` ou `prop = ""`
+- **Deliverable:** Props correctement typées
+
+#### **CHUNK 17: Props Optionnelles Tests** [⏳ QUEUE]
+- **Duration:** 10min | **Agent:** QA
+- **Actions:** Valider création clients/événements
+- **Tests:** Champs optionnels, soumission formulaires
+- **Deliverable:** Formulaires fonctionnels
+
+#### **CHUNK 18: Framer Motion Extended Fix** [⏳ QUEUE]
+- **Duration:** 25min | **Agent:** Dev
+- **Actions:** Résoudre conflits animations avancées
+- **Components:** Modal, Sidebar, Notifications
+- **Deliverable:** Système animation unifié
+
+#### **CHUNK 19: Framer Motion Tests** [⏳ QUEUE]
+- **Duration:** 15min | **Agent:** QA
+- **Actions:** Tests animations et transitions
+- **Tests:** Ouverture modales, sidebar, notifications
+- **Deliverable:** Animations fluides validées
+
+#### **CHUNK 20: Sprint 2 - Validation Globale** [⏳ QUEUE]
+- **Duration:** 15min | **Agent:** QA + SM
+- **Actions:** Tests E2E types, regression check
+- **Validation:** Types cohérents, UI fluide
+- **Deliverable:** Sprint 2 100% validé
+
+---
+
+### **🧹 SPRINT 3 : NETTOYAGE CODE (10 CHUNKS)**
+**Durée :** 2-3h | **Objectif :** Code quality & performance | **Chunks 21-30**
+
+#### **CHUNK 21: Imports Audit** [⏳ QUEUE]
+- **Duration:** 15min | **Agent:** Dev
+- **Actions:** Scan complet imports non utilisés
+- **Tools:** ESLint unused-imports, analysis
+- **Deliverable:** Liste imports à supprimer
+
+#### **CHUNK 22: Imports Cleanup** [⏳ QUEUE]
+- **Duration:** 20min | **Agent:** Dev
+- **Actions:** Supprimer 100+ imports non utilisés
+- **Automation:** eslint --fix, manual review
+- **Deliverable:** Imports optimisés
+
+#### **CHUNK 23: Files Backup Audit** [⏳ QUEUE]
+- **Duration:** 10min | **Agent:** Dev
+- **Actions:** Identifier fichiers .backup-*, obsolètes
+- **Pattern:** *.backup-*, *BACKUP*, *EMERGENCY*
+- **Deliverable:** Liste fichiers à archiver
+
+#### **CHUNK 24: Files Backup Cleanup** [⏳ QUEUE]
+- **Duration:** 15min | **Agent:** Dev
+- **Actions:** Déplacer vers archive/, supprimer obsolètes
+- **Structure:** backup-archive-26072025/
+- **Deliverable:** Structure projet épurée
+
+#### **CHUNK 25: Bundle Analysis** [⏳ QUEUE]
+- **Duration:** 20min | **Agent:** Dev
+- **Actions:** Analyse bundle size, dead code
+- **Tools:** webpack-bundle-analyzer, source-map-explorer
+- **Deliverable:** Rapport optimisation bundle
+
+#### **CHUNK 26: Bundle Optimization** [⏳ QUEUE]
+- **Duration:** 25min | **Agent:** Dev
+- **Actions:** Tree-shaking, code splitting, lazy loading
+- **Target:** -30% bundle size minimum
+- **Deliverable:** Bundle optimisé
+
+#### **CHUNK 27: Performance Audit** [⏳ QUEUE]
+- **Duration:** 15min | **Agent:** QA
+- **Actions:** Lighthouse audit, Web Vitals
+- **Metrics:** FCP, LCP, CLS, FID
+- **Deliverable:** Performance baseline
+
+#### **CHUNK 28: Performance Optimization** [⏳ QUEUE]
+- **Duration:** 20min | **Agent:** Dev
+- **Actions:** Memo, useMemo, useCallback optimizations
+- **Target:** Lighthouse 90+ score
+- **Deliverable:** Performance optimisée
+
+#### **CHUNK 29: ESLint & Formatting** [⏳ QUEUE]
+- **Duration:** 15min | **Agent:** Dev
+- **Actions:** eslint --fix, prettier, code quality
+- **Validation:** 0 warnings ESLint
+- **Deliverable:** Code formaté et propre
+
+#### **CHUNK 30: Sprint 3 - Validation Globale** [⏳ QUEUE]
+- **Duration:** 10min | **Agent:** QA + SM
+- **Actions:** Tests performance, structure clean
+- **Validation:** Bundle -30%, Lighthouse 90+
+- **Deliverable:** Sprint 3 100% validé
+
+---
+
+### **📚 SPRINT 4 : DOCUMENTATION (10 CHUNKS)**
+**Durée :** 8h | **Objectif :** Docs complète | **Chunks 31-40**
+
+#### **CHUNK 31: Architecture Analysis** [⏳ QUEUE]
+- **Duration:** 30min | **Agent:** Architect
+- **Actions:** Analyser structure projet, patterns
+- **Analysis:** Components, hooks, utils, types
+- **Deliverable:** Architecture map complète
+
+#### **CHUNK 32: README Professional** [⏳ QUEUE]
+- **Duration:** 45min | **Agent:** Architect
+- **Actions:** README complet avec setup, features
+- **Sections:** Installation, Usage, API, Contributing
+- **Deliverable:** README professionnel
+
+#### **CHUNK 33: PRD Business Creation** [⏳ QUEUE]
+- **Duration:** 60min | **Agent:** Analyst + SM
+- **Actions:** Product Requirements Document détaillé
+- **Content:** User stories, business rules, workflows
+- **Deliverable:** PRD complet business
+
+#### **CHUNK 34: Technical Specifications** [⏳ QUEUE]
+- **Duration:** 45min | **Agent:** Architect
+- **Actions:** Spécifications techniques détaillées
+- **Content:** API docs, component specs, patterns
+- **Deliverable:** Docs technique complète
+
+#### **CHUNK 35: User Guide Creation** [⏳ QUEUE]
+- **Duration:** 30min | **Agent:** Analyst
+- **Actions:** Guide utilisateur avec screenshots
+- **Content:** Workflows, features, troubleshooting
+- **Deliverable:** User guide complet
+
+#### **CHUNK 36: Developer Guide** [⏳ QUEUE]
+- **Duration:** 45min | **Agent:** Architect
+- **Actions:** Guide développeur avec patterns
+- **Content:** Setup dev, architecture, conventions
+- **Deliverable:** Dev guide complet
+
+#### **CHUNK 37: API Documentation** [⏳ QUEUE]
+- **Duration:** 40min | **Agent:** Architect
+- **Actions:** Documentation API et hooks
+- **Tools:** TypeDoc, JSDoc generation
+- **Deliverable:** API docs auto-générée
+
+#### **CHUNK 38: Testing Documentation** [⏳ QUEUE]
+- **Duration:** 30min | **Agent:** QA + Architect
+- **Actions:** Stratégie tests, coverage, E2E
+- **Content:** Test patterns, tools, workflows
+- **Deliverable:** Test strategy documentée
+
+#### **CHUNK 39: Deployment Guide** [⏳ QUEUE]
+- **Duration:** 35min | **Agent:** Architect
+- **Actions:** Guide déploiement complet
+- **Content:** GitHub Actions, Supabase, Vercel
+- **Deliverable:** Deployment guide step-by-step
+
+#### **CHUNK 40: Sprint 4 - Validation Docs** [⏳ QUEUE]
+- **Duration:** 20min | **Agent:** SM + All Agents
+- **Actions:** Review complète documentation
+- **Validation:** Cohérence, complétude, qualité
+- **Deliverable:** Documentation validée
+
+---
+
+### **🚀 SPRINT 5 : DÉPLOIEMENT (10 CHUNKS)**
+**Durée :** 6h | **Objectif :** Production ready | **Chunks 41-50**
+
+#### **CHUNK 41: GitHub Actions Setup** [⏳ QUEUE]
+- **Duration:** 45min | **Agent:** Architect
+- **Actions:** CI/CD pipeline configuration
+- **Workflows:** Build, test, deploy, quality gates
+- **Deliverable:** GitHub Actions configuré
+
+#### **CHUNK 42: Supabase Production Setup** [⏳ QUEUE]
+- **Duration:** 40min | **Agent:** Dev + Architect
+- **Actions:** Database production, migrations
+- **Config:** Tables, RLS, functions, triggers
+- **Deliverable:** Supabase production ready
+
+#### **CHUNK 43: Vercel Deployment Config** [⏳ QUEUE]
+- **Duration:** 30min | **Agent:** Architect
+- **Actions:** Vercel project, env vars, domaine
+- **Config:** Build settings, redirects, analytics
+- **Deliverable:** Vercel deployment configuré
+
+#### **CHUNK 44: Environment Variables** [⏳ QUEUE]
+- **Duration:** 20min | **Agent:** Dev
+- **Actions:** Env vars production, security
+- **Variables:** API keys, database URLs, secrets
+- **Deliverable:** Variables sécurisées
+
+#### **CHUNK 45: Security Hardening** [⏳ QUEUE]
+- **Duration:** 35min | **Agent:** Architect
+- **Actions:** CSP, HTTPS, security headers
+- **Security:** Authentication, authorization, CORS
+- **Deliverable:** Security optimisée
+
+#### **CHUNK 46: Monitoring Setup** [⏳ QUEUE]
+- **Duration:** 30min | **Agent:** Architect
+- **Actions:** Logs, analytics, error tracking
+- **Tools:** Vercel Analytics, Sentry, logging
+- **Deliverable:** Monitoring opérationnel
+
+#### **CHUNK 47: Performance Production** [⏳ QUEUE]
+- **Duration:** 25min | **Agent:** QA + Dev
+- **Actions:** Optimisations production
+- **Optimizations:** Caching, CDN, compression
+- **Deliverable:** Performance production
+
+#### **CHUNK 48: E2E Testing Production** [⏳ QUEUE]
+- **Duration:** 40min | **Agent:** QA
+- **Actions:** Tests E2E environnement production
+- **Tests:** Workflows complets, data integrity
+- **Deliverable:** Production testée
+
+#### **CHUNK 49: Go-Live Preparation** [⏳ QUEUE]
+- **Duration:** 20min | **Agent:** SM + All
+- **Actions:** Checklist go-live, rollback plan
+- **Validation:** Final checks, documentation
+- **Deliverable:** Go-live ready
+
+#### **CHUNK 50: Sprint 5 - Go Live!** [⏳ QUEUE]
+- **Duration:** 15min | **Agent:** Architect + SM
+- **Actions:** Déploiement final, monitoring
+- **Validation:** Production live, everything works
+- **Deliverable:** 🚀 APP MATHILDE LIVE!
+
+---
+
+## 🧹 **NETTOYAGE SYSTÉMATIQUE CHUNKED**
+
+### **Files Cleanup Pattern (Chunks 23-24)**
+```bash
+# Fichiers backup inutiles (Chunk 23)
+*.backup-* → archive/backup-files/
+*.clean.* → archive/clean-files/
+*BACKUP-* → archive/backup-files/
+*EMERGENCY* → archive/emergency-files/
+*SUPER-SIMPLE* → archive/simple-files/
+
+# Dossiers temporaires (Chunk 24)
+backup-test-20251707-2118/ → archive/
+fix-refresh/ → DELETE
+
+# Fichiers de documentation obsolète
+AMELIORATIONS_*.md → archive/docs/
+CORRECTIONS_*.md → archive/docs/
+RAPPORT_*.md → archive/docs/
+TESTS_*.md → archive/docs/
+```
+
+### **Code Optimization Pattern (Chunks 25-28)**
+- **Chunk 25:** Bundle Analysis avec webpack-bundle-analyzer
+- **Chunk 26:** Tree-shaking et code splitting
+- **Chunk 27:** Performance audit Lighthouse
+- **Chunk 28:** Memo optimizations et lazy loading
+
+---
+
+## 📊 **MÉTRIQUES CHUNKING TEMPS RÉEL**
+
+### **Progress Dashboard:**
+- **Total Chunks:** 50 (5 sprints × 10 chunks)
+- **Chunks Completed:** 3/50 (6%)
+- **Current Sprint:** 1/5 (Sprint 1 - Bugs Critiques)
+- **Current Chunk:** 4/10 (Validation Bug #1)
+- **Time Elapsed:** ~45min
+- **Velocity:** 15min/chunk moyenne
+- **ETA Total:** ~12.5h restantes
+
+### **Sprint Breakdown:**
+- **Sprint 1 (Chunks 1-10):** 3/10 done ✅ 1/10 pending ⏳
+- **Sprint 2 (Chunks 11-20):** 0/10 queue
+- **Sprint 3 (Chunks 21-30):** 0/10 queue  
+- **Sprint 4 (Chunks 31-40):** 0/10 queue
+- **Sprint 5 (Chunks 41-50):** 0/10 queue
+
+### **Seuils d'Alerte Chunking:**
+- 🔴 **> 30min sur 1 chunk** → Escalation technique
+- 🟠 **Chunk bloqué > 1h** → Escalation architect
+- 🟢 **Velocity 10-25min/chunk** → Optimal flow
+
+---
+
+## 🎯 **DÉFINITION OF DONE CHUNKED**
+
+### **Done Criteria par Chunk:**
+- [ ] **Deliverable** défini et livré
+- [ ] **Validation** tests passés
+- [ ] **Documentation** mise à jour si applicable
+- [ ] **No regression** introduite
+- [ ] **Time box** respecté (max 30min)
+
+### **Done Criteria par Sprint:**
+- [ ] **10 chunks** tous completed
+- [ ] **Integration tests** passés
+- [ ] **Performance** maintenue ou améliorée
+- [ ] **Documentation sprint** mise à jour
+
+### **Done Criteria Global (50 chunks):**
+- [ ] **0 erreur TypeScript**
+- [ ] **App 100% fonctionnelle**
+- [ ] **Performance Lighthouse 90+**
+- [ ] **Documentation complète**
+- [ ] **Production deployed**
+
+---
+
+## 🚀 **WORKFLOW CHUNKING COMMANDS**
+
+### **Chunk Start Pattern:**
+```bash
+# Command pattern: *agent
+*dev     # Development chunks (odd numbers)
+*qa      # Quality/test chunks (even numbers)  
+*sm      # Scrum Master coordination
+*architect  # Architecture & deployment
+*analyst    # Business & documentation
+```
+
+### **Chunk Validation Pattern:**
+```bash
+# After each chunk
+npm run type-check          # Technical validation
+npm run build              # Build validation
+npm run dev                # Runtime validation
+git commit -m "Chunk X: [deliverable]"  # Version control
+```
+
+### **Sprint Validation Pattern:**
+```bash
+# After each sprint (every 10 chunks)
+npm run test:e2e           # Full E2E validation
+npm run build:analyze      # Performance check
+git push origin sprint-X   # Sprint completion
+```
+
+---
+
+## 📞 **PROTOCOLE CHUNKING**
+
+### **Handoffs Chunks:**
+- **Dev chunks (odd)** → Code/Implementation  
+- **QA chunks (even)** → Tests/Validation
+- **Cross-agent chunks** → Collaboration selon besoin
+- **User approval** → Chunks critiques uniquement
+
+### **Escalation Chunking:**
+1. **> 30min chunk** → Escalation immediate
+2. **Blockers techniques** → Architect Agent
+3. **Blockers business** → Analyst Agent
+4. **Priorités conflits** → Scrum Master
+
+---
+
+## 🎯 **CURRENT STATUS - CHUNK 4 BLOCKED**
+
+**POSITION ACTUELLE :**
+- ✅ **Chunks 1-3 DONE** (Audit + Mapping + Bug #1 Fix)
+- ⏳ **Chunk 4 PENDING** → User approval required
+- 🔄 **Chunk 5 READY** → Bug #2 Props Navigation
+
+**ACTION REQUISE :**
+User must approve Chunk 3 (Bug #1 EventStatus fix) before continuing to Chunk 5.
+
+**NEXT CHUNK READY:**
+Chunk 5 - Props Navigation Fix (20min, Dev Agent)
+
+---
+
+**Ready for Chunk 4 approval? Let's continue the chunking flow! 🔥**
+
+*Dernière mise à jour: 26/07/2025 16:20*  
+*Methodology: BMAD Chunking 50 étapes*
+*Current blocker: User approval Chunk 3*

@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Event = () => {
+const EventCalendar: React.FC = () => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
@@ -13,5 +13,4 @@ const Event = () => {
   )
 }
 
-export default Event
-
+export default EventCalendar

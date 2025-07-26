@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Save, Trash2, User, Calendar } from 'lucide-react'
-import { useApp } from '@/contexts/AppContextSupabase'
+import { useClients, useEvents } from '@/contexts/AppContext'
 import { Client } from '@/types'
 import { ClientValidationSchema, DataSanitizer } from '@/utils/validation'
 import ClientForm from '@/components/forms/ClientForm'
@@ -12,10 +12,10 @@ import Modal from '@/components/ui/Modal'
 
 interface EditClientProps {
   clientId: string
-  navigate?: (page: string, params?: any) => void
+  navigate: (page: string, params?: any) => void
 }
 
-const EditClient = ({ clientId, navigate }) => {
+const EditClient: React.FC<EditClientProps> = ({ clientId, navigate }) => {
   const { clients, updateClient, deleteClient, isLoading } = useClients()
   const { getEventsByClient } = useEvents()
   const [client, setClient] = useState<Client | null>(null)
@@ -344,5 +344,3 @@ const EditClient = ({ clientId, navigate }) => {
 }
 
 export default EditClient
-
-

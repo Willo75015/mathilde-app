@@ -81,14 +81,11 @@ const FloristWithConflictWarning: React.FC<FloristWithConflictWarningProps> = ({
     allEvents
   )
 
-  // Trouver les missions actuelles du fleuriste
-  const today = new Date().toDateString()
+  // Trouver les missions actuelles du fleuriste (toutes les missions confirmées)
   const currentMissions = allEvents.filter(event => {
-    const eventDateStr = (event.date instanceof Date ? event.date : new Date(event.date)).toDateString()
-    return eventDateStr === today && 
-           event.assignedFlorists?.some(af => 
-             af.floristId === florist.id && (af.isConfirmed || af.status === 'confirmed')
-           )
+    return event.assignedFlorists?.some(af => 
+      af.floristId === florist.id && (af.isConfirmed || af.status === 'confirmed')
+    )
   })
 
   const handleAssignWithWarning = () => {

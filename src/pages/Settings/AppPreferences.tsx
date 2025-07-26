@@ -1,6 +1,6 @@
 import React from 'react'
 
-const AppPreferences = () => {
+const AppPreferences: React.FC = () => {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
@@ -12,4 +12,3 @@ const AppPreferences = () => {
 }
 
 export default AppPreferences
-

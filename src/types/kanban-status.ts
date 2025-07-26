@@ -1,10 +1,9 @@
-import React from 'react'
-import { Clock } from 'lucide-react'
 // 🎯 STATUTS KANBAN SYNCHRONISÉS - ÉVÉNEMENTS & CALENDRIER
 // Configuration unifiée des statuts pour toute l'application
 
 export enum EventStatus {
   DRAFT = 'draft',
+  PLANNING = 'planning', // Phase de planification avant confirmation
   CONFIRMED = 'confirmed', 
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
@@ -41,6 +40,18 @@ export const KANBAN_COLUMNS: KanbanColumn[] = [
     iconColor: 'text-gray-500',
     emoji: '📝',
     description: 'Événements en cours de création'
+  },
+  {
+    id: 'planning',
+    title: 'En planification',
+    status: EventStatus.PLANNING,
+    bgColor: 'bg-orange-50',
+    headerColor: 'bg-orange-100',
+    textColor: 'text-orange-800',
+    icon: 'Calendar',
+    iconColor: 'text-orange-500',
+    emoji: '📋',
+    description: 'Phase de planification avant confirmation'
   },
   {
     id: 'confirmed', 
@@ -138,16 +149,18 @@ export const getStatusEmoji = (status: EventStatus): string => {
 export const STATUS_PRIORITY: Record<EventStatus, number> = {
   [EventStatus.IN_PROGRESS]: 1,  // Plus urgent
   [EventStatus.CONFIRMED]: 2,
-  [EventStatus.DRAFT]: 3,
-  [EventStatus.COMPLETED]: 4,
-  [EventStatus.INVOICED]: 5,     // À surveiller pour le paiement
-  [EventStatus.PAID]: 6,         // Finalisé
-  [EventStatus.CANCELLED]: 7     // Moins urgent
+  [EventStatus.PLANNING]: 3,     // En planification
+  [EventStatus.DRAFT]: 4,
+  [EventStatus.COMPLETED]: 5,
+  [EventStatus.INVOICED]: 6,     // À surveiller pour le paiement
+  [EventStatus.PAID]: 7,         // Finalisé
+  [EventStatus.CANCELLED]: 8     // Moins urgent
 }
 
 // Transitions autorisées entre statuts
 export const ALLOWED_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
-  [EventStatus.DRAFT]: [EventStatus.CONFIRMED, EventStatus.CANCELLED],
+  [EventStatus.DRAFT]: [EventStatus.PLANNING, EventStatus.CONFIRMED, EventStatus.CANCELLED],
+  [EventStatus.PLANNING]: [EventStatus.CONFIRMED, EventStatus.CANCELLED],
   [EventStatus.CONFIRMED]: [EventStatus.IN_PROGRESS, EventStatus.CANCELLED],
   [EventStatus.IN_PROGRESS]: [EventStatus.COMPLETED, EventStatus.CANCELLED],
   [EventStatus.COMPLETED]: [EventStatus.INVOICED, EventStatus.CANCELLED], // Peut passer à facturé
@@ -159,4 +172,3 @@ export const ALLOWED_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
 export const canTransitionTo = (from: EventStatus, to: EventStatus): boolean => {
   return ALLOWED_TRANSITIONS[from].includes(to)
 }
-

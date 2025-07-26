@@ -4,7 +4,7 @@ import {
   CheckCircle, XCircle, Clock, Users, MessageSquare, 
   AlertTriangle, Plus
 } from 'lucide-react'
-import { useFlorists } from '@/contexts/AppContextSupabase'
+import { useFlorists } from '@/contexts/AppContext'
 import FloristCard from '@/components/ui/FloristCard'
 
 interface FloristAssignmentCompleteProps {
@@ -15,7 +15,7 @@ interface FloristAssignmentCompleteProps {
   onAddFlorist: (florist: any) => void
 }
 
-export const FloristAssignmentComplete = ({
+export const FloristAssignmentComplete: React.FC<FloristAssignmentCompleteProps> = ({
   editedEvent,
   allEvents,
   onUpdateFloristStatus,
@@ -251,4 +251,3 @@ export const FloristAssignmentComplete = ({
 }
 
 export default FloristAssignmentComplete
-

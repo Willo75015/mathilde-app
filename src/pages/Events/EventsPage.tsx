@@ -5,7 +5,7 @@ import {
   Clock, Archive, XCircle, Edit, CheckCircle2, CheckCircle,
   MapPin, User, Euro, DollarSign, Receipt
 } from 'lucide-react'
-import { useApp } from "@/contexts/AppContextSupabase"
+import { useEvents } from '@/contexts/AppContext'
 import { EventStatus, KANBAN_COLUMNS } from '@/types'
 import { StatusBadge, useStatusCounts } from '@/components/ui/StatusBadge'
 import { filterActiveEvents, isPaymentOverdue } from '@/utils/eventHelpers'
@@ -25,10 +25,8 @@ interface EventsPageProps {
   navigate?: (page: string, params?: any) => void
 }
 
-const EventsPage = ({ navigate }) => {
-  const { state, actions } = useApp()
-  const { events, isLoading } = state
-  const { loadEvents, updateEvent, createEvent } = actions
+const EventsPage: React.FC<EventsPageProps> = ({ navigate }) => {
+  const { events, loadEvents, isLoading, updateEvent, createEvent } = useEvents()
   const statusCounts = useStatusCounts(events)
   
   // 🆕 Hook pour la facturation
@@ -677,4 +675,3 @@ const EventsPage = ({ navigate }) => {
 }
 
 export default EventsPage
-

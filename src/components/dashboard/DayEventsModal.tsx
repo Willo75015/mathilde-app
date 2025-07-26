@@ -11,7 +11,7 @@ import MoreEventsModal from './MoreEventsModal'
 import EventModal from '@/components/events/EventModal'
 import FloristWithConflictWarning from '@/components/ui/FloristWithConflictWarning'
 import { Event, EventStatus } from '@/types'
-import { useApp } from "@/contexts/AppContextSupabase"
+import { useEvents, useApp } from '@/contexts/AppContext'
 
 interface DayEventsModalProps {
   isOpen: boolean
@@ -36,7 +36,7 @@ const mockFlorists: Florist[] = [
   { id: '4', name: 'Julien Petit', phone: '+33656789012', isConfirmed: false },
 ]
 
-const DayEventsModal = ({ 
+const DayEventsModal: React.FC<DayEventsModalProps> = ({ 
   isOpen, 
   onClose, 
   date, 
@@ -144,7 +144,7 @@ const DayEventsModal = ({
     })
   }
   
-  const EventCard = ({ event, index }) => {
+  const EventCard: React.FC<{ event: Event; index: number }> = ({ event, index }) => {
     const eventFlorists = getEventFlorists(event.id)
     const confirmedFlorists = eventFlorists.filter(f => f.isConfirmed)
     const pendingFlorists = eventFlorists.filter(f => !f.isConfirmed)
@@ -458,4 +458,3 @@ const DayEventsModal = ({
 }
 
 export default DayEventsModal
-

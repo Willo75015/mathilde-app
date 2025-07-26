@@ -18,7 +18,7 @@ interface FleuristePageProps {
   navigate?: (page: string, params?: any) => void
 }
 
-const FleuristePage = ({ navigate }) => {
+const FleuristePage: React.FC<FleuristePageProps> = ({ navigate }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedAvailability, setSelectedAvailability] = useState('all')
@@ -699,4 +699,3 @@ const FleuristePage = ({ navigate }) => {
 }
 
 export default FleuristePage
-

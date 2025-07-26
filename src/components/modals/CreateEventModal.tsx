@@ -16,7 +16,7 @@ interface CreateEventModalProps {
  * - Assignation de fleuristes
  * - Interface complète identique à la modification
  */
-const CreateEventModal = ({
+const CreateEventModal: React.FC<CreateEventModalProps> = ({
   isOpen,
   onClose,
   onEventCreated
@@ -42,4 +42,3 @@ const CreateEventModal = ({
 }
 
 export default CreateEventModal
-

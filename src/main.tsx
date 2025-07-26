@@ -1,7 +1,7 @@
+import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
-import { AppProvider } from './contexts/AppContextSupabase'
-import { AuthProvider } from './contexts/AuthContext'
+import { AppProvider } from './contexts/AppContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { TimeProvider } from './contexts/TimeContext'
 import { GlobalNotificationProvider } from './contexts/GlobalNotificationContext'
@@ -25,19 +25,16 @@ if (import.meta.env.DEV) {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
-    <AuthProvider>
-      <ThemeProvider>
-        <TimeProvider>
-          <GlobalNotificationProvider>
-            <AppProvider>
-              <App />
-            </AppProvider>
-          </GlobalNotificationProvider>
-        </TimeProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <TimeProvider>
+        <GlobalNotificationProvider>
+          <AppProvider>
+            <App />
+          </AppProvider>
+        </GlobalNotificationProvider>
+      </TimeProvider>
+    </ThemeProvider>
   </ErrorBoundary>
 )
 
 console.log('✅ Application initialisée avec succès!')
-

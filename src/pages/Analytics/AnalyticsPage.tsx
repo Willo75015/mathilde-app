@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { 
-  BarChart3, TrendingUp, RefreshCw,
-  Users, Euro, Flower2, FilterDays, Home, Shield,
+  BarChart3, TrendingUp, RefreshCw, Calendar,
+  Users, Euro, Flower2, Filter, CalendarDays, Home, Shield,
   Clock, CreditCard, Target, Award
 } from 'lucide-react'
-import { useApp } from "@/contexts/AppContextSupabase"
+import { useEvents, useClients } from '@/contexts/AppContext'
 import { useEventTimeSync } from '@/hooks/useEventTimeSync'
 import { usePerformance } from '@/hooks/usePerformance'
 import PerformanceMonitor from '@/components/analytics/PerformanceMonitor'
@@ -175,7 +175,7 @@ interface AnalyticsPageProps {
   navigate?: (page: string, params?: any) => void
 }
 
-const AnalyticsPage = ({ navigate }) => {
+const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ navigate }) => {
   const { events, isLoading: eventsLoading } = useEvents()
   const { clients, isLoading: clientsLoading } = useClients()
   const { metrics } = usePerformance()
@@ -223,7 +223,7 @@ const AnalyticsPage = ({ navigate }) => {
     { 
       id: 'missions', 
       label: 'Nouvelles missions', 
-      icon: TrendingUp,
+      icon: Calendar,
       color: 'emerald',
       bgGradient: 'from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20',
       borderColor: 'border-emerald-200 dark:border-emerald-800',
@@ -1233,5 +1233,3 @@ const AnalyticsPage = ({ navigate }) => {
 }
 
 export default AnalyticsPage
-
-

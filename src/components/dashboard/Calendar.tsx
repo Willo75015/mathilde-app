@@ -9,7 +9,7 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import SimpleDayEventsModal from './SimpleDayEventsModal'
 import EventModal from '@/components/events/EventModal'
-import { useApp } from "@/contexts/AppContextSupabase"
+import { useEvents } from '@/contexts/AppContext'
 import { EventStatus } from '@/types'
 
 interface CalendarProps {
@@ -17,7 +17,7 @@ interface CalendarProps {
   onCreateEvent?: () => void
 }
 
-const Calendar = ({ navigate, onCreateEvent }) => {
+const Calendar: React.FC<CalendarProps> = ({ navigate, onCreateEvent }) => {
   const { events, updateEvent } = useEvents()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState<{ date: Date; events: any[] } | null>(null)
@@ -349,4 +349,3 @@ const Calendar = ({ navigate, onCreateEvent }) => {
 }
 
 export default Calendar
-
