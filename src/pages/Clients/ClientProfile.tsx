@@ -4,7 +4,7 @@ import {
   ArrowLeft, Edit, Mail, Phone, MapPin, Calendar,
   Plus, Filter, TrendingUp, Euro, Star
 } from 'lucide-react'
-import { useApp } from '@/contexts/AppContextSupabase'
+import { useClients, useEvents } from '@/contexts/AppContext'
 import { Client } from '@/types'
 import ClientDetails from '@/components/clients/ClientDetails'
 import EventList from '@/components/events/EventList'
@@ -15,10 +15,10 @@ import Tabs from '@/components/ui/Tabs'
 
 interface ClientProfileProps {
   clientId: string
-  navigate?: (page: string, params?: any) => void
+  navigate: (page: string, params?: any) => void
 }
 
-const ClientProfile = ({ clientId, navigate }) => {
+const ClientProfile: React.FC<ClientProfileProps> = ({ clientId, navigate }) => {
   const { clients } = useClients()
   const { getEventsByClient } = useEvents()
   const [client, setClient] = useState<Client | null>(null)
@@ -407,5 +407,3 @@ const ClientProfile = ({ clientId, navigate }) => {
 }
 
 export default ClientProfile
-
-
