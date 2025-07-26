@@ -3,6 +3,7 @@
 // Date: 26 Juillet 2025
 
 import React from 'react';
+import { EventProvider } from '@/contexts/EventContext';
 import { DashboardProvider } from '@/contexts/DashboardContext';
 import { CalendarProvider } from '@/contexts/CalendarContext';
 import { ClientProvider } from '@/contexts/ClientContext';
@@ -13,17 +14,19 @@ import { GlobalCoordinatorProvider } from '@/contexts/GlobalCoordinator';
 // 🎯 WRAPPER OPTIMISÉ pour tous les contexts métier
 const OptimizedBusinessContexts: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <DashboardProvider>
-      <CalendarProvider>
-        <ClientProvider>
-          <FloristProvider>
-            <AnalyticsProvider>
-              {children}
-            </AnalyticsProvider>
-          </FloristProvider>
-        </ClientProvider>
-      </CalendarProvider>
-    </DashboardProvider>
+    <EventProvider>
+      <DashboardProvider>
+        <CalendarProvider>
+          <ClientProvider>
+            <FloristProvider>
+              <AnalyticsProvider>
+                {children}
+              </AnalyticsProvider>
+            </FloristProvider>
+          </ClientProvider>
+        </CalendarProvider>
+      </DashboardProvider>
+    </EventProvider>
   );
 };
 
