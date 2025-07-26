@@ -458,10 +458,10 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   const { events, clients } = useEventSync() // Récupère les données depuis EventContext
   const { currentTime } = useCurrentTime()   // Temps réel pour les calculs
   
-  // 🚀 Computed Values - Mémorisés pour performance
-  const totalUrgentCount = state.urgentEvents.length
-  const criticalEventsCount = state.urgentEvents.filter(e => e.urgency.level === 'critical').length
-  const revenueAtRisk = state.cashFlow.overdueInvoices.reduce((sum, event) => sum + event.budget, 0)
+  // 🚀 Computed Values - Mémorisés pour performance (Protection undefined)
+  const totalUrgentCount = (state.urgentEvents || []).length
+  const criticalEventsCount = (state.urgentEvents || []).filter(e => e.urgency?.level === 'critical').length
+  const revenueAtRisk = (state.cashFlow?.overdueInvoices || []).reduce((sum, event) => sum + (event.budget || 0), 0)
   const overallHealthScore = Math.round(
     (state.businessMetrics.eventConversion * 0.3) +
     (state.businessMetrics.teamUtilization * 0.3) +
@@ -499,7 +499,7 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
   
   // 📊 Data Processing Effects
   useEffect(() => {
-    if (events.length > 0) {
+    if (events && events.length > 0) {
       // Calculate urgent events
       const urgentEvents = events
         .filter(event => {
@@ -535,24 +535,24 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
           .filter(e => e.status === EventStatus.PAID)
           .reduce((sum, e) => sum + e.budget, 0),
         revenueGrowth: 0, // Would calculate from previous month
-        activeClients: clients.length,
+        activeClients: (clients || []).length,
         clientGrowth: 0, // Would calculate from previous period
         eventConversion: 0, // Would calculate from leads
-        avgEventValue: events.reduce((sum, e) => sum + e.budget, 0) / events.length || 0,
+        avgEventValue: (events || []).reduce((sum, e) => sum + (e.budget || 0), 0) / ((events || []).length || 1),
         teamUtilization: 0, // Would calculate from florist assignments
         satisfactionScore: 0 // Would calculate from client feedback
       }
       
       dispatch({ type: 'LOAD_BUSINESS_METRICS', payload: businessMetrics })
       
-      // Calculate cash flow data
-      const eventsToInvoice = events.filter(e => 
+      // Calculate cash flow data (Protection undefined)
+      const eventsToInvoice = (events || []).filter(e => 
         e.status === EventStatus.COMPLETED && 
         !e.archived && 
         new Date(e.date) <= now
       )
       
-      const overdueInvoices = events.filter(e => {
+      const overdueInvoices = (events || []).filter(e => {
         if (e.status !== EventStatus.INVOICED) return false
         const invoiceDate = new Date(e.updatedAt || e.date)
         const daysSince = (now.getTime() - invoiceDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -570,8 +570,8 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
       
       dispatch({ type: 'LOAD_CASH_FLOW', payload: cashFlow })
       
-      // Calculate strategic planning data
-      const futureEvents = events.filter(e => new Date(e.date) > now)
+      // Calculate strategic planning data (Protection undefined)
+      const futureEvents = (events || []).filter(e => new Date(e.date) > now)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       
       const strategicPlanning: StrategicPlanningData = {
