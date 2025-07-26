@@ -49,6 +49,16 @@ const Home = ({ navigate }) => {
     refreshAll
   } = dashboard
 
+  // 🔥 URGENT EVENTS depuis DashboardContext
+  const urgentEvents = useMemo(() => {
+    return dashboardState.urgentEvents || []
+  }, [dashboardState.urgentEvents])
+
+  // 🔥 SHOW MORE URGENT depuis DashboardContext
+  const showMoreUrgent = useMemo(() => {
+    return dashboardState.showMoreUrgent || false
+  }, [dashboardState.showMoreUrgent])
+
   // Événements à facturer (terminés non facturés)
   const eventsToInvoice = useMemo(() => {
     return state.events
@@ -233,7 +243,7 @@ const Home = ({ navigate }) => {
             urgentEvents={urgentEvents}
             totalUrgentCount={totalUrgentCount}
             showMoreUrgent={showMoreUrgent}
-            onToggleShowMore={() => setShowMoreUrgent(!showMoreUrgent)}
+            onToggleShowMore={() => dashboardDispatch({ type: 'TOGGLE_SHOW_MORE_URGENT' })}
             onEventSelect={handleEventSelect}
             onEventEdit={handleEventEditSelect}
             onAssignFlorist={handleAssignFlorist}
