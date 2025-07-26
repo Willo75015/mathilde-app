@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { DashboardProvider } from '@/contexts/DashboardContext' // 🔥 NOUVEAU: Provider dashboard
 import { CalendarProvider } from '@/contexts/CalendarContext' // 🔥 NOUVEAU: Provider calendar
 import { ClientProvider } from '@/contexts/ClientContext' // 🔥 NOUVEAU: Provider clients CRM
+import { FloristProvider } from '@/contexts/FloristContext' // 🔥 NOUVEAU: Provider florists team management
 import AuthModal from '@/components/auth/AuthModal'
 import OfflineIndicator from '@/components/PWA/OfflineIndicator'
 import InstallPrompt from '@/components/PWA/InstallPrompt'
@@ -107,7 +108,11 @@ const App = () => {
           </ClientProvider>
         )
       case 'fleuriste':
-        return <FleuristePage navigate={navigate} />
+        return (
+          <FloristProvider>
+            <FleuristePage navigate={navigate} />
+          </FloristProvider>
+        )
       case 'calendar':
         return (
           <CalendarProvider>
