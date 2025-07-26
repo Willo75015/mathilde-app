@@ -1371,7 +1371,7 @@ const CalendarPage = ({ navigate }) => {
       )}
 
       {/* 🆕 SECTION CLIENTS DU MOIS - Affiché seulement en mode calendrier */}
-      {viewMode === 'calendrier' && (
+      {state.viewMode === 'calendrier' && (
         <div className="mt-6 bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <User className="w-5 h-5 text-blue-500 mr-2" />
