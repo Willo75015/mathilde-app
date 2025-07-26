@@ -474,11 +474,11 @@ export const AnalyticsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => {
     if (!state.autoRefresh || eventsLoading || clientsLoading) return
 
-    // Refresh initial au chargement
-    if (events.length > 0 && clients.length > 0) {
+    // Refresh initial au chargement (Protection undefined)
+    if (events && clients && events.length > 0 && clients.length > 0) {
       refreshAllAnalytics()
     }
-  }, [events.length, clients.length, eventsLoading, clientsLoading, state.autoRefresh, refreshAllAnalytics])
+  }, [events?.length, clients?.length, eventsLoading, clientsLoading, state.autoRefresh, refreshAllAnalytics])
 
   useEffect(() => {
     if (!state.autoRefresh) return
