@@ -14,6 +14,7 @@
     "dev:stable": "scripts/dev-clean.bat",
     "clean": "rimraf node_modules/.vite dist .vite",
     "build": "tsc && vite build",
+    "build:quick": "vite build --mode production",
     "serve": "node server.js",
     "start": "npm run serve",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
