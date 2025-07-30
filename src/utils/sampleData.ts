@@ -188,12 +188,12 @@ export const initializeSampleData = () => {
   if (!existingClients || JSON.parse(existingClients).length === 0) {
     const sampleClients = generateSampleClients()
     localStorage.setItem('mathilde_clients', JSON.stringify(sampleClients))
-    console.log('🌸 Clients d\'exemple ajoutés:', sampleClients.length)
+    // Clients d'exemple ajoutés
   }
   
   if (!existingEvents || JSON.parse(existingEvents).length === 0) {
     const sampleEvents = generateSampleEvents()
     localStorage.setItem('mathilde_events', JSON.stringify(sampleEvents))
-    console.log('🌸 Événements d\'exemple ajoutés:', sampleEvents.length)
+    // Événements d'exemple ajoutés
   }
 }

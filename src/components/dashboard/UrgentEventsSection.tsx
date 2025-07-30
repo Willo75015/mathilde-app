@@ -7,6 +7,7 @@ import {
 import { Event, EventStatus } from '@/types'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
+import { debugEventStatus } from '@/lib/smart-urgency'
 
 interface UrgentEventsSectionProps {
   urgentEvents: (Event & { urgency: any })[]
@@ -31,6 +32,36 @@ const UrgentEventsSection: React.FC<UrgentEventsSectionProps> = ({
   onCancelEvent,
   navigate
 }) => {
+  // 🔍 DEBUG : Fonction de debug pour traquer les événements incohérents
+  const debugEventStatus = (events: Event[]) => {
+    console.log('🔍 DEBUG UrgentEventsSection - Analyse des événements:')
+    
+    events.forEach(event => {
+      const isPaidStatus = ['paid', 'PAID'].includes(event.status as any)
+      const hasPaidDate = !!event.paidDate
+      const isArchived = !!event.archived
+      
+      console.log(`📋 ${event.title}:`)
+      console.log(`   Status: ${event.status}`)
+      console.log(`   PaidDate: ${event.paidDate}`)
+      console.log(`   Archived: ${event.archived}`)
+      console.log(`   Client: ${event.clientName}`)
+      
+      if ((isPaidStatus || hasPaidDate || isArchived)) {
+        console.log(`❌ PROBLÈME: Événement finalisé dans les urgents!`)
+      }
+      console.log('---')
+    })
+  }
+
+  // 🔍 DEBUG : Traquer les événements avec statut incohérent
+  React.useEffect(() => {
+    if (urgentEvents.length > 0) {
+      console.log('🔍 DEBUG UrgentEventsSection - Événements reçus:', urgentEvents.length)
+      debugEventStatus(urgentEvents)
+    }
+  }, [urgentEvents])
+
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [eventToCancel, setEventToCancel] = useState<Event | null>(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -58,10 +89,13 @@ const UrgentEventsSection: React.FC<UrgentEventsSectionProps> = ({
 
   const getStatusBadge = (status: EventStatus) => {
     const statusConfig = {
-      [EventStatus.DRAFT]: { label: '📝 À planifier', color: 'bg-orange-100 text-orange-800' },
-      [EventStatus.CONFIRMED]: { label: '✅ Confirmé', color: 'bg-green-100 text-green-800' },
-      [EventStatus.IN_PROGRESS]: { label: '🔄 En cours', color: 'bg-blue-100 text-blue-800' },
-      [EventStatus.COMPLETED]: { label: '🎉 Terminé', color: 'bg-purple-100 text-purple-800' },
+      [EventStatus.DRAFT]: { label: '📝 À planifier', color: 'bg-gray-100 text-gray-800' },
+      // [EventStatus.PLANNING]: { label: '📋 En planification', color: 'bg-orange-100 text-orange-800' }, // SUPPRIMÉ
+      [EventStatus.CONFIRMED]: { label: '✅ Confirmé', color: 'bg-blue-100 text-blue-800' },
+      [EventStatus.IN_PROGRESS]: { label: '🔄 En cours', color: 'bg-amber-100 text-amber-800' },
+      [EventStatus.COMPLETED]: { label: '🎉 Terminé', color: 'bg-pink-100 text-pink-800' },
+      [EventStatus.INVOICED]: { label: '💼 Facturé', color: 'bg-purple-100 text-purple-800' },
+      [EventStatus.PAID]: { label: '💰 Payé', color: 'bg-green-100 text-green-800' },
       [EventStatus.CANCELLED]: { label: '❌ Annulé', color: 'bg-red-100 text-red-800' }
     }
     return statusConfig[status] || statusConfig[EventStatus.DRAFT]

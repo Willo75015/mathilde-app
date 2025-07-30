@@ -224,7 +224,38 @@ const FloristCard: React.FC<FloristCardProps> = ({
               break
               
             case 'pending':
-              message = `Bonjour ${florist.name.split(' ')[0]},\n\nÊtes-vous disponible pour l'événement "${event.title}" le ${event.date instanceof Date ? event.date.toLocaleDateString('fr-FR') : new Date(event.date).toLocaleDateString('fr-FR')} à ${event.time} ?\n\nLieu : ${event.location}\n\nMerci de me confirmer !\n\nMathilde Fleurs`
+              // 🌸 MESSAGE OPTIMISÉ POUR DEMANDE DE DISPONIBILITÉ
+              const eventDate = event.date instanceof Date ? event.date : new Date(event.date)
+              const formattedDate = eventDate.toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+              const budget = event.budget ? `${event.budget}€` : ''
+              const description = event.description || ''
+              const clientName = event.clientName || ''
+              const floristsRequired = event.floristsRequired || 1
+              
+              message = `Salut ${florist.name.split(' ')[0]} ! 🌸
+
+J'ai une mission qui pourrait t'intéresser :
+
+📋 **${event.title}**
+📅 ${formattedDate} à ${event.time}
+📍 ${event.location}${clientName ? `
+👤 Client: ${clientName}` : ''}
+
+💼 **Détails mission:**
+${description}${budget ? `
+💰 Budget: ${budget}` : ''}${floristsRequired > 1 ? `
+👥 Équipe: ${floristsRequired} fleuristes` : ''}
+
+🤔 **Tu es disponible pour cette mission ?**
+Réponds-moi rapidement pour que je puisse confirmer l'équipe !
+
+Merci 😊
+Mathilde`
               break
               
             case 'refused':

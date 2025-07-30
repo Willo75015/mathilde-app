@@ -39,17 +39,29 @@ export class SmartUrgencyCalculator {
       }
     }
     
-    // 🚫 EXCLURE les événements terminés/annulés
-    if (event.status === EventStatus.COMPLETED || 
-        event.status === EventStatus.PAID || 
-        event.status === EventStatus.INVOICED || 
-        event.status === EventStatus.CANCELLED) {
+    // 🚫 🔥 FIX CRITIQUE : EXCLURE les événements terminés/annulés
+    // Support des ENUMS ET des STRINGS pour éviter les bugs
+    const isFinalisedStatus = [
+      EventStatus.COMPLETED, 'completed',
+      EventStatus.PAID, 'paid', 
+      EventStatus.INVOICED, 'invoiced',
+      EventStatus.CANCELLED, 'cancelled'
+    ].includes(event.status as any)
+    
+    // 🔥 FIX ADDITIONNEL : Vérifier aussi les propriétés de paiement
+    const hasPaidProperties = !!(event.paidDate || event.archived)
+    
+    if (isFinalisedStatus || hasPaidProperties) {
       return {
         level: 0,
         label: 'Événement finalisé',
         color: 'gray',
         priority: 'none',
-        reasons: ['Événement finalisé'],
+        reasons: [
+          isFinalisedStatus ? `Statut: ${event.status}` : 'Propriétés de finalisation détectées',
+          event.paidDate ? `Payé le ${event.paidDate.toLocaleDateString()}` : '',
+          event.archived ? 'Archivé' : ''
+        ].filter(Boolean),
         actionNeeded: 'Aucune action requise'
       }
     }
@@ -194,3 +206,24 @@ export class SmartUrgencyCalculator {
 }
 
 export default SmartUrgencyCalculator
+
+// 🔧 FIX ADDITIONNEL : Fonction de debug pour identifier les événements problématiques
+export function debugEventStatus(events: Event[]) {
+  console.log('🔍 DEBUG - Événements avec statut incohérent:')
+  
+  events.forEach(event => {
+    const isPaidStatus = [EventStatus.PAID, 'paid'].includes(event.status as any)
+    const hasPaidDate = !!event.paidDate
+    const isArchived = !!event.archived
+    const urgency = SmartUrgencyCalculator.calculateUrgency(event)
+    
+    if ((isPaidStatus || hasPaidDate || isArchived) && urgency.level > 0) {
+      console.log(`❌ INCOHÉRENT: ${event.title}`)
+      console.log(`   Status: ${event.status}`)
+      console.log(`   PaidDate: ${event.paidDate}`)
+      console.log(`   Archived: ${event.archived}`)
+      console.log(`   Urgency Level: ${urgency.level}`)
+      console.log('---')
+    }
+  })
+}

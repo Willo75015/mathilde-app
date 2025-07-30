@@ -113,12 +113,8 @@ export default defineConfig({
     host: '127.0.0.1',
     strictPort: true,
     
-    // HMR Configuration pour éviter les reloads intempestifs
-    hmr: {
-      overlay: false,
-      port: 3024, // Port différent pour HMR
-      host: 'localhost'
-    },
+    // HMR Configuration désactivée pour éviter les erreurs WebSocket
+    hmr: false,
     
     // Surveillance fichiers optimisée
     watch: {

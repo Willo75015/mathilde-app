@@ -8,11 +8,16 @@ export const useEventStatusNotifier = () => {
     console.log(`🔔 NOTIFICATION STATUT: ${eventTitle} → ${newStatus}`)
     
     const statusMessages = {
-      [EventStatus.PLANNING]: { 
-        emoji: '📋', 
-        action: 'remis en planification',
+      [EventStatus.DRAFT]: { 
+        emoji: '📝', 
+        action: 'créé en brouillon',
         type: 'info' as const
       },
+      // [EventStatus.PLANNING]: { 
+      //   emoji: '📋', 
+      //   action: 'remis en planification',
+      //   type: 'info' as const
+      // }, // SUPPRIMÉ
       [EventStatus.CONFIRMED]: { 
         emoji: '✅', 
         action: 'confirmé',

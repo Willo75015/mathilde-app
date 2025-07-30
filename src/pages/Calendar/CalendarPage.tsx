@@ -15,6 +15,162 @@ interface CalendarPageProps {
 type ViewMode = 'calendrier' | 'kanban'
 
 const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
+  // 🎨 STYLE CSS MATHILDE PROPRE ET ÉLÉGANT
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .mathilde-calendar-grid {
+        display: grid !important;
+        grid-template-columns: repeat(7, minmax(100px, 1fr)) !important;
+        min-width: 800px !important;
+        width: 100% !important;
+        gap: 8px !important;
+        background: white !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+        border: 1px solid #e5e7eb !important;
+      }
+      
+      .mathilde-day-header {
+        background: #6b7280 !important; /* Gris neutre homogène */
+        color: white !important;
+        font-weight: 600 !important;
+        text-align: center !important;
+        padding: 12px 8px !important;
+        border-radius: 8px !important;
+        font-size: 14px !important;
+        transition: all 0.2s ease !important;
+      }
+      
+      .mathilde-day-header:hover {
+        background: #059669 !important;
+        transform: translateY(-1px) !important;
+      }
+      
+      .mathilde-day-cell {
+        background: white !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        min-height: 120px !important;
+        border: 1px solid #e5e7eb !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+      }
+      
+      .mathilde-day-cell:hover {
+        border-color: #10b981 !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15) !important;
+        transform: translateY(-2px) !important;
+      }
+      
+      .mathilde-day-cell.today {
+        background: #f0fdf4 !important;
+        border-color: #10b981 !important;
+        border-width: 2px !important;
+      }
+      
+      .mathilde-day-cell.today .mathilde-day-number {
+        color: #10b981 !important;
+        font-weight: 700 !important;
+      }
+      
+      .mathilde-day-number {
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        margin-bottom: 8px !important;
+        color: #374151 !important;
+      }
+      
+      .mathilde-event-item {
+        color: white !important;
+        padding: 6px 8px !important;
+        border-radius: 6px !important;
+        font-size: 12px !important;
+        margin-bottom: 4px !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+        line-height: 1.3 !important;
+        /* SUPPRIMÉ: background fixe - utilise maintenant les couleurs dynamiques du Kanban */
+      }
+      
+      .mathilde-event-item:hover {
+        transform: scale(1.02) !important;
+        filter: brightness(0.9) !important;
+        /* SUPPRIMÉ: background fixe - le hover utilise maintenant un filtre */
+      }
+      
+      .mathilde-event-item .event-time {
+        font-size: 10px !important;
+        opacity: 0.9 !important;
+        font-weight: 500 !important;
+      }
+      
+      .mathilde-event-item .event-title {
+        font-weight: 600 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+      
+      /* 🌟 STYLES POUR HIGHLIGHT MULTI-JOURS */
+      .mathilde-day-cell.highlighted-day {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+        border: 3px solid #3b82f6 !important;
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3) !important;
+        transform: translateY(-3px) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      
+      .mathilde-day-cell.highlighted-day .mathilde-day-number {
+        color: #1d4ed8 !important;
+        font-weight: 800 !important;
+        font-size: 18px !important;
+      }
+      
+      .mathilde-event-item.highlighted-event {
+        background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+        border: 2px solid #92400e !important;
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4) !important;
+        transform: scale(1.05) !important;
+        animation: pulse-highlight 2s infinite !important;
+        z-index: 10 !important;
+        position: relative !important;
+      }
+      
+      @keyframes pulse-highlight {
+        0%, 100% { 
+          box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+        50% { 
+          box-shadow: 0 8px 25px rgba(245, 158, 11, 0.6);
+        }
+      }
+      
+      .multi-day-badge {
+        position: absolute !important;
+        top: -8px !important;
+        right: -8px !important;
+        background: #ef4444 !important;
+        color: white !important;
+        border-radius: 50% !important;
+        width: 20px !important;
+        height: 20px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 12px !important;
+        font-weight: bold !important;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3) !important;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   const { state, actions } = useApp()
   const { currentDate, setCurrentDate, navigateMonth, isToday } = useCalendarSync()
   const { getAutoEventStatus, syncEventStatuses } = useEventTimeSync()
@@ -24,10 +180,34 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
 
   // 🆕 États pour EventModal
   const [isEventModalOpen, setIsEventModalOpen] = useState(false)
+  
+  // 🎨 FONCTION POUR OBTENIR LES COULEURS KANBAN
+  const getEventBackgroundColor = (status: EventStatus) => {
+    switch (status) {
+      case EventStatus.DRAFT:
+        return 'bg-gray-500' // Gris pour "À planifier"
+      case EventStatus.CONFIRMED:
+        return 'bg-blue-500' // Bleu pour "Confirmé"
+      case EventStatus.IN_PROGRESS:
+        return 'bg-amber-500' // Amber pour "En cours"
+      case EventStatus.COMPLETED:
+        return 'bg-pink-500' // Rose pour "Terminé"
+      case EventStatus.INVOICED:
+        return 'bg-purple-500' // Violet pour "Facturé"
+      case EventStatus.PAID:
+        return 'bg-green-500' // Vert pour "Payé"
+      case EventStatus.CANCELLED:
+        return 'bg-red-500' // Rouge pour "Annulé"
+      default:
+        return 'bg-gray-500'
+    }
+  }
   const [selectedEvent, setSelectedEvent] = useState<any>(null)
   
-  // 🆕 État pour la surbrillance des événements similaires
+  // 🆕 États pour la surbrillance des événements multi-jours
   const [highlightedEventTitle, setHighlightedEventTitle] = useState<string | null>(null)
+  const [highlightedEventId, setHighlightedEventId] = useState<string | null>(null)
+  const [highlightedDays, setHighlightedDays] = useState<number[]>([])
 
   // 🆕 État pour le menu déroulant des fleuristes
   const [expandedFloristsEventId, setExpandedFloristsEventId] = useState<string | null>(null)
@@ -39,6 +219,57 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
   const [selectedEventForPayment, setSelectedEventForPayment] = useState<any>(null)
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+
+  // 🚀 FONCTION POUR CALCULER TOUS LES JOURS D'UN ÉVÉNEMENT MULTI-JOURS
+  const getEventDays = (event: any) => {
+    const startDate = new Date(event.date)
+    const endDate = event.endDate ? new Date(event.endDate) : startDate
+    
+    const days: number[] = []
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+    
+    // Parcourir tous les jours entre start et end
+    const currentDay = new Date(startDate)
+    while (currentDay <= endDate) {
+      // Si le jour est dans le mois affiché
+      if (currentDay.getFullYear() === year && currentDay.getMonth() === month) {
+        days.push(currentDay.getDate())
+      }
+      currentDay.setDate(currentDay.getDate() + 1)
+    }
+    
+    return days
+  }
+
+  // 🎨 FONCTION POUR GÉRER LE HIGHLIGHT MULTI-JOURS
+  const handleEventHighlight = (event: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    
+    // Si on clique sur le même événement, on désélectionne
+    if (highlightedEventId === event.id) {
+      setHighlightedEventId(null)
+      setHighlightedEventTitle(null)
+      setHighlightedDays([])
+      return
+    }
+    
+    // Sinon, on sélectionne le nouvel événement
+    setHighlightedEventId(event.id)
+    setHighlightedEventTitle(event.title)
+    
+    // Calculer tous les jours concernés par cet événement
+    const eventDays = getEventDays(event)
+    setHighlightedDays(eventDays)
+    
+    console.log(`🎯 Événement sélectionné: ${event.title}`)
+    console.log(`📅 Jours concernés: ${eventDays.join(', ')}`)
+    
+    // Afficher un message si multi-jours
+    if (eventDays.length > 1) {
+      console.log(`🌟 Événement multi-jours détecté ! ${eventDays.length} jours`)
+    }
+  }
 
   // Récupérer les événements depuis le state global
   const events = state.events || []
@@ -449,25 +680,32 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
                   {/* Corps de colonne */}
                   <div className={`${column.bgColor} rounded-b-lg p-3 min-h-96 space-y-3`}>
                     {columnEvents.map((event) => {
-                      const isHighlighted = highlightedEventTitle === event.title
+                      const isHighlighted = highlightedEventId === event.id
+                      
+                      // 🌟 VÉRIFIER SI L'ÉVÉNEMENT EST MULTI-JOURS
+                      const eventDays = getEventDays(event)
+                      const isMultiDay = eventDays.length > 1
                       
                       return (
                         <div
                           key={event.id}
                           className={`rounded-xl p-4 shadow-lg border-2 transition-all cursor-pointer bg-gradient-to-br ${
                             isHighlighted 
-                              ? 'from-blue-100 to-indigo-200 border-blue-400 shadow-xl ring-4 ring-blue-200 transform scale-105' 
+                              ? 'from-amber-100 to-orange-200 border-orange-400 shadow-xl ring-4 ring-orange-200 transform scale-105' 
                               : 'from-white to-gray-50 border-purple-300 hover:shadow-xl hover:border-purple-400 hover:transform hover:scale-102'
                           }`}
-                          onClick={() => {
-                            // Toggle highlight: si on clique sur le même événement, on désélectionne
-                            setHighlightedEventTitle(
-                              highlightedEventTitle === event.title ? null : event.title
-                            )
-                          }}
+                          onClick={() => handleEventHighlight(event)}
                         >
                         <div className="flex items-start justify-between mb-2">
-                          <h4 className="font-bold text-purple-900 text-lg flex-1">{event.title}</h4>
+                          <h4 className="font-bold text-purple-900 text-lg flex-1">
+                            {event.title}
+                            {/* 🎯 INDICATEUR MULTI-JOURS dans Kanban */}
+                            {isMultiDay && (
+                              <span className="ml-2 inline-block bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                                📅 {eventDays.length} jours
+                              </span>
+                            )}
+                          </h4>
                           
                           {/* 🎯 BOUTONS D'ACTION avec crayon */}
                           <div className="flex items-center space-x-1 ml-2">
@@ -608,7 +846,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
     const firstDay = getFirstDayOfMonth(currentDate)
 
     return (
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg shadow-sm p-6" style={{ minWidth: '800px', overflowX: 'auto' }}>
         {/* Navigation du calendrier */}
         <div className="flex items-center justify-between mb-6">
           <button
@@ -631,12 +869,12 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
         </div>
 
         {/* Calendrier */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="mathilde-calendar-grid">
           {/* En-têtes des jours */}
           {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day) => (
             <div
               key={day}
-              className="p-2 text-center text-sm font-medium text-gray-500 bg-gray-50 rounded"
+              className="mathilde-day-header"
             >
               {day}
             </div>
@@ -644,7 +882,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
 
           {/* Jours vides avant le début du mois */}
           {Array.from({ length: firstDay }).map((_, index) => (
-            <div key={`empty-${index}`} className="p-2 min-h-[100px]"></div>
+            <div key={`empty-${index}`} className="mathilde-day-cell"></div>
           ))}
 
           {/* Jours du mois */}
@@ -653,17 +891,24 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
             const dayEvents = getEventsForDay(day)
             const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
             const isTodaySync = isToday(dayDate) // Utiliser la fonction synchronisée
+            
+            // 🌟 VÉRIFIER SI CE JOUR EST DANS LES JOURS HIGHLIGHTÉS
+            const isDayHighlighted = highlightedDays.includes(day)
 
             return (
               <div
                 key={day}
                 onClick={() => setSelectedDay(day.toString())}
-                className={`p-2 min-h-[100px] border border-gray-200 rounded cursor-pointer hover:bg-gray-50 transition-colors ${
-                  isTodaySync ? 'bg-green-50 border-green-200' : ''
-                }`}
+                className={`mathilde-day-cell ${isTodaySync ? 'today' : ''} ${isDayHighlighted ? 'highlighted-day' : ''}`}
               >
-                <div className={`text-sm font-medium ${isTodaySync ? 'text-green-700' : 'text-gray-900'}`}>
+                <div className="mathilde-day-number">
                   {day}
+                  {/* 🎯 BADGE MULTI-JOURS si ce jour fait partie d'un événement multi-jours highlighté */}
+                  {isDayHighlighted && highlightedDays.length > 1 && (
+                    <div className="multi-day-badge">
+                      {highlightedDays.length}
+                    </div>
+                  )}
                 </div>
                 
                 {/* Événements du jour */}
@@ -672,27 +917,31 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
                     // 🔧 OBTENIR LES COULEURS KANBAN selon le statut automatique
                     const actualStatus = getActualEventStatus(event)
                     const kanbanColumn = getKanbanColumn(actualStatus)
-                    const isHighlighted = highlightedEventTitle === event.title
+                    const isEventHighlighted = highlightedEventId === event.id
+                    
+                    // 🌟 VÉRIFIER SI L'ÉVÉNEMENT EST MULTI-JOURS
+                    const eventDays = getEventDays(event)
+                    const isMultiDay = eventDays.length > 1
                     
                     return (
                       <div
                         key={event.id}
-                        className={`text-xs px-1 py-0.5 rounded truncate cursor-pointer transition-all ${
-                          isHighlighted 
-                            ? 'bg-blue-200 text-blue-900 border-blue-400 ring-1 ring-blue-300' 
-                            : `${kanbanColumn.bgColor} ${kanbanColumn.textColor} border ${kanbanColumn.textColor} border-opacity-30`
-                        }`}
-                        title={`${event.title} - ${kanbanColumn.title}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          // Toggle highlight: si on clique sur le même événement, on désélectionne
-                          setHighlightedEventTitle(
-                            highlightedEventTitle === event.title ? null : event.title
-                          )
-                        }}
+                        className={`mathilde-event-item ${getEventBackgroundColor(actualStatus)} ${isEventHighlighted ? 'highlighted-event' : ''}`}
+                        title={`${event.title} - ${kanbanColumn.title}${isMultiDay ? ` (${eventDays.length} jours)` : ''}`}
+                        onClick={(e) => handleEventHighlight(event, e)}
+                        style={{ position: 'relative' }}
                       >
                         <span className="mr-1">{kanbanColumn.emoji}</span>
-                        {event.time} - {event.title}
+                        <div className="event-title">
+                          {event.title}
+                          {/* 🎯 INDICATEUR MULTI-JOURS */}
+                          {isMultiDay && (
+                            <span className="ml-1 text-xs opacity-75">
+                              📅{eventDays.length}j
+                            </span>
+                          )}
+                        </div>
+                        <div className="event-time">{event.time}</div>
                       </div>
                     )
                   })}
@@ -1048,7 +1297,35 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
                                           onClick={(e) => {
                                             e.stopPropagation()
                                             const phone = florist.phone || '0123456789'
-                                            const message = `Bonjour ${florist.floristName}, événement "${event.title}" le ${new Date(event.date).toLocaleDateString('fr-FR')} à ${event.time}. Merci de votre confirmation !`
+                                            // 🌸 MESSAGE OPTIMISÉ AVEC TOUTES LES INFOS
+                                            const eventDate = new Date(event.date).toLocaleDateString('fr-FR', {
+                                              weekday: 'long',
+                                              year: 'numeric',
+                                              month: 'long',
+                                              day: 'numeric'
+                                            })
+                                            const budget = event.budget ? `${event.budget}€` : ''
+                                            const description = event.description || ''
+                                            const clientName = event.clientName || ''
+                                            
+                                            const message = `Salut ${florist.floristName.split(' ')[0]} ! 🌸
+
+Confirmation pour la mission :
+
+📋 **${event.title}**
+📅 ${eventDate} à ${event.time}
+📍 ${event.location}${clientName ? `
+👤 Client: ${clientName}` : ''}
+
+💼 **Détails:**
+${description}${budget ? `
+💰 Budget: ${budget}` : ''}
+
+✅ **Tu es confirmé(e) pour cette mission !**
+Rendez-vous sur place à l'heure prévue.
+
+Merci 😊
+Mathilde`
                                             const whatsappUrl = `https://web.whatsapp.com/send?phone=33${phone.replace(/^(\+33|0)/, '')}&text=${encodeURIComponent(message)}`
                                             window.open(whatsappUrl, '_blank')
                                           }}
@@ -1099,7 +1376,35 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ navigate }) => {
                                                   onClick={(e) => {
                                                     e.stopPropagation()
                                                     const phone = florist.phone || '0123456789'
-                                                    const message = `Bonjour ${florist.floristName}, événement "${event.title}" le ${new Date(event.date).toLocaleDateString('fr-FR')} à ${event.time}. Merci de votre confirmation !`
+                                                    // 🌸 MESSAGE OPTIMISÉ AVEC TOUTES LES INFOS
+                                            const eventDate = new Date(event.date).toLocaleDateString('fr-FR', {
+                                              weekday: 'long',
+                                              year: 'numeric',
+                                              month: 'long',
+                                              day: 'numeric'
+                                            })
+                                            const budget = event.budget ? `${event.budget}€` : ''
+                                            const description = event.description || ''
+                                            const clientName = event.clientName || ''
+                                            
+                                            const message = `Salut ${florist.floristName.split(' ')[0]} ! 🌸
+
+Confirmation pour la mission :
+
+📋 **${event.title}**
+📅 ${eventDate} à ${event.time}
+📍 ${event.location}${clientName ? `
+👤 Client: ${clientName}` : ''}
+
+💼 **Détails:**
+${description}${budget ? `
+💰 Budget: ${budget}` : ''}
+
+✅ **Tu es confirmé(e) pour cette mission !**
+Rendez-vous sur place à l'heure prévue.
+
+Merci 😊
+Mathilde`
                                                     const whatsappUrl = `https://web.whatsapp.com/send?phone=33${phone.replace(/^(\+33|0)/, '')}&text=${encodeURIComponent(message)}`
                                                     window.open(whatsappUrl, '_blank')
                                                   }}

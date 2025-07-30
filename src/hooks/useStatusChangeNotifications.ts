@@ -23,11 +23,11 @@ export const useStatusChangeNotifications = ({ events }: UseStatusChangeNotifica
         
         // Messages personnalisés selon le type de changement
         const statusMessages = {
-          [EventStatus.PLANNING]: { 
-            emoji: '📋', 
-            action: 'remis en planification',
-            type: 'info' as const
-          },
+          // [EventStatus.PLANNING]: { 
+          //   emoji: '📋', 
+          //   action: 'remis en planification',
+          //   type: 'info' as const
+          // }, // SUPPRIMÉ
           [EventStatus.CONFIRMED]: { 
             emoji: '✅', 
             action: 'confirmé',
@@ -83,7 +83,8 @@ export const useStatusChangeNotifications = ({ events }: UseStatusChangeNotifica
     // Fonction pour forcer une notification
     notifyStatusChange: (eventId: string, eventTitle: string, newStatus: EventStatus) => {
       const statusMessages = {
-        [EventStatus.PLANNING]: { emoji: '📋', action: 'remis en planification' },
+        [EventStatus.DRAFT]: { emoji: '📝', action: 'créé en brouillon' },
+        // [EventStatus.PLANNING]: { emoji: '📋', action: 'remis en planification' }, // SUPPRIMÉ
         [EventStatus.CONFIRMED]: { emoji: '✅', action: 'confirmé' },
         [EventStatus.IN_PROGRESS]: { emoji: '🎯', action: 'démarré' },
         [EventStatus.COMPLETED]: { emoji: '✨', action: 'terminé' },
