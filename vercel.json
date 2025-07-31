@@ -21,9 +21,9 @@
       "NODE_ENV": "production"
     }
   },
-  "buildCommand": "npm run build:quick",
+  "buildCommand": "vite build",
   "outputDirectory": "dist",
-  "installCommand": "npm install",
+  "installCommand": "npm install --legacy-peer-deps",
   "devCommand": "npm run dev",
   "framework": "vite",
   "rewrites": [
