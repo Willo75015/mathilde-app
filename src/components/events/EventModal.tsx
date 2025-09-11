@@ -128,9 +128,6 @@ const EventModal: React.FC<EventModalProps> = ({
   const { emitEventSync, syncFloristAssignments } = useEventSync()
   const { latestEvent, isEventOutdated } = useModalEventSync(event?.id || null, 'EventModal')
   
-  // 🔥 PROTECTION DOUBLE-SUBMIT
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  
   // Ref pour maintenir la position de scroll
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   
@@ -662,17 +659,9 @@ Mathilde Fleurs`
 
   // Sauvegarder les modifications (détails + assignations)
   const handleSave = () => {
-    console.log('🔥 EVENTMODAL - handleSave APPELÉ !', { editedEvent: !!editedEvent, onEdit: !!onEdit, isSubmitting })
-    
-    // 🔥 PROTECTION DOUBLE-SUBMIT
-    if (isSubmitting) {
-      console.log('⚠️ EVENTMODAL - Double-submit détecté, ignoré !')
-      return
-    }
+    console.log('🔥 EVENTMODAL - handleSave APPELÉ !', { editedEvent: !!editedEvent, onEdit: !!onEdit })
     
     if (editedEvent && onEdit) {
-      setIsSubmitting(true) // Bloquer les futurs clics
-      
       // Distinguer création vs modification
       const isCreating = !event || event.id.startsWith('temp-')
       
@@ -746,11 +735,6 @@ Mathilde Fleurs`
       
       // Appel onEdit pour maintenir la compatibilité (gère création ET modification)
       onEdit(updatedEvent, false) // 🔥 PASSER false pour fermer le modal (comportement normal)
-      
-      // Reset protection après un délai
-      setTimeout(() => {
-        setIsSubmitting(false)
-      }, 1000)
     }
     onClose()
   }
@@ -1127,8 +1111,6 @@ Mathilde Fleurs`
                                 onStatusChange={(newStatus) => handleUpdateFloristStatus(florist.id, newStatus)}
                                 onRemove={() => handleRemoveFlorist(florist.id)}
                                 preWrittenMessage={assignment?.preWrittenMessage} // 🆕 Passer le message
-                                onShowMissions={() => setShowFloristMissionsModal(true)} // 🆕 Passer la fonction
-                                onSelectMissions={(missions) => setSelectedFloristMissions(missions)} // 🆕 Passer la fonction
                               />
                             )
                           })}
@@ -1160,8 +1142,6 @@ Mathilde Fleurs`
                               currentEventDate={editedEvent?.date || event?.date instanceof Date ? editedEvent?.date || event?.date : new Date(editedEvent?.date || event?.date)}
                               onStatusChange={(newStatus) => handleUpdateFloristStatus(florist.id, newStatus)}
                               onRemove={() => handleRemoveFlorist(florist.id)}
-                              onShowMissions={() => setShowFloristMissionsModal(true)} // 🆕 Passer la fonction
-                              onSelectMissions={(missions) => setSelectedFloristMissions(missions)} // 🆕 Passer la fonction
                             />
                           ))}
                           {getFloristsByStatus('pending').length === 0 && (
@@ -1192,9 +1172,6 @@ Mathilde Fleurs`
                               currentEventDate={editedEvent?.date || event?.date instanceof Date ? editedEvent?.date || event?.date : new Date(editedEvent?.date || event?.date)}
                               onStatusChange={(newStatus) => handleUpdateFloristStatus(florist.id, newStatus)}
                               onRemove={() => handleRemoveFlorist(florist.id)}
-                              onShowMissions={() => setShowFloristMissionsModal(true)} // 🆕 Passer la fonction
-                              onSelectMissions={(missions) => setSelectedFloristMissions(missions)} // 🆕 Passer la fonction
-                              onRemove={() => handleRemoveFlorist(florist.id)}
                             />
                           ))}
                           {getFloristsByStatus('not_selected').length === 0 && (
@@ -1224,9 +1201,6 @@ Mathilde Fleurs`
                               currentEventId={editedEvent?.id || event?.id}
                               currentEventDate={editedEvent?.date || event?.date instanceof Date ? editedEvent?.date || event?.date : new Date(editedEvent?.date || event?.date)}
                               onStatusChange={(newStatus) => handleUpdateFloristStatus(florist.id, newStatus)}
-                              onRemove={() => handleRemoveFlorist(florist.id)}
-                              onShowMissions={() => setShowFloristMissionsModal(true)} // 🆕 Passer la fonction
-                              onSelectMissions={(missions) => setSelectedFloristMissions(missions)} // 🆕 Passer la fonction
                               onRemove={() => handleRemoveFlorist(florist.id)}
                             />
                           ))}
@@ -1298,8 +1272,8 @@ Mathilde Fleurs`
                                     variant="secondary"
                                     size="sm"
                                     onClick={() => {
-                                      if (onSelectMissions) onSelectMissions(floristStatus.currentMissions)
-                                      if (onShowMissions) onShowMissions()
+                                      setSelectedFloristMissions(floristStatus.currentMissions)
+                                      setShowFloristMissionsModal(true)
                                     }}
                                     leftIcon={<Eye className="w-3 h-3" />}
                                     className="text-orange-600 border-orange-300 hover:bg-orange-50"
@@ -1374,10 +1348,9 @@ Mathilde Fleurs`
                   variant="primary"
                   leftIcon={<CheckCircle className="w-4 h-4" />}
                   onClick={handleSave}
-                  disabled={isSubmitting}
-                  className={`bg-green-500 hover:bg-green-600 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className="bg-green-500 hover:bg-green-600"
                 >
-                  {isSubmitting ? '⏳ Sauvegarde...' : '✅ Valider & Synchroniser'}
+                  ✅ Valider & Synchroniser
                 </Button>
               </div>
             </div>
@@ -1452,71 +1425,6 @@ Mathilde Fleurs`
             </span>
           </motion.div>
         )}
-
-        {/* Modal des missions du fleuriste */}
-        {showFloristMissionsModal && (
-          <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-96 overflow-y-auto"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-            >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Missions du fleuriste
-                  </h3>
-                  <button
-                    onClick={() => setShowFloristMissionsModal(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-                
-                <div className="space-y-3">
-                  {selectedFloristMissions.length > 0 ? (
-                    selectedFloristMissions.map(mission => (
-                      <div key={mission.id} className="bg-gray-50 p-4 rounded-lg border">
-                        <h4 className="font-medium text-gray-800">{mission.title}</h4>
-                        <p className="text-sm text-gray-600">Client: {mission.clientName}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {mission.date instanceof Date ? mission.date.toLocaleString() : new Date(mission.date).toLocaleString()}
-                        </p>
-                        <div className="mt-2">
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            mission.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                            mission.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {mission.status}
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-center py-4">Aucune mission trouvée</p>
-                  )}
-                </div>
-                
-                <div className="mt-6 flex justify-end">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setShowFloristMissionsModal(false)}
-                  >
-                    Fermer
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
     </AnimatePresence>
   )
 }
@@ -1532,8 +1440,7 @@ interface FloristCardProps {
   onStatusChange: (newStatus: FloristAssignment['status']) => void
   onRemove: () => void
   preWrittenMessage?: string // 🆕 Message pré-écrit
-  onShowMissions?: () => void // 🆕 Fonction pour montrer les missions
-  onSelectMissions?: (missions: Event[]) => void // 🆕 Fonction pour sélectionner les missions
+  onShowFloristMissions?: (missions: Event[]) => void // 🆕 Pour afficher les missions
 }
 
 const FloristCard: React.FC<FloristCardProps> = ({
@@ -1546,8 +1453,7 @@ const FloristCard: React.FC<FloristCardProps> = ({
   onStatusChange,
   onRemove,
   preWrittenMessage, // 🆕 Recevoir le message pré-écrit
-  onShowMissions, // 🆕 Recevoir la fonction pour montrer les missions
-  onSelectMissions // 🆕 Recevoir la fonction pour sélectionner les missions
+  onShowFloristMissions // 🆕 Fonction pour afficher les missions
 }) => {
   const [showConflictWarning, setShowConflictWarning] = useState(false)
   
@@ -1608,14 +1514,7 @@ const FloristCard: React.FC<FloristCardProps> = ({
                   <span>•</span>
                   <button
                     className="text-blue-600 hover:text-blue-800 underline"
-                    onClick={() => {
-                      if (onSelectMissions) {
-                        onSelectMissions(floristStatus.currentMissions)
-                      }
-                      if (onShowMissions) {
-                        onShowMissions()
-                      }
-                    }}
+                    onClick={() => setShowConflictWarning(true)}
                     title="Voir les missions en conflit"
                   >
                     Voir mission{floristStatus.currentMissions.length > 1 ? 's' : ''}
@@ -1657,7 +1556,7 @@ const FloristCard: React.FC<FloristCardProps> = ({
               } else if (status === 'not_selected') {
                 message = `Salut ${floristName} ! Merci pour ton intérêt pour l'événement "${currentEvent?.title}". Malheureusement c'est déjà pris, mais je penserai à toi pour les prochaines missions. À bientôt !`
               } else {
-                // 🌸 MESSAGE OPTIMISÉ AVEC TOUTES LES INFOS DE LA MISSION
+                // Message détaillé pour proposition de mission
                 const eventDate = currentEvent?.date ? new Date(currentEvent.date).toLocaleDateString('fr-FR', {
                   weekday: 'long',
                   year: 'numeric',
@@ -1668,36 +1567,19 @@ const FloristCard: React.FC<FloristCardProps> = ({
                 const eventTime = currentEvent?.time || ''
                 const eventLocation = currentEvent?.location || ''
                 const eventDescription = currentEvent?.description || ''
-                const eventBudget = currentEvent?.budget ? `${currentEvent.budget}€` : ''
-                const clientName = currentEvent?.clientName || ''
-                const floristsRequired = currentEvent?.floristsRequired || 1
-                const assignedCount = currentEvent?.assignedFlorists?.filter(f => f.isConfirmed).length || 0
-                const remainingSpots = floristsRequired - assignedCount
                 
-                // Calcul de la durée estimée
-                const isMultiDay = currentEvent?.endDate && currentEvent.endDate !== currentEvent.date
-                const durationText = isMultiDay 
-                  ? `du ${eventDate} au ${new Date(currentEvent.endDate).toLocaleDateString('fr-FR')}`
-                  : eventDate
-                
-                message = `Salut ${floristName} ! 🌸
+                message = `Salut ${floristName} !
 
 J'ai une mission qui pourrait t'intéresser :
 
-📋 **${currentEvent?.title}**
-📅 ${durationText} à ${eventTime}
-📍 ${eventLocation}${clientName ? `
-👤 Client: ${clientName}` : ''}
+${currentEvent?.title}
+${eventDate} à ${eventTime}
+${eventLocation}
 
-💼 **Détails mission:**
-${eventDescription}${eventBudget ? `
-💰 Budget: ${eventBudget}` : ''}${floristsRequired > 1 ? `
-👥 Équipe: ${floristsRequired} fleuristes (${remainingSpots} place${remainingSpots > 1 ? 's' : ''} restante${remainingSpots > 1 ? 's' : ''})` : ''}
+${eventDescription}
 
-🤔 **Tu es disponible pour cette mission ?**
-Réponds-moi rapidement pour que je puisse confirmer l'équipe !
+Tu es dispo ? Dis-moi vite !
 
-Merci 😊
 Mathilde`
               }
               
@@ -1813,6 +1695,73 @@ Mathilde`
                     leftIcon={<CheckCircle className="w-4 h-4" />}
                   >
                     Confirmer quand même
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal des missions du fleuriste */}
+      <AnimatePresence>
+        {showFloristMissionsModal && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-96 overflow-y-auto"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Missions du fleuriste
+                  </h3>
+                  <button
+                    onClick={() => setShowFloristMissionsModal(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="space-y-3">
+                  {selectedFloristMissions.length > 0 ? (
+                    selectedFloristMissions.map(mission => (
+                      <div key={mission.id} className="bg-gray-50 p-4 rounded-lg border">
+                        <h4 className="font-medium text-gray-800">{mission.title}</h4>
+                        <p className="text-sm text-gray-600">Client: {mission.clientName}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {mission.date instanceof Date ? mission.date.toLocaleString() : new Date(mission.date).toLocaleString()}
+                        </p>
+                        <div className="mt-2">
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            mission.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                            mission.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {mission.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-center py-4">Aucune mission trouvée</p>
+                  )}
+                </div>
+                
+                <div className="mt-6 flex justify-end">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setShowFloristMissionsModal(false)}
+                  >
+                    Fermer
                   </Button>
                 </div>
               </div>

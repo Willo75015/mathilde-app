@@ -2,16 +2,16 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { 
   Calendar, Users, Flower, DollarSign, 
-  TrendingUp, TrendingDown, ArrowRight 
+  TrendingUp, TrendingDown
 } from 'lucide-react'
 import Card, { CardContent } from '@/components/ui/Card'
 import { useEvents, useClients } from '@/contexts/AppContext'
 
 const StatsCards: React.FC = () => {
-  const { getEventStats } = useEvents()
+  const { eventStats } = useEvents()
   const { clients } = useClients()
   
-  const { total: totalEvents, completed, upcoming } = getEventStats()
+  const { total: totalEvents, completed, upcoming } = eventStats
   
   const stats = [
     {

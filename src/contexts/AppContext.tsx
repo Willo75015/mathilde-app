@@ -18,7 +18,6 @@ interface AppContextType {
     setLoading: (loading: boolean) => void
     generateNotSelectedMessage: (floristName: string, eventTitle: string, eventDate: Date) => string
     syncClientNames: () => void
-    removeDuplicateEvents: () => void // 🔥 NOUVELLE ACTION
   }
 }
 
@@ -271,20 +270,6 @@ Mathilde Fleurs`
   }
   
   const createEvent = (eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => {
-    // 🔥 PROTECTION DOUBLON : Vérifier si l'événement existe déjà
-    const existingEvent = events.find(e => 
-      e.title === eventData.title && 
-      e.date.toDateString() === eventData.date.toDateString() &&
-      e.location === eventData.location &&
-      e.clientId === eventData.clientId
-    )
-    
-    if (existingEvent) {
-      console.log('⚠️ CONTEXT - Doublon détecté, UPDATE au lieu de CREATE:', existingEvent.id)
-      updateEventWithTeamCheck(existingEvent.id, eventData)
-      return existingEvent
-    }
-    
     const newEvent: Event = {
       ...eventData,
       id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -362,35 +347,6 @@ Mathilde Fleurs`
     console.log('🔄 Sync demandée (désactivée temporairement)')
   }
   
-  // 🔥 NOUVELLE FONCTION : Nettoyer les doublons
-  const removeDuplicateEvents = () => {
-    console.log('🧹 Nettoyage des doublons d\'événements...')
-    
-    setEvents(prev => {
-      const seen = new Map()
-      const unique: Event[] = []
-      
-      prev.forEach(event => {
-        const key = `${event.title}-${event.date.toDateString()}-${event.location}-${event.clientId}`
-        
-        if (!seen.has(key)) {
-          seen.set(key, true)
-          unique.push(event)
-          console.log('✅ Gardé:', event.title, '(ID:', event.id + ')')
-        } else {
-          console.log('🗑️ Supprimé doublon:', event.title, '(ID:', event.id + ')')
-        }
-      })
-      
-      console.log(`📊 Nettoyage terminé: ${prev.length} → ${unique.length} événements`)
-      
-      // Sauvegarder les données nettoyées
-      localStorage.setItem('mathilde-events', JSON.stringify(unique))
-      
-      return unique
-    })
-  }
-  
   // ÉTAT ET ACTIONS ULTRA-SIMPLES
   const state: AppState = {
     user: null,
@@ -415,8 +371,7 @@ Mathilde Fleurs`
     setError,
     setLoading: setIsLoading,
     generateNotSelectedMessage,
-    syncClientNames,
-    removeDuplicateEvents // 🔥 NOUVELLE ACTION
+    syncClientNames
   }
   
   return (

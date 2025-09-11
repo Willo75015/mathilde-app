@@ -13,11 +13,11 @@ export const useEventStatusNotifier = () => {
         action: 'créé en brouillon',
         type: 'info' as const
       },
-      // [EventStatus.PLANNING]: { 
-      //   emoji: '📋', 
-      //   action: 'remis en planification',
-      //   type: 'info' as const
-      // }, // SUPPRIMÉ
+      [EventStatus.PLANNING]: { 
+        emoji: '📋', 
+        action: 'remis en planification',
+        type: 'info' as const
+      },
       [EventStatus.CONFIRMED]: { 
         emoji: '✅', 
         action: 'confirmé',

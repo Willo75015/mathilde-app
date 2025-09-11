@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Trash } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useApp } from '@/contexts/AppContext'
 import { Event, EventStatus } from '@/types'
 import EventModal from '../components/events/EventModal'
@@ -110,20 +110,8 @@ const Home: React.FC<HomeProps> = ({ navigate }) => {
   const handleEventCreated = useCallback((event: Event) => {
     console.log('✅ HOME - Événement créé, ajout au state:', event.title)
     
-    // 🔥 FIX DOUBLON : Vérifier si l'événement existe déjà avant de créer
-    const existingEvent = state.events.find(e => 
-      e.title === event.title && 
-      e.date.toDateString() === event.date.toDateString() &&
-      e.location === event.location
-    )
-    
-    if (existingEvent) {
-      console.log('⚠️ HOME - Événement existant détecté, UPDATE au lieu de CREATE:', existingEvent.id)
-      actions.updateEventWithTeamCheck(existingEvent.id, event)
-    } else {
-      console.log('🆕 HOME - Nouvel événement, création normale')
-      actions.createEvent(event)
-    }
+    // 🔥 CRITIQUE: Ajouter l'événement au state global
+    actions.createEvent(event)
     
     setIsCreateEventModalOpen(false)
     
@@ -131,7 +119,7 @@ const Home: React.FC<HomeProps> = ({ navigate }) => {
     setTimeout(() => {
       navigate?.('calendar')
     }, 500)
-  }, [navigate, actions, state.events])
+  }, [navigate, actions])
 
   const handleEventSelect = useCallback((event: Event) => {
     setSelectedEvent(event)
@@ -177,12 +165,6 @@ const Home: React.FC<HomeProps> = ({ navigate }) => {
     setSelectedEventForEdit(selectedEvent)
     setSelectedEvent(null)
   }, [selectedEvent])
-  
-  // 🔧 UTILITAIRE : Nettoyer les doublons
-  const handleCleanDuplicates = useCallback(() => {
-    console.log('🧹 Nettoyage des doublons demandé par l\'utilisateur')
-    actions.removeDuplicateEvents()
-  }, [actions])
 
   // Animation variants
   const containerVariants = {
@@ -288,19 +270,6 @@ const Home: React.FC<HomeProps> = ({ navigate }) => {
             eventsToInvoice={eventsToInvoice}
           />
         </motion.section>
-        
-        {/* 🔧 BOUTON DEBUG : Nettoyer doublons */}
-        <div className="fixed bottom-6 left-6 z-10">
-          <motion.button
-            onClick={handleCleanDuplicates}
-            className="bg-orange-500 hover:bg-orange-600 text-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-200"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            title="🧹 Nettoyer les doublons d'événements"
-          >
-            <Trash className="w-5 h-5" />
-          </motion.button>
-        </div>
       </div>
 
       {/* Modales */}

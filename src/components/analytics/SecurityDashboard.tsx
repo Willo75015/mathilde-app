@@ -1,5 +1,5 @@
 import React from 'react'
-import { Shield, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
+import { Shield, AlertTriangle, CheckCircle } from 'lucide-react'
 
 const SecurityDashboard: React.FC = () => {
   return (

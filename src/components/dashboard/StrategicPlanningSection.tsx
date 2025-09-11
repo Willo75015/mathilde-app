@@ -1,8 +1,7 @@
 import React from 'react'
-import { motion } from 'framer-motion'
 import { 
-  Calendar, AlertTriangle, CheckCircle, TrendingUp,
-  Users, Mail, Phone, Target, Edit
+  Calendar, AlertTriangle, CheckCircle,
+  Users, Mail, Edit
 } from 'lucide-react'
 import { Event, EventStatus } from '@/types'
 import Button from '@/components/ui/Button'
@@ -63,8 +62,9 @@ const StrategicPlanningSection: React.FC<StrategicPlanningSectionProps> = ({
   const organizedAmount = organizedEvents.reduce((sum, e) => sum + e.budget, 0)
 
   // Calculer les jours jusqu'à l'événement
-  const getDaysUntilEvent = (eventDate: string) => {
-    return Math.ceil((new Date(eventDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+  const getDaysUntilEvent = (eventDate: Date | string) => {
+    const date = eventDate instanceof Date ? eventDate : new Date(eventDate)
+    return Math.ceil((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
   }
 
   return (

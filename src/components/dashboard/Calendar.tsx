@@ -10,7 +10,7 @@ import Badge from '@/components/ui/Badge'
 import SimpleDayEventsModal from './SimpleDayEventsModal'
 import EventModal from '@/components/events/EventModal'
 import { useEvents } from '@/contexts/AppContext'
-import { EventStatus, getKanbanColumn } from '@/types'
+import { EventStatus } from '@/types'
 
 interface CalendarProps {
   navigate?: (page: string, params?: any) => void
@@ -33,16 +33,11 @@ const Calendar: React.FC<CalendarProps> = ({ navigate, onCreateEvent }) => {
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
-    
-    // 🇫🇷 CALENDRIER FRANÇAIS - COMMENCE PAR LUNDI
-    // getDay() retourne 0=Dimanche, 1=Lundi, ..., 6=Samedi
-    // On veut 0=Lundi, 1=Mardi, ..., 6=Dimanche
-    let startingDayOfWeek = firstDay.getDay()
-    startingDayOfWeek = startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1 // Conversion vers système lundi=0
+    const startingDayOfWeek = firstDay.getDay()
     
     const days = []
     
-    // Jours du mois précédent pour calendrier français
+    // Jours du mois précédent
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
       const day = new Date(year, month, -i)
       days.push({ date: day, isCurrentMonth: false, events: [] })
@@ -81,26 +76,17 @@ const Calendar: React.FC<CalendarProps> = ({ navigate, onCreateEvent }) => {
   }
   
   const getStatusColor = (status: EventStatus) => {
-    const column = getKanbanColumn(status)
-    
-    // Conversion des classes Tailwind bg-color-50 vers bg-color-500 pour le calendrier
     switch (status) {
-      case EventStatus.DRAFT:
-        return 'bg-gray-500 text-white' // Gris pour "À planifier"
       case EventStatus.CONFIRMED:
-        return 'bg-blue-500 text-white' // Bleu pour "Confirmé"
+        return 'bg-blue-500'
       case EventStatus.IN_PROGRESS:
-        return 'bg-amber-500 text-white' // Amber pour "En cours"
+        return 'bg-yellow-500'
       case EventStatus.COMPLETED:
-        return 'bg-pink-500 text-white' // Rose pour "Terminé"
-      case EventStatus.INVOICED:
-        return 'bg-purple-500 text-white' // Violet pour "Facturé"
-      case EventStatus.PAID:
-        return 'bg-green-500 text-white' // Vert pour "Payé"
+        return 'bg-green-500'
       case EventStatus.CANCELLED:
-        return 'bg-red-500 text-white' // Rouge pour "Annulé"
+        return 'bg-red-500'
       default:
-        return 'bg-gray-500 text-white'
+        return 'bg-gray-500'
     }
   }
   
@@ -156,56 +142,41 @@ const Calendar: React.FC<CalendarProps> = ({ navigate, onCreateEvent }) => {
         </CardHeader>
         
         <CardContent>
-          {/* WRAPPER CALENDRIER AVEC LARGEUR FORCÉE */}
-          <div className="w-full min-w-[800px] overflow-x-auto">
-            {/* Header avec navigation */}
-            <div className="flex items-center justify-between mb-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigateMonth('prev')}
-              leftIcon={<ChevronLeft className="w-4 h-4" />}
-            />
-            
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white capitalize">
-              {monthYear}
-            </h3>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigateMonth('next')}
-              rightIcon={<ChevronRight className="w-4 h-4" />}
-            />
-          </div>
+          {/* Container avec scroll horizontal si nécessaire */}
+          <div className="overflow-x-auto">
+            <div className="min-w-[800px]"> {/* Largeur minimum pour 7 colonnes */}
+              {/* Header avec navigation */}
+              <div className="flex items-center justify-between mb-6">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigateMonth('prev')}
+                  leftIcon={<ChevronLeft className="w-4 h-4" />}
+                />
+                
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white capitalize">
+                  {monthYear}
+                </h3>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigateMonth('next')}
+                  rightIcon={<ChevronRight className="w-4 h-4" />}
+                />
+              </div>
           
-          {/* Jours de la semaine - CALENDRIER FRANÇAIS */}
-          <div 
-            className="gap-1 mb-2 border-4 border-red-500"
-            style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(7, 1fr)',
-              width: '100%',
-              backgroundColor: 'yellow' // DEBUG
-            }}
-          >
-            {['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'].map(day => (
-              <div key={day} className="p-3 text-center font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-blue-500">
+          {/* Jours de la semaine */}
+          <div className="grid grid-cols-7 gap-1 mb-2 min-w-full">
+            {['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'].map(day => (
+              <div key={day} className="p-2 text-center font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm">
                 {day}
               </div>
             ))}
           </div>
           
-          {/* 🎯 GRILLE DES JOURS - HAUTEUR UNIFORME ET DYNAMIQUE */}
-          <div 
-            className="gap-1 border-4 border-green-500"
-            style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(7, 1fr)',
-              width: '100%',
-              backgroundColor: 'pink' // DEBUG
-            }}
-          >
+          {/* 🎯 GRILLE DES JOURS - HAUTEUR UNIFORME ET DYNAMIQUE - 7 COLONNES FORCÉES */}
+          <div className="grid grid-cols-7 gap-1 min-w-full w-full">
             {days.map((day, index) => {
               const isToday = day.date.toDateString() === today.toDateString()
               const hasEvents = day.events.length > 0
@@ -214,7 +185,11 @@ const Calendar: React.FC<CalendarProps> = ({ navigate, onCreateEvent }) => {
               return (
                 <motion.div
                   key={index}
-                  style={{ height: `${cellHeight}px` }} // 🎯 HAUTEUR FIXE CALCULÉE
+                  style={{ 
+                    height: `${cellHeight}px`,
+                    minWidth: '0',
+                    width: '100%'
+                  }}
                   className={`
                     p-2 border border-gray-200 dark:border-gray-700 rounded-lg overflow-y-auto
                     ${day.isCurrentMonth 
@@ -251,7 +226,7 @@ const Calendar: React.FC<CalendarProps> = ({ navigate, onCreateEvent }) => {
                           key={event.id}
                           whileHover={{ scale: 1.02 }}
                           className={`
-                            text-xs p-1.5 rounded cursor-pointer
+                            text-xs p-1.5 rounded text-white cursor-pointer
                             ${getStatusColor(event.status)}
                             hover:shadow-md transition-all duration-200
                           `}
@@ -300,16 +275,12 @@ const Calendar: React.FC<CalendarProps> = ({ navigate, onCreateEvent }) => {
               )
             })}
           </div>
+          </div> {/* Fermeture de min-w-[800px] */}
+          </div> {/* Fermeture de overflow-x-auto */}
           
           {/* Statistiques du mois */}
           <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mb-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-600">
-                  {events.filter(e => e.status === EventStatus.DRAFT).length}
-                </div>
-                <div className="text-xs text-gray-500">À planifier</div>
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">
                   {events.filter(e => e.status === EventStatus.CONFIRMED).length}
@@ -317,60 +288,45 @@ const Calendar: React.FC<CalendarProps> = ({ navigate, onCreateEvent }) => {
                 <div className="text-xs text-gray-500">Confirmés</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-amber-600">
+                <div className="text-2xl font-bold text-yellow-600">
                   {events.filter(e => e.status === EventStatus.IN_PROGRESS).length}
                 </div>
                 <div className="text-xs text-gray-500">En cours</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-pink-600">
+                <div className="text-2xl font-bold text-green-600">
                   {events.filter(e => e.status === EventStatus.COMPLETED).length}
                 </div>
                 <div className="text-xs text-gray-500">Terminés</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">
-                  {events.filter(e => e.status === EventStatus.INVOICED).length}
+                <div className="text-2xl font-bold text-gray-600">
+                  {events.length}
                 </div>
-                <div className="text-xs text-gray-500">Facturés</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {events.filter(e => e.status === EventStatus.PAID).length}
-                </div>
-                <div className="text-xs text-gray-500">Payés</div>
+                <div className="text-xs text-gray-500">Total</div>
               </div>
             </div>
             
-            {/* Légende */}
-            <div className="flex items-center justify-center space-x-4 text-xs flex-wrap gap-y-2">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-gray-500 rounded"></div>
-                <span className="text-gray-600 dark:text-gray-400">À planifier</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                <span className="text-gray-600 dark:text-gray-400">Confirmé</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-amber-500 rounded"></div>
-                <span className="text-gray-600 dark:text-gray-400">En cours</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-pink-500 rounded"></div>
-                <span className="text-gray-600 dark:text-gray-400">Terminé</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-purple-500 rounded"></div>
-                <span className="text-gray-600 dark:text-gray-400">Facturé</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-green-500 rounded"></div>
-                <span className="text-gray-600 dark:text-gray-400">Payé</span>
+              {/* Légende */}
+              <div className="flex items-center justify-center space-x-6 text-xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                  <span className="text-gray-600 dark:text-gray-400">Confirmé</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-yellow-500 rounded"></div>
+                  <span className="text-gray-600 dark:text-gray-400">En cours</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-green-500 rounded"></div>
+                  <span className="text-gray-600 dark:text-gray-400">Terminé</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-gray-500 rounded"></div>
+                  <span className="text-gray-600 dark:text-gray-400">Brouillon</span>
+                </div>
               </div>
             </div>
-          </div> {/* Fin wrapper calendrier */}
-          </div>
         </CardContent>
       </Card>
       
