@@ -13,7 +13,8 @@ import { NotificationContainer } from '@/components/ui/Notification'
 // Ce composant montre comment connecter tous les éléments ensemble
 
 export const EventWorkflowExample: React.FC = () => {
-  const { events } = useApp()
+  const { state } = useApp()
+  const events = state.events
   const { archiveAndInvoiceEvent, updatePaymentStatus } = useBillingWorkflow()
   const { notifications, removeNotification, showSuccess, showError, showInfo } = useNotifications()
   
@@ -71,7 +72,7 @@ export const EventWorkflowExample: React.FC = () => {
       
     } catch (error) {
       showError(
-        `Erreur lors de l'archivage: ${error.message}`,
+        `Erreur lors de l'archivage: ${error instanceof Error ? error.message : String(error)}`,
         'Erreur de facturation'
       )
     }
@@ -97,7 +98,7 @@ export const EventWorkflowExample: React.FC = () => {
       
     } catch (error) {
       showError(
-        `Erreur lors de la mise à jour: ${error.message}`,
+        `Erreur lors de la mise à jour: ${error instanceof Error ? error.message : String(error)}`,
         'Erreur de paiement'
       )
     }

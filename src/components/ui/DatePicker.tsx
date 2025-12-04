@@ -3,6 +3,11 @@ import { motion } from 'framer-motion'
 import { clsx } from 'clsx'
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 
+interface DatePickerDay {
+  date: Date
+  isCurrentMonth: boolean
+}
+
 interface DatePickerProps {
   value?: Date
   onChange: (date: Date) => void
@@ -33,15 +38,15 @@ const DatePicker: React.FC<DatePickerProps> = ({
     })
   }
   
-  const getDaysInMonth = (date: Date) => {
+  const getDaysInMonth = (date: Date): DatePickerDay[] => {
     const year = date.getFullYear()
     const month = date.getMonth()
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
     const startingDayOfWeek = firstDay.getDay()
-    
-    const days = []
+
+    const days: DatePickerDay[] = []
     
     // Jours du mois précédent
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {

@@ -1,82 +1,120 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  X, Edit, Calendar, MapPin, DollarSign, Phone, 
-  User, Clock, FileText, Users, CheckCircle, 
+import {
+  X, DollarSign, Phone,
+  User, Clock, Users, CheckCircle,
   XCircle, AlertCircle, MessageSquare, Trash2,
   Plus, Eye
 } from 'lucide-react'
-import { Event, Client } from '../../types'
+import { Event, Client, EventStatus } from '../../types'
 import Button from '../ui/Button'
 import PhoneInput from '../ui/PhoneInput'
-import ContactFloristModal from '../modals/ContactFloristModal'
 import { useEventSync, useModalEventSync } from '../../hooks/useEventSync'
 import { useApp } from '../../contexts/AppContext'
 
 // 🆕 Fonctions utilitaires pour détecter les conflits de fleuristes
+// BUG #5 FIX: Ajout de la comparaison des heures pour éviter les faux positifs
+
+// Helper pour convertir "HH:MM" en minutes depuis minuit
+const timeToMinutes = (time: string): number => {
+  if (!time) return 0
+  const [hours, minutes] = time.split(':').map(Number)
+  return (hours || 0) * 60 + (minutes || 0)
+}
+
+// Helper pour vérifier si deux plages horaires se chevauchent
+const timeRangesOverlap = (
+  start1: string,
+  end1: string | undefined,
+  start2: string,
+  end2: string | undefined
+): boolean => {
+  const start1Min = timeToMinutes(start1)
+  const end1Min = end1 ? timeToMinutes(end1) : start1Min + 120 // Par défaut 2h si pas de fin
+  const start2Min = timeToMinutes(start2)
+  const end2Min = end2 ? timeToMinutes(end2) : start2Min + 120 // Par défaut 2h si pas de fin
+
+  // Deux plages se chevauchent si l'une commence avant la fin de l'autre
+  return start1Min < end2Min && start2Min < end1Min
+}
+
 const checkFloristConflicts = (
-  floristId: string, 
-  currentEventId: string, 
-  eventDate: Date, 
+  floristId: string,
+  currentEventId: string,
+  eventDate: Date,
+  eventTime: string,
+  eventEndTime: string | undefined,
   allEvents: Event[]
 ): { hasConflict: boolean; conflictingEvents: Event[] } => {
   // Convertir la date en string pour comparaison
   const targetDate = eventDate.toDateString()
-  
+
   const conflictingEvents = allEvents.filter(event => {
     // Ignorer l'événement actuel
     if (event.id === currentEventId) return false
-    
+
     // Vérifier si c'est le même jour
     const eventDateStr = (event.date instanceof Date ? event.date : new Date(event.date)).toDateString()
     if (eventDateStr !== targetDate) return false
-    
+
     // Vérifier si le fleuriste est assigné et confirmé
-    const hasFlorist = event.assignedFlorists?.some(af => 
+    const hasFlorist = event.assignedFlorists?.some(af =>
       af.floristId === floristId && (af.isConfirmed || af.status === 'confirmed')
     )
-    
-    return hasFlorist
+
+    if (!hasFlorist) return false
+
+    // BUG #5 FIX: Vérifier si les plages horaires se chevauchent
+    const hasTimeConflict = timeRangesOverlap(
+      eventTime,
+      eventEndTime,
+      event.time,
+      event.endTime
+    )
+
+    return hasTimeConflict
   })
-  
+
   return {
     hasConflict: conflictingEvents.length > 0,
     conflictingEvents
   }
 }
 
+// BUG #10 & #11 FIX: Utiliser le type local LocalFlorist pour la compatibilité avec les données locales
+// Ce type combine les propriétés nécessaires pour l'affichage dans le modal
 const getFloristStatus = (
-  florist: Florist, 
+  florist: LocalFlorist,
   allEvents: Event[]
 ): {
   status: 'available' | 'on_mission' | 'unavailable'
   currentMissions: Event[]
   totalMissions: number
 } => {
-  const today = new Date().toDateString()
-  
   // Trouver toutes les missions confirmées (toutes dates)
   const currentMissions = allEvents.filter(event => {
-    return event.assignedFlorists?.some(af => 
+    return event.assignedFlorists?.some(af =>
       af.floristId === florist.id && (af.isConfirmed || af.status === 'confirmed')
     )
   })
-  
+
   // Compter le total des missions (toutes dates confondues)
   const totalMissions = allEvents.filter(event => {
-    return event.assignedFlorists?.some(af => 
+    return event.assignedFlorists?.some(af =>
       af.floristId === florist.id && (af.isConfirmed || af.status === 'confirmed')
     )
   }).length
-  
+
   let status: 'available' | 'on_mission' | 'unavailable' = 'available'
-  
+
+  // BUG #11 FIX: Vérifier le statut local du fleuriste (busy/unavailable/available)
+  // Le type LocalFlorist utilise 'busy' alors que GlobalFlorist utilise FloristAvailability enum
   if (florist.status === 'unavailable') {
     status = 'unavailable'
   } else if (currentMissions.length > 0) {
     status = 'on_mission'
   }
-  
+
   return {
     status,
     currentMissions,
@@ -84,14 +122,15 @@ const getFloristStatus = (
   }
 }
 
-// Types pour les fleuristes
-interface Florist {
+// BUG #10 FIX: Renommer l'interface locale pour éviter la confusion avec le type global Florist
+// Cette interface est utilisée pour les données d'affichage dans le modal uniquement
+interface LocalFlorist {
   id: string
   name: string
   role: string
-  status: 'available' | 'unavailable' | 'busy'
+  status: 'available' | 'unavailable' | 'busy' // Statut simplifié pour l'UI locale
   avatar?: string
-  phone?: string // 🆕 Numéro de téléphone pour WhatsApp
+  phone?: string // Numéro de téléphone pour WhatsApp
 }
 
 interface FloristAssignment {
@@ -126,7 +165,7 @@ const EventModal: React.FC<EventModalProps> = ({
   
   // Hooks de synchronisation
   const { emitEventSync, syncFloristAssignments } = useEventSync()
-  const { latestEvent, isEventOutdated } = useModalEventSync(event?.id || null, 'EventModal')
+  const { latestEvent } = useModalEventSync(event?.id || null, 'EventModal')
   
   // Ref pour maintenir la position de scroll
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -134,16 +173,11 @@ const EventModal: React.FC<EventModalProps> = ({
   // State pour les notifications
   const [showLimitReachedPopup, setShowLimitReachedPopup] = useState(false)
   const [showMaxReachedAlert, setShowMaxReachedAlert] = useState(false)
-  
-  // 🆕 États pour le modal de contact
-  const [contactModalOpen, setContactModalOpen] = useState(false)
-  const [selectedFloristForContact, setSelectedFloristForContact] = useState<any>(null)
-  const [contactFloristStatus, setContactFloristStatus] = useState<'pending' | 'confirmed' | 'refused' | 'not_selected'>('pending')
-  
-  // 🆕 États pour la modal des missions de fleuriste
+
+  // États pour la modal des missions de fleuriste (pour la liste des fleuristes disponibles)
   const [showFloristMissionsModal, setShowFloristMissionsModal] = useState(false)
   const [selectedFloristMissions, setSelectedFloristMissions] = useState<Event[]>([])
-  
+
   // State local pour l'édition (clone de l'événement)
   const [editedEvent, setEditedEvent] = useState<Event | null>(null)
   
@@ -205,12 +239,22 @@ const EventModal: React.FC<EventModalProps> = ({
           isFromSync: !!latestEvent
         })
         
-        const newAssignments = currentEvent.assignedFlorists.map(af => ({
-          floristId: af.floristId,
-          status: af.status || (af.isConfirmed ? 'confirmed' : af.isRefused ? 'refused' : 'pending') as const,
-          assignedAt: af.assignedAt,
-          preWrittenMessage: af.preWrittenMessage // 🆕 Conserver le message pré-écrit
-        }))
+        const newAssignments = currentEvent.assignedFlorists.map(af => {
+          let assignmentStatus: 'pending' | 'confirmed' | 'refused' | 'not_selected' = 'pending'
+          if (af.status) {
+            assignmentStatus = af.status
+          } else if (af.isConfirmed) {
+            assignmentStatus = 'confirmed'
+          } else if (af.isRefused) {
+            assignmentStatus = 'refused'
+          }
+          return {
+            floristId: af.floristId,
+            status: assignmentStatus,
+            assignedAt: af.assignedAt,
+            preWrittenMessage: af.preWrittenMessage
+          }
+        })
         
         setAssignments(newAssignments)
         console.log('✅ EventModal - Assignations chargées:', newAssignments)
@@ -233,7 +277,8 @@ const EventModal: React.FC<EventModalProps> = ({
           floristsMap.set(af.floristId, {
             id: af.floristId,
             name: af.floristName,
-            role: af.floristRole || 'Fleuriste', 
+            // BUG #9 FIX: Utiliser af.role (pas af.floristRole qui n'existe pas)
+            role: af.role || 'Fleuriste',
             status: 'available' // Par défaut disponible, sera calculé par getFloristStatus
           })
         }
@@ -310,7 +355,7 @@ const EventModal: React.FC<EventModalProps> = ({
       .filter(Boolean)
   }
 
-  const handleAddFlorist = (florist: Florist) => {
+  const handleAddFlorist = (florist: LocalFlorist) => {
     // On peut toujours ajouter en "En attente" - pas de limite
     // La limite s'applique seulement aux confirmés
     
@@ -408,17 +453,15 @@ Mathilde Fleurs`
         })))
         
         // 🚀 DISPATCHING IMMÉDIAT ET SYNCHRONE
+        // BUG #4 FIX: Suppression du double setAssignments qui causait une race condition
         console.log('🚀 DÉMARRAGE du dispatching immédiat...')
-        
-        // 1. Appliquer immédiatement les changements
+
+        // 1. Appliquer les changements une seule fois
         setAssignments(finalAssignments)
-        
+
         // 2. Synchroniser immédiatement (pas de setTimeout)
         syncAssignmentsImmediately(finalAssignments)
-        
-        // 3. Forcer la re-render immédiate avec une technique React
-        setAssignments(prev => [...finalAssignments])
-        
+
         console.log('✅ Dispatching terminé. Popup dans 100ms...')
         
         // 4. Montrer le popup après un délai minimal pour laisser le DOM se mettre à jour
@@ -575,88 +618,6 @@ Mathilde Fleurs`
     }
   }
 
-  // 🆕 Version de sauvegarde qui ne ferme PAS le modal (pour le popup de confirmation)
-  const handleSaveOnly = () => {
-    console.log('💾 EVENTMODAL - handleSaveOnly APPELÉ (sans fermer modal) !', { editedEvent: !!editedEvent, onEdit: !!onEdit })
-    
-    if (editedEvent && onEdit) {
-      // Distinguer création vs modification
-      const isCreating = !event || event.id.startsWith('temp-')
-      
-      // Synchroniser les assignations avec l'événement
-      const updatedEvent = {
-        ...editedEvent,
-        // Générer un nouvel ID si c'est une création
-        id: isCreating ? `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` : (editedEvent?.id || event?.id || `event-${Date.now()}`),
-        assignedFlorists: assignments.map(assignment => ({
-          floristId: assignment.floristId,
-          floristName: allFlorists.find(f => f.id === assignment.floristId)?.name || '',
-          isConfirmed: assignment.status === 'confirmed',
-          isRefused: assignment.status === 'refused',
-          status: assignment.status,
-          assignedAt: assignment.assignedAt,
-          preWrittenMessage: assignment.preWrittenMessage // 🆕 Inclure le message pré-écrit
-        })),
-        floristsRequired: requiredFlorists,
-        // Mettre à jour le statut de l'événement selon les assignations
-        status: confirmedCount >= requiredFlorists ? 'confirmed' : editedEvent.status,
-        // Mettre à jour les timestamps
-        createdAt: isCreating ? new Date() : editedEvent.createdAt,
-        updatedAt: new Date()
-      }
-      
-      console.log(`💾 EventModal - ${isCreating ? 'Création' : 'Modification'} événement (save only):`, {
-        eventId: updatedEvent.id,
-        title: updatedEvent.title,
-        floristsRequired: requiredFlorists,
-        assignedFlorists: updatedEvent.assignedFlorists,
-        confirmedCount,
-        newStatus: updatedEvent.status
-      })
-
-      // 🔥 WORKFLOW FINAL : S'assurer que les pending passent en not_selected si équipe complète
-      if (updatedEvent.assignedFlorists && confirmedCount >= requiredFlorists) {
-        console.log('🎯 HANDLESAVEONLY - Vérification finale workflow')
-        const finalFlorists = updatedEvent.assignedFlorists.map(florist => {
-          if (florist.status === 'pending') {
-            const eventDate = updatedEvent.date || new Date()
-            const formattedDate = eventDate.toLocaleDateString('fr-FR', {
-              day: 'numeric',
-              month: 'numeric', 
-              year: 'numeric'
-            })
-            
-            const preWrittenMessage = `Bonjour ${florist.floristName?.split(' ')[0]},
-
-L'événement "${updatedEvent.title}" du ${formattedDate} est pourvu.
-
-Merci pour votre disponibilité !
-
-Mathilde Fleurs`
-
-            console.log('🔥 HANDLESAVEONLY - Passage final pending→not_selected:', florist.floristName)
-            
-            return { 
-              ...florist, 
-              status: 'not_selected' as const,
-              preWrittenMessage
-            }
-          }
-          return florist
-        })
-        
-        updatedEvent.assignedFlorists = finalFlorists
-      }
-      
-      // Émettre la synchronisation AVANT l'appel onEdit
-      emitEventSync(updatedEvent, 'EventModal')
-      
-      // Appel onEdit pour maintenir la compatibilité (gère création ET modification)
-      onEdit(updatedEvent, true) // 🔥 PASSER true pour keepModalOpen
-    }
-    // 🔥 PAS de onClose() ici ! Le modal reste ouvert
-  }
-
   // Sauvegarder les modifications (détails + assignations)
   const handleSave = () => {
     console.log('🔥 EVENTMODAL - handleSave APPELÉ !', { editedEvent: !!editedEvent, onEdit: !!onEdit })
@@ -681,12 +642,12 @@ Mathilde Fleurs`
         })),
         floristsRequired: requiredFlorists,
         // Mettre à jour le statut de l'événement selon les assignations
-        status: confirmedCount >= requiredFlorists ? 'confirmed' : editedEvent.status,
+        status: confirmedCount >= requiredFlorists ? EventStatus.CONFIRMED : editedEvent.status,
         // Mettre à jour les timestamps
         createdAt: isCreating ? new Date() : editedEvent.createdAt,
         updatedAt: new Date()
       }
-      
+
       console.log(`💾 EventModal - ${isCreating ? 'Création' : 'Modification'} événement:`, {
         eventId: updatedEvent.id,
         title: updatedEvent.title,
@@ -747,13 +708,13 @@ Mathilde Fleurs`
     onClose()
   }
 
-  const getStatusIcon = (florist: Florist) => {
+  const getStatusIcon = (florist: LocalFlorist) => {
     if (florist.status === 'unavailable') return '⚠️'
     if (florist.status === 'busy') return '🔄'
     return '✅'
   }
 
-  const getStatusText = (florist: Florist) => {
+  const getStatusText = (florist: LocalFlorist) => {
     if (florist.status === 'unavailable') return 'Indisponible'
     if (florist.status === 'busy') return 'Sur mission'
     return 'Disponible'
@@ -838,6 +799,7 @@ Mathilde Fleurs`
                     </h3>
                     
                     {/* Dates de début et fin */}
+                    {/* BUG #16 FIX: Utilisation du format local pour éviter les décalages de timezone */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -848,15 +810,23 @@ Mathilde Fleurs`
                           value={(() => {
                             const dateValue = editedEvent?.date || event?.date;
                             if (dateValue instanceof Date) {
-                              return dateValue.toISOString().split('T')[0];
+                              // Format local YYYY-MM-DD sans conversion UTC
+                              const year = dateValue.getFullYear();
+                              const month = String(dateValue.getMonth() + 1).padStart(2, '0');
+                              const day = String(dateValue.getDate()).padStart(2, '0');
+                              return `${year}-${month}-${day}`;
                             }
-                            if (typeof dateValue === 'string') {
-                              const dateStr = dateValue.split('T')[0];
-                              return dateStr;
+                            if (dateValue && typeof dateValue === 'string') {
+                              return (dateValue as string).split('T')[0];
                             }
                             return '';
                           })()}
-                          onChange={(e) => updateEventField('date', new Date(e.target.value))}
+                          onChange={(e) => {
+                            // Créer la date à midi pour éviter les problèmes de timezone
+                            const [year, month, day] = e.target.value.split('-').map(Number);
+                            const newDate = new Date(year, month - 1, day, 12, 0, 0);
+                            updateEventField('date', newDate);
+                          }}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
                         />
                       </div>
@@ -870,14 +840,27 @@ Mathilde Fleurs`
                           value={(() => {
                             const endDateValue = editedEvent?.endDate;
                             if (endDateValue instanceof Date) {
-                              return endDateValue.toISOString().split('T')[0];
+                              // Format local YYYY-MM-DD sans conversion UTC
+                              const year = endDateValue.getFullYear();
+                              const month = String(endDateValue.getMonth() + 1).padStart(2, '0');
+                              const day = String(endDateValue.getDate()).padStart(2, '0');
+                              return `${year}-${month}-${day}`;
                             }
-                            if (typeof endDateValue === 'string') {
-                              return endDateValue.split('T')[0];
+                            if (endDateValue && typeof endDateValue === 'string') {
+                              return (endDateValue as string).split('T')[0];
                             }
                             return '';
                           })()}
-                          onChange={(e) => updateEventField('endDate', e.target.value ? new Date(e.target.value) : undefined)}
+                          onChange={(e) => {
+                            if (!e.target.value) {
+                              updateEventField('endDate', undefined);
+                              return;
+                            }
+                            // Créer la date à midi pour éviter les problèmes de timezone
+                            const [year, month, day] = e.target.value.split('-').map(Number);
+                            const newDate = new Date(year, month - 1, day, 12, 0, 0);
+                            updateEventField('endDate', newDate);
+                          }}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
                         />
                       </div>
@@ -1106,8 +1089,10 @@ Mathilde Fleurs`
                                 status="confirmed"
                                 allEvents={allEvents}
                                 currentEvent={event}
-                                currentEventId={editedEvent?.id || event?.id}
-                                currentEventDate={(editedEvent?.date || event?.date) instanceof Date ? (editedEvent?.date || event?.date) : new Date(editedEvent?.date || event?.date || Date.now())}
+                                currentEventId={editedEvent?.id || event?.id || ''}
+                                currentEventDate={(editedEvent?.date || event?.date) instanceof Date ? (editedEvent?.date || event?.date) as Date : new Date(editedEvent?.date || event?.date || Date.now())}
+                                currentEventTime={editedEvent?.time || event?.time || '09:00'}
+                                currentEventEndTime={editedEvent?.endTime || event?.endTime}
                                 onStatusChange={(newStatus) => handleUpdateFloristStatus(florist.id, newStatus)}
                                 onRemove={() => handleRemoveFlorist(florist.id)}
                                 preWrittenMessage={assignment?.preWrittenMessage} // 🆕 Passer le message
@@ -1138,8 +1123,10 @@ Mathilde Fleurs`
                               status="pending"
                               allEvents={allEvents}
                               currentEvent={event}
-                              currentEventId={editedEvent?.id || event?.id}
-                              currentEventDate={editedEvent?.date || event?.date instanceof Date ? editedEvent?.date || event?.date : new Date(editedEvent?.date || event?.date)}
+                              currentEventId={editedEvent?.id || event?.id || ''}
+                              currentEventDate={(editedEvent?.date || event?.date) instanceof Date ? (editedEvent?.date || event?.date) as Date : new Date(editedEvent?.date || event?.date || Date.now())}
+                              currentEventTime={editedEvent?.time || event?.time || '09:00'}
+                              currentEventEndTime={editedEvent?.endTime || event?.endTime}
                               onStatusChange={(newStatus) => handleUpdateFloristStatus(florist.id, newStatus)}
                               onRemove={() => handleRemoveFlorist(florist.id)}
                             />
@@ -1168,8 +1155,10 @@ Mathilde Fleurs`
                               status="not_selected"
                               allEvents={allEvents}
                               currentEvent={event}
-                              currentEventId={editedEvent?.id || event?.id}
-                              currentEventDate={editedEvent?.date || event?.date instanceof Date ? editedEvent?.date || event?.date : new Date(editedEvent?.date || event?.date)}
+                              currentEventId={editedEvent?.id || event?.id || ''}
+                              currentEventDate={(editedEvent?.date || event?.date) instanceof Date ? (editedEvent?.date || event?.date) as Date : new Date(editedEvent?.date || event?.date || Date.now())}
+                              currentEventTime={editedEvent?.time || event?.time || '09:00'}
+                              currentEventEndTime={editedEvent?.endTime || event?.endTime}
                               onStatusChange={(newStatus) => handleUpdateFloristStatus(florist.id, newStatus)}
                               onRemove={() => handleRemoveFlorist(florist.id)}
                             />
@@ -1198,8 +1187,10 @@ Mathilde Fleurs`
                               status="refused"
                               allEvents={allEvents}
                               currentEvent={event}
-                              currentEventId={editedEvent?.id || event?.id}
-                              currentEventDate={editedEvent?.date || event?.date instanceof Date ? editedEvent?.date || event?.date : new Date(editedEvent?.date || event?.date)}
+                              currentEventId={editedEvent?.id || event?.id || ''}
+                              currentEventDate={(editedEvent?.date || event?.date) instanceof Date ? (editedEvent?.date || event?.date) as Date : new Date(editedEvent?.date || event?.date || Date.now())}
+                              currentEventTime={editedEvent?.time || event?.time || '09:00'}
+                              currentEventEndTime={editedEvent?.endTime || event?.endTime}
                               onStatusChange={(newStatus) => handleUpdateFloristStatus(florist.id, newStatus)}
                               onRemove={() => handleRemoveFlorist(florist.id)}
                             />
@@ -1229,7 +1220,7 @@ Mathilde Fleurs`
                             <div key={florist.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                               <div className="flex items-center space-x-3">
                                 <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
-                                  {florist.name.split(' ').map(n => n[0]).join('')}
+                                  {florist.name.split(' ').map((n: string) => n[0]).join('')}
                                 </div>
                                 <div>
                                   <div className="font-medium text-gray-900 dark:text-white flex items-center space-x-2">
@@ -1431,16 +1422,17 @@ Mathilde Fleurs`
 
 // Composant FloristCard pour afficher les fleuristes avec actions
 interface FloristCardProps {
-  florist: Florist
+  florist: LocalFlorist
   status: FloristAssignment['status']
   allEvents: Event[]
   currentEvent: Event | null
   currentEventId: string
   currentEventDate: Date
+  currentEventTime: string // BUG #5 FIX: Ajout heure de début
+  currentEventEndTime?: string // BUG #5 FIX: Ajout heure de fin
   onStatusChange: (newStatus: FloristAssignment['status']) => void
   onRemove: () => void
   preWrittenMessage?: string // 🆕 Message pré-écrit
-  onShowFloristMissions?: (missions: Event[]) => void // 🆕 Pour afficher les missions
 }
 
 const FloristCard: React.FC<FloristCardProps> = ({
@@ -1450,15 +1442,19 @@ const FloristCard: React.FC<FloristCardProps> = ({
   currentEvent,
   currentEventId,
   currentEventDate,
+  currentEventTime,
+  currentEventEndTime,
   onStatusChange,
   onRemove,
-  preWrittenMessage, // 🆕 Recevoir le message pré-écrit
-  onShowFloristMissions // 🆕 Fonction pour afficher les missions
+  preWrittenMessage // 🆕 Recevoir le message pré-écrit
 }) => {
   const [showConflictWarning, setShowConflictWarning] = useState(false)
-  
+  const [showFloristMissionsModal, setShowFloristMissionsModal] = useState(false)
+  const [selectedFloristMissions, setSelectedFloristMissions] = useState<Event[]>([])
+
   const floristStatus = getFloristStatus(florist, allEvents)
-  const conflicts = checkFloristConflicts(florist.id, currentEventId, currentEventDate, allEvents)
+  // BUG #5 FIX: Passer les heures pour une détection de conflit précise
+  const conflicts = checkFloristConflicts(florist.id, currentEventId, currentEventDate, currentEventTime, currentEventEndTime, allEvents)
   
   // Couleur de la carte selon le statut
   const getCardStyle = () => {
@@ -1539,11 +1535,11 @@ const FloristCard: React.FC<FloristCardProps> = ({
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              console.log('🔥 BOUTON WHATSAPP CLIQUÉ !', { 
-                florist: florist.name, 
+              console.log('🔥 BOUTON WHATSAPP CLIQUÉ !', {
+                florist: florist.name,
                 phone: florist.phone,
                 preWrittenMessage,
-                eventTitle: event?.title 
+                eventTitle: currentEvent?.title
               })
               
               // 🔥 OUVRIR WHATSAPP ou modal de contact
@@ -1742,8 +1738,8 @@ Mathilde`
                         </p>
                         <div className="mt-2">
                           <span className={`px-2 py-1 rounded text-xs ${
-                            mission.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                            mission.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            mission.status === EventStatus.CONFIRMED ? 'bg-green-100 text-green-800' :
+                            mission.status === EventStatus.DRAFT || mission.status === EventStatus.PLANNING ? 'bg-yellow-100 text-yellow-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
                             {mission.status}

@@ -372,7 +372,7 @@ const EventReadOnlyModal: React.FC<EventReadOnlyModalProps> = ({
                             <div className="flex items-center space-x-2">
                               <span className="text-lg">🌺</span>
                               <span className="font-medium text-gray-900 dark:text-white">
-                                {flower.name || `Fleur ${index + 1}`}
+                                {flower.flowerId || `Fleur ${index + 1}`}
                               </span>
                             </div>
                             <span className="text-sm font-bold text-pink-600 dark:text-pink-400">

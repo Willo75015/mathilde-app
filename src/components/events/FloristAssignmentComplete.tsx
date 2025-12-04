@@ -1,11 +1,31 @@
 import React, { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  CheckCircle, XCircle, Clock, Users, MessageSquare, 
+import {
+  CheckCircle, XCircle, Clock, Users, MessageSquare,
   AlertTriangle, Plus
 } from 'lucide-react'
 import { useFlorists } from '@/contexts/AppContext'
+import { Florist as GlobalFlorist } from '@/types'
 import FloristCard from '@/components/ui/FloristCard'
+
+// Type local pour la compatibilité avec FloristCard
+interface LocalFlorist {
+  id: string
+  name: string
+  role: string
+  status: 'available' | 'unavailable' | 'busy'
+  avatar?: string
+}
+
+// Helper pour convertir un fleuriste global vers le format local
+const toLocalFlorist = (florist: GlobalFlorist): LocalFlorist => ({
+  id: florist.id,
+  name: `${florist.firstName} ${florist.lastName}`,
+  role: 'Fleuriste',
+  status: florist.availability === 'available' ? 'available' :
+          florist.availability === 'unavailable' ? 'unavailable' : 'busy',
+  avatar: florist.avatar
+})
 
 interface FloristAssignmentCompleteProps {
   editedEvent: any
@@ -92,9 +112,10 @@ export const FloristAssignmentComplete: React.FC<FloristAssignmentCompleteProps>
           </div>
           <div className="p-3 space-y-2 max-h-60 overflow-y-auto">
             {getFloristsByStatus('confirmed').map((assignment: any) => {
-              const florist = florists.find(f => f.id === assignment.floristId)
-              if (!florist) return null
-              
+              const globalFlorist = florists.find(f => f.id === assignment.floristId)
+              if (!globalFlorist) return null
+              const florist = toLocalFlorist(globalFlorist)
+
               return (
                 <FloristCard
                   key={florist.id}
@@ -126,9 +147,10 @@ export const FloristAssignmentComplete: React.FC<FloristAssignmentCompleteProps>
           </div>
           <div className="p-3 space-y-2 max-h-60 overflow-y-auto">
             {getFloristsByStatus('pending').map((assignment: any) => {
-              const florist = florists.find(f => f.id === assignment.floristId)
-              if (!florist) return null
-              
+              const globalFlorist = florists.find(f => f.id === assignment.floristId)
+              if (!globalFlorist) return null
+              const florist = toLocalFlorist(globalFlorist)
+
               return (
                 <FloristCard
                   key={florist.id}
@@ -160,9 +182,10 @@ export const FloristAssignmentComplete: React.FC<FloristAssignmentCompleteProps>
           </div>
           <div className="p-3 space-y-2 max-h-60 overflow-y-auto">
             {getFloristsByStatus('refused').map((assignment: any) => {
-              const florist = florists.find(f => f.id === assignment.floristId)
-              if (!florist) return null
-              
+              const globalFlorist = florists.find(f => f.id === assignment.floristId)
+              if (!globalFlorist) return null
+              const florist = toLocalFlorist(globalFlorist)
+
               return (
                 <FloristCard
                   key={florist.id}
@@ -194,51 +217,54 @@ export const FloristAssignmentComplete: React.FC<FloristAssignmentCompleteProps>
           </h4>
         </div>
         <div className="p-3 space-y-2 max-h-60 overflow-y-auto">
-          {availableFlorists.map(florist => (
-            <div key={florist.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
-                  {florist.name.split(' ').map((n: string) => n[0]).join('')}
+          {availableFlorists.map(globalFlorist => {
+            const florist = toLocalFlorist(globalFlorist)
+            return (
+              <div key={florist.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                    {florist.name.split(' ').map((n: string) => n[0]).join('')}
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">
+                      {florist.name}
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {florist.role || 'Fleuriste'}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-medium text-gray-900 dark:text-white">
-                    {florist.name}
-                  </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {florist.role || 'Fleuriste'}
-                  </div>
+
+                {/* Boutons d'action */}
+                <div className="flex items-center space-x-2">
+                  {/* Contacter */}
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 transition-colors"
+                    title="Contacter le fleuriste"
+                    onClick={() => {
+                      // Ici on pourrait ouvrir un modal de message
+                      console.log('Contacter', florist.name)
+                    }}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                  </motion.button>
+
+                  {/* Ajouter */}
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="p-2 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-colors"
+                    title="Ajouter à l'équipe"
+                    onClick={() => onAddFlorist(globalFlorist)}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </motion.button>
                 </div>
               </div>
-              
-              {/* Boutons d'action */}
-              <div className="flex items-center space-x-2">
-                {/* Contacter */}
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 transition-colors"
-                  title="Contacter le fleuriste"
-                  onClick={() => {
-                    // Ici on pourrait ouvrir un modal de message
-                    console.log('Contacter', florist.name)
-                  }}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                </motion.button>
-                
-                {/* Ajouter */}
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="p-2 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-colors"
-                  title="Ajouter à l'équipe"
-                  onClick={() => onAddFlorist(florist)}
-                >
-                  <Plus className="w-4 h-4" />
-                </motion.button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
           {availableFlorists.length === 0 && (
             <p className="text-blue-600 dark:text-blue-400 text-sm text-center py-4">
               Tous les fleuristes sont déjà assignés

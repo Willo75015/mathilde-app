@@ -226,7 +226,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     } catch (error) {
       console.error('❌ KANBAN - Erreur archivage:', error)
       showError(
-        `Erreur lors de l'archivage: ${error.message}`,
+        `Erreur lors de l'archivage: ${error instanceof Error ? error.message : String(error)}`,
         'Erreur de facturation'
       )
     }
@@ -264,7 +264,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     } catch (error) {
       console.error('❌ KANBAN - Erreur paiement:', error)
       showError(
-        `Erreur lors de la mise à jour: ${error.message}`,
+        `Erreur lors de la mise à jour: ${error instanceof Error ? error.message : String(error)}`,
         'Erreur de paiement'
       )
     }

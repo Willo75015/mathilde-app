@@ -12,6 +12,10 @@ import UrgentEventsSection from '@/components/dashboard/UrgentEventsSection'
 import InvoicingSection from '@/components/dashboard/InvoicingSection'
 import StrategicPlanningSection from '@/components/dashboard/StrategicPlanningSection'
 import BusinessMetricsSection from '@/components/dashboard/BusinessMetricsSection'
+import RemindersSection from '@/components/dashboard/RemindersSection'
+
+// Hook pour les rappels
+import { useReminders } from '@/hooks/useReminders'
 
 // 🚨 Nouveau système d'urgence intelligent
 import { SmartUrgencyCalculator } from '@/lib/smart-urgency'
@@ -27,6 +31,9 @@ const Home: React.FC<HomeProps> = ({ navigate }) => {
   const [selectedEventForFlorist, setSelectedEventForFlorist] = useState<Event | null>(null)
   const [showMoreUrgent, setShowMoreUrgent] = useState(false)
   const [isCreateEventModalOpen, setIsCreateEventModalOpen] = useState(false)
+
+  // Hook pour les rappels automatiques
+  const remindersData = useReminders(state.events, state.clients)
 
   // 🚨 Événements urgents : Affichage intelligent selon la demande de Bill
   const urgentEvents = useMemo(() => {
@@ -218,6 +225,21 @@ const Home: React.FC<HomeProps> = ({ navigate }) => {
             </button>
           </div>
         </motion.section>
+
+        {/* RAPPELS & ALERTES - Nouveau système de notifications */}
+        {remindersData.reminders.length > 0 && (
+          <motion.section variants={sectionVariants}>
+            <RemindersSection
+              reminders={remindersData.reminders}
+              urgentCount={remindersData.urgentCount}
+              highCount={remindersData.highCount}
+              totalUnread={remindersData.totalUnread}
+              onDismiss={remindersData.dismissReminder}
+              onMarkAsRead={remindersData.markAsRead}
+              navigate={navigate}
+            />
+          </motion.section>
+        )}
 
         {/* NIVEAU 1 - URGENCE OPÉRATIONNELLE (40%) */}
         <motion.section variants={sectionVariants}>

@@ -5,7 +5,7 @@ import {
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
-import { Event } from '@/types'
+import { Event, EventStatus } from '@/types'
 
 interface Florist {
   id: string
@@ -26,6 +26,8 @@ interface FloristWithConflictWarningProps {
   onContact?: () => void
   onAssign?: () => void
   showActions?: boolean
+  showAddButton?: boolean // Afficher le bouton d'ajout
+  compact?: boolean // Mode compact pour les listes
   className?: string
 }
 
@@ -160,8 +162,8 @@ const FloristWithConflictWarning: React.FC<FloristWithConflictWarningProps> = ({
               </p>
               <div className="mt-2">
                 <span className={`px-2 py-1 rounded text-xs ${
-                  mission.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                  mission.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                  mission.status === EventStatus.CONFIRMED ? 'bg-green-100 text-green-800' :
+                  mission.status === EventStatus.DRAFT || mission.status === EventStatus.PLANNING ? 'bg-yellow-100 text-yellow-800' :
                   'bg-gray-100 text-gray-800'
                 }`}>
                   {mission.status}
@@ -249,10 +251,10 @@ const FloristWithConflictWarning: React.FC<FloristWithConflictWarningProps> = ({
 
                 {onAssign && (
                   <Button
-                    variant={hasConflict ? "warning" : "primary"}
+                    variant={hasConflict ? "secondary" : "primary"}
                     size="sm"
                     onClick={handleAssignWithWarning}
-                    className={hasConflict ? "bg-orange-500 hover:bg-orange-600" : ""}
+                    className={hasConflict ? "bg-orange-500 hover:bg-orange-600 text-white" : ""}
                   >
                     {hasConflict ? "⚠️ Assigner quand même" : "Assigner"}
                   </Button>

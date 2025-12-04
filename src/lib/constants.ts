@@ -37,7 +37,7 @@ export const PWA_CONFIG = {
 
 // URLs et endpoints API
 export const API_CONFIG = {
-  baseUrl: process.env.VITE_API_BASE_URL || 'https://api.mathilde-fleurs.com',
+  baseUrl: import.meta.env.VITE_API_BASE_URL || 'https://api.mathilde-fleurs.com',
   version: 'v1',
   timeout: 30000, // 30 secondes
   retryAttempts: 3,
@@ -164,7 +164,7 @@ export const NOTIFICATION_CONFIG = {
   position: 'top-right',
   maxVisible: 5,
   pushNotifications: {
-    vapidPublicKey: process.env.VITE_VAPID_PUBLIC_KEY || '',
+    vapidPublicKey: import.meta.env.VITE_VAPID_PUBLIC_KEY || '',
     endpoint: '/api/notifications/subscribe'
   }
 } as const
@@ -213,7 +213,7 @@ export const MEDIA_CONFIG = {
 // Configuration de performance
 export const PERFORMANCE_CONFIG = {
   metrics: {
-    enabled: process.env.NODE_ENV === 'development',
+    enabled: import.meta.env.DEV,
     sampleRate: 0.1, // 10% des sessions
     maxMetrics: 1000,
     flushInterval: 30000 // 30 secondes
@@ -236,8 +236,8 @@ export const PERFORMANCE_CONFIG = {
 
 // Configuration des analytics
 export const ANALYTICS_CONFIG = {
-  enabled: process.env.NODE_ENV === 'production',
-  trackingId: process.env.VITE_GA_TRACKING_ID || '',
+  enabled: import.meta.env.PROD,
+  trackingId: import.meta.env.VITE_GA_TRACKING_ID || '',
   events: {
     PAGE_VIEW: 'page_view',
     USER_ENGAGEMENT: 'user_engagement',
@@ -373,6 +373,53 @@ export const DATE_FORMATS = {
   RELATIVE: 'fromNow'
 } as const
 
+// Labels des statuts d'événement (utilisé par format.ts)
+export const EVENT_STATUS_LABELS = {
+  draft: 'Brouillon',
+  confirmed: 'Confirmé',
+  in_progress: 'En cours',
+  completed: 'Terminé',
+  invoiced: 'Facturé',
+  paid: 'Payé',
+  cancelled: 'Annulé',
+  archived: 'Archivé'
+} as const
+
+// Labels des catégories de fleurs (utilisé par format.ts)
+export const FLOWER_CATEGORY_LABELS = {
+  roses: 'Roses',
+  tulips: 'Tulipes',
+  carnations: 'Œillets',
+  lilies: 'Lys',
+  orchids: 'Orchidées',
+  seasonal: 'Saisonnières',
+  exotic: 'Exotiques'
+} as const
+
+// Labels des rôles utilisateur (utilisé par format.ts)
+export const USER_ROLE_LABELS = {
+  admin: 'Administrateur',
+  manager: 'Gestionnaire',
+  florist: 'Fleuriste',
+  client: 'Client'
+} as const
+
+// Saisons (utilisé par date.ts)
+export const SEASONS = {
+  SPRING: 'spring',
+  SUMMER: 'summer',
+  AUTUMN: 'autumn',
+  WINTER: 'winter'
+} as const
+
+// Mois par saison (utilisé par date.ts)
+export const SEASON_MONTHS = {
+  spring: [3, 4, 5],   // Mars, Avril, Mai
+  summer: [6, 7, 8],   // Juin, Juillet, Août
+  autumn: [9, 10, 11], // Septembre, Octobre, Novembre
+  winter: [12, 1, 2]   // Décembre, Janvier, Février
+} as const
+
 // Export par défaut pour accès global
 export default {
   APP_CONFIG,
@@ -392,5 +439,10 @@ export default {
   SUCCESS_MESSAGES,
   ROUTES,
   PATTERNS,
-  DATE_FORMATS
+  DATE_FORMATS,
+  EVENT_STATUS_LABELS,
+  FLOWER_CATEGORY_LABELS,
+  USER_ROLE_LABELS,
+  SEASONS,
+  SEASON_MONTHS
 } as const

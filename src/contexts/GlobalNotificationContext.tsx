@@ -1,9 +1,11 @@
 import React, { createContext, useContext, ReactNode } from 'react'
 import { useNotifications } from '@/hooks/useNotifications'
 import { useEventNavigation } from '@/hooks/useEventNavigation'
+import { NotificationProps } from '@/components/ui/Notification'
 
+// BUG #12 FIX: Remplacer any[] par le type spécifique NotificationProps[]
 interface GlobalNotificationContextType {
-  notifications: any[]
+  notifications: NotificationProps[]
   showSuccess: (message: string, title?: string, duration?: number, eventId?: string) => string
   showError: (message: string, title?: string, duration?: number, eventId?: string) => string
   showWarning: (message: string, title?: string, duration?: number, eventId?: string) => string

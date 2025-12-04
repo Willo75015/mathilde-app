@@ -20,10 +20,16 @@ export const useAutoStatusTransition = ({
     events.forEach(event => {
       const eventDate = typeof event.date === 'string' ? new Date(event.date) : event.date
       const [hours, minutes] = event.time.split(':').map(Number)
-      
-      // Créer l'heure de fin de l'événement (on suppose 2h de durée par défaut)
+
+      // BUG #6 FIX: Utiliser endTime si disponible, sinon 2h par défaut
       const eventEndTime = new Date(eventDate)
-      eventEndTime.setHours(hours + 2, minutes, 0, 0)
+      if (event.endTime) {
+        const [endHours, endMinutes] = event.endTime.split(':').map(Number)
+        eventEndTime.setHours(endHours, endMinutes, 0, 0)
+      } else {
+        // Fallback: 2h de durée par défaut si pas d'heure de fin
+        eventEndTime.setHours(hours + 2, minutes, 0, 0)
+      }
       
       // LOGS DE DEBUG DÉTAILLÉS
       console.log(`📅 Événement: ${event.title}`)

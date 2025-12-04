@@ -1,27 +1,87 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { TrendingUp, BarChart3 } from 'lucide-react'
-
-// Mock data pour les graphiques
-const monthlyData = [
-  { month: 'Jan', events: 12, revenue: 4500 },
-  { month: 'Fév', events: 19, revenue: 7200 },
-  { month: 'Mar', events: 15, revenue: 5800 },
-  { month: 'Avr', events: 22, revenue: 8500 },
-  { month: 'Mai', events: 28, revenue: 10200 },
-  { month: 'Jun', events: 25, revenue: 9500 }
-]
-
-const statusData = [
-  { status: 'Confirmés', count: 45, color: '#3B82F6' },
-  { status: 'En cours', count: 12, color: '#F59E0B' },
-  { status: 'Terminés', count: 78, color: '#10B981' },
-  { status: 'Annulés', count: 5, color: '#EF4444' }
-]
+import { useEvents } from '@/contexts/AppContext'
+import { EventStatus } from '@/types'
 
 const Charts: React.FC = () => {
+  const { events } = useEvents()
+
+  // 📊 Données mensuelles RÉELLES calculées depuis les événements
+  const monthlyData = useMemo(() => {
+    const now = new Date()
+    const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+    const data: { month: string; events: number; revenue: number }[] = []
+
+    // 6 derniers mois
+    for (let i = 5; i >= 0; i--) {
+      const targetDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const targetMonth = targetDate.getMonth()
+      const targetYear = targetDate.getFullYear()
+
+      const monthEvents = events.filter(e => {
+        const eventDate = new Date(e.date)
+        return eventDate.getMonth() === targetMonth && eventDate.getFullYear() === targetYear
+      })
+
+      const monthRevenue = monthEvents
+        .filter(e => e.status === EventStatus.PAID)
+        .reduce((sum, e) => sum + (e.budget || 0), 0)
+
+      data.push({
+        month: months[targetMonth],
+        events: monthEvents.length,
+        revenue: monthRevenue
+      })
+    }
+
+    return data
+  }, [events])
+
+  // 📊 Données des statuts RÉELLES
+  const statusData = useMemo(() => {
+    const confirmed = events.filter(e => e.status === EventStatus.CONFIRMED).length
+    const inProgress = events.filter(e => e.status === EventStatus.IN_PROGRESS).length
+    const completed = events.filter(e =>
+      e.status === EventStatus.COMPLETED ||
+      e.status === EventStatus.INVOICED ||
+      e.status === EventStatus.PAID
+    ).length
+    const cancelled = events.filter(e => e.status === EventStatus.CANCELLED).length
+
+    return [
+      { status: 'Confirmés', count: confirmed, color: '#3B82F6' },
+      { status: 'En cours', count: inProgress, color: '#F59E0B' },
+      { status: 'Terminés', count: completed, color: '#10B981' },
+      { status: 'Annulés', count: cancelled, color: '#EF4444' }
+    ]
+  }, [events])
+
+  // Calcul des stats pour l'affichage
+  const currentMonthEvents = useMemo(() => {
+    const now = new Date()
+    return events.filter(e => {
+      const eventDate = new Date(e.date)
+      return eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear()
+    }).length
+  }, [events])
+
+  const lastMonthEvents = useMemo(() => {
+    const now = new Date()
+    const lastMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1
+    const lastMonthYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear()
+    return events.filter(e => {
+      const eventDate = new Date(e.date)
+      return eventDate.getMonth() === lastMonth && eventDate.getFullYear() === lastMonthYear
+    }).length
+  }, [events])
+
+  const trendPercent = useMemo(() => {
+    if (lastMonthEvents === 0) return currentMonthEvents > 0 ? 100 : 0
+    return Math.round(((currentMonthEvents - lastMonthEvents) / lastMonthEvents) * 100)
+  }, [currentMonthEvents, lastMonthEvents])
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Graphique des événements par mois */}
@@ -73,11 +133,13 @@ const Charts: React.FC = () => {
             
             <div className="mt-4 flex items-center justify-between text-sm">
               <span className="text-gray-600 dark:text-gray-400">
-                Total ce mois: <span className="font-medium text-gray-900 dark:text-white">25 événements</span>
+                Total ce mois: <span className="font-medium text-gray-900 dark:text-white">{currentMonthEvents} événement{currentMonthEvents > 1 ? 's' : ''}</span>
               </span>
-              <span className="text-green-600 font-medium">
-                +15% vs mois dernier
-              </span>
+              {trendPercent !== 0 && (
+                <span className={`font-medium ${trendPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {trendPercent >= 0 ? '+' : ''}{trendPercent}% vs mois dernier
+                </span>
+              )}
             </div>
           </CardContent>
         </Card>

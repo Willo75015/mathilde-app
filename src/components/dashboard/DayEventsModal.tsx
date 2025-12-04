@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  X, Edit, Phone, MessageCircle, Users, Clock, 
+import {
+  X, Edit, Users,
   MapPin, Euro, Calendar as CalendarIcon, ChevronRight
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
@@ -104,10 +104,23 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({
   }
   
   // Simulation des fleuristes assignés pour chaque événement
-  const getEventFlorists = (eventId: string): Florist[] => {
-    return mockFlorists.slice(0, Math.floor(Math.random() * 3) + 1)
+  const getEventFlorists = (event: Event): Array<{id: string; name: string; isConfirmed: boolean}> => {
+    // Utiliser les assignations réelles de l'événement si disponibles
+    if (event.assignedFlorists && event.assignedFlorists.length > 0) {
+      return event.assignedFlorists.map(af => ({
+        id: af.floristId,
+        name: af.floristName || 'Fleuriste',
+        isConfirmed: af.isConfirmed || af.status === 'confirmed'
+      }))
+    }
+    // Fallback vers mock data si pas d'assignations
+    return mockFlorists.slice(0, Math.floor(Math.random() * 3) + 1).map(f => ({
+      id: f.id,
+      name: f.name,
+      isConfirmed: f.isConfirmed
+    }))
   }
-  
+
   // 🆕 Handlers pour EventModal
   const handleCreateEvent = () => {
     setSelectedEvent(null) // Mode création
@@ -125,16 +138,6 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({
     setSelectedEvent(null)
   }
   
-  const handleCall = (phone: string) => {
-    window.open(`tel:${phone}`, '_self')
-  }
-  
-  const handleWhatsApp = (phone: string, floristName: string) => {
-    const cleanPhone = phone.replace(/\+33/, '33').replace(/\s/g, '')
-    const message = encodeURIComponent(`Bonjour ${floristName}, j'ai une question concernant la mission du ${date.toLocaleDateString('fr-FR')}.`)
-    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank')
-  }
-  
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('fr-FR', {
       weekday: 'long',
@@ -145,9 +148,9 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({
   }
   
   const EventCard: React.FC<{ event: Event; index: number }> = ({ event, index }) => {
-    const eventFlorists = getEventFlorists(event.id)
-    const confirmedFlorists = eventFlorists.filter(f => f.isConfirmed)
-    const pendingFlorists = eventFlorists.filter(f => !f.isConfirmed)
+    const eventFlorists = getEventFlorists(event)
+    const confirmedFlorists = eventFlorists.filter((f: {isConfirmed: boolean}) => f.isConfirmed)
+    const pendingFlorists = eventFlorists.filter((f: {isConfirmed: boolean}) => !f.isConfirmed)
     
     return (
       <motion.div
@@ -418,8 +421,8 @@ const DayEventsModal: React.FC<DayEventsModalProps> = ({
           <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                <span className="font-medium">{events.reduce((sum, event) => sum + getEventFlorists(event.id).filter(f => f.isConfirmed).length, 0)}</span> fleuristes confirmés sur{' '}
-                <span className="font-medium">{events.reduce((sum, event) => sum + getEventFlorists(event.id).length, 0)}</span> assignés
+                <span className="font-medium">{events.reduce((sum, event) => sum + getEventFlorists(event).filter((f: {isConfirmed: boolean}) => f.isConfirmed).length, 0)}</span> fleuristes confirmés sur{' '}
+                <span className="font-medium">{events.reduce((sum, event) => sum + getEventFlorists(event).length, 0)}</span> assignés
               </div>
               
               <div className="flex space-x-3">

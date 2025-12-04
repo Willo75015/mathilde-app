@@ -399,7 +399,12 @@ const ClientProfile: React.FC<ClientProfileProps> = ({ clientId, navigate }) => 
         )}
         
         {activeTab === 'preferences' && (
-          <ClientDetails client={client} />
+          <ClientDetails
+            clientId={clientId}
+            onBack={() => navigate && navigate('clients')}
+            onEdit={(id) => navigate && navigate('clients/edit', { clientId: id })}
+            navigate={navigate}
+          />
         )}
       </motion.div>
     </motion.div>

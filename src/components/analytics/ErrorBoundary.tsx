@@ -75,7 +75,7 @@ class ErrorBoundary extends Component<Props, State> {
               L'équipe technique a été notifiée.
             </p>
             
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <details className="mb-6 text-left">
                 <summary className="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Détails de l'erreur (développement)

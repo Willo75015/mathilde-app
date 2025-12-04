@@ -1,50 +1,113 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  Calendar, Users, Flower, DollarSign, 
+import {
+  Calendar, Users, Flower, DollarSign,
   TrendingUp, TrendingDown
 } from 'lucide-react'
 import Card, { CardContent } from '@/components/ui/Card'
 import { useEvents, useClients } from '@/contexts/AppContext'
+import { EventStatus } from '@/types'
 
 const StatsCards: React.FC = () => {
-  const { eventStats } = useEvents()
+  const { events, eventStats } = useEvents()
   const { clients } = useClients()
-  
+
   const { total: totalEvents, completed, upcoming } = eventStats
-  
+
+  // 📊 Calcul des tendances RÉELLES basées sur les données
+  const trends = useMemo(() => {
+    const now = new Date()
+    const currentMonth = now.getMonth()
+    const currentYear = now.getFullYear()
+
+    // Mois précédent
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear
+
+    // Filtrer les événements par mois de création
+    const eventsThisMonth = events.filter(e => {
+      const created = new Date(e.createdAt)
+      return created.getMonth() === currentMonth && created.getFullYear() === currentYear
+    })
+
+    const eventsLastMonth = events.filter(e => {
+      const created = new Date(e.createdAt)
+      return created.getMonth() === lastMonth && created.getFullYear() === lastMonthYear
+    })
+
+    // Événements terminés ce mois vs mois dernier
+    const completedThisMonth = events.filter(e => {
+      if (e.status !== EventStatus.COMPLETED && e.status !== EventStatus.INVOICED && e.status !== EventStatus.PAID) return false
+      const updated = new Date(e.updatedAt)
+      return updated.getMonth() === currentMonth && updated.getFullYear() === currentYear
+    })
+
+    const completedLastMonth = events.filter(e => {
+      if (e.status !== EventStatus.COMPLETED && e.status !== EventStatus.INVOICED && e.status !== EventStatus.PAID) return false
+      const updated = new Date(e.updatedAt)
+      return updated.getMonth() === lastMonth && updated.getFullYear() === lastMonthYear
+    })
+
+    // Clients créés ce mois vs mois dernier
+    const clientsThisMonth = clients.filter(c => {
+      const created = new Date(c.createdAt)
+      return created.getMonth() === currentMonth && created.getFullYear() === currentYear
+    })
+
+    const clientsLastMonth = clients.filter(c => {
+      const created = new Date(c.createdAt)
+      return created.getMonth() === lastMonth && created.getFullYear() === lastMonthYear
+    })
+
+    // Calcul des pourcentages de variation
+    const calcTrend = (current: number, previous: number): { value: number, up: boolean } => {
+      if (previous === 0) {
+        return current > 0 ? { value: 100, up: true } : { value: 0, up: true }
+      }
+      const diff = ((current - previous) / previous) * 100
+      return { value: Math.round(Math.abs(diff)), up: diff >= 0 }
+    }
+
+    return {
+      events: calcTrend(eventsThisMonth.length, eventsLastMonth.length),
+      clients: calcTrend(clientsThisMonth.length, clientsLastMonth.length),
+      completed: calcTrend(completedThisMonth.length, completedLastMonth.length),
+      upcoming: { value: upcoming, up: upcoming > 0 } // Pas de tendance pour "à venir", c'est un état actuel
+    }
+  }, [events, clients, upcoming])
+
   const stats = [
     {
       title: 'Événements totaux',
       value: totalEvents,
       icon: Calendar,
       color: 'bg-blue-500',
-      trend: '+12%',
-      trendUp: true
+      trend: trends.events.value > 0 ? `${trends.events.up ? '+' : '-'}${trends.events.value}%` : null,
+      trendUp: trends.events.up
     },
     {
       title: 'Clients actifs',
       value: clients.length,
       icon: Users,
       color: 'bg-green-500',
-      trend: '+8%',
-      trendUp: true
+      trend: trends.clients.value > 0 ? `${trends.clients.up ? '+' : '-'}${trends.clients.value}%` : null,
+      trendUp: trends.clients.up
     },
     {
       title: 'Événements terminés',
       value: completed,
       icon: Flower,
       color: 'bg-purple-500',
-      trend: '+15%',
-      trendUp: true
+      trend: trends.completed.value > 0 ? `${trends.completed.up ? '+' : '-'}${trends.completed.value}%` : null,
+      trendUp: trends.completed.up
     },
     {
       title: 'Événements à venir',
       value: upcoming,
       icon: DollarSign,
       color: 'bg-orange-500',
-      trend: '-2%',
-      trendUp: false
+      trend: null, // Pas de tendance pour les événements à venir
+      trendUp: true
     }
   ]
   
@@ -80,20 +143,26 @@ const StatsCards: React.FC = () => {
                   </p>
                 </div>
                 
-                {/* Tendance */}
-                <div className="flex items-center space-x-1">
-                  <div className={`flex items-center space-x-0.5 text-xs ${
-                    stat.trendUp ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {stat.trendUp ? (
-                      <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                    ) : (
-                      <TrendingDown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                    )}
-                    <span className="font-medium text-xs">{stat.trend}</span>
+                {/* Tendance - affichée uniquement si disponible */}
+                {stat.trend ? (
+                  <div className="flex items-center space-x-1">
+                    <div className={`flex items-center space-x-0.5 text-xs ${
+                      stat.trendUp ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {stat.trendUp ? (
+                        <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                      ) : (
+                        <TrendingDown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                      )}
+                      <span className="font-medium text-xs">{stat.trend}</span>
+                    </div>
+                    <span className="text-xs text-gray-500">vs mois dernier</span>
                   </div>
-                  <span className="text-xs text-gray-500">ce mois</span>
-                </div>
+                ) : (
+                  <div className="flex items-center space-x-1">
+                    <span className="text-xs text-gray-400">—</span>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

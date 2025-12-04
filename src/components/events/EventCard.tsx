@@ -1,14 +1,12 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { MapPin, User, Euro, Calendar, Clock, Archive, DollarSign, CheckCircle, X, AlertTriangle, Edit } from 'lucide-react'
-import { EventStatus, getKanbanColumn } from '@/types'
-import { StatusBadge } from '@/components/ui/StatusBadge'
+import { MapPin, User, Euro, Calendar, Archive, DollarSign, CheckCircle, X, Edit } from 'lucide-react'
+import { EventStatus } from '@/types'
 import Button from '@/components/ui/Button'
-import { 
-  getStatusColors, 
-  getPaymentOverdueIndicator, 
-  getStatusText,
-  isPaymentOverdue 
+import {
+  getStatusColors,
+  getPaymentOverdueIndicator,
+  getStatusText
 } from '@/utils/eventHelpers'
 
 interface EventCardProps {
@@ -25,7 +23,7 @@ interface EventCardProps {
     budget: number
     status: EventStatus
     clientId: string
-    clientName: string
+    clientName?: string
     clientPhone?: string
     assignedFlorists?: Array<{
       floristId: string
@@ -46,6 +44,9 @@ interface EventCardProps {
   onClick?: (event: any) => void
   onEdit?: (event: any) => void
   onCancel?: (event: any) => void
+  onDelete?: (event: any) => void // Alias pour onCancel
+  onCall?: (phone: string) => void
+  onEmail?: (email: string) => void
   onStatusChange?: (eventId: string, newStatus: EventStatus) => void
   onArchiveAndInvoice?: (event: any) => void
   onPaymentTracking?: (event: any) => void
@@ -61,6 +62,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   onClick,
   onEdit,
   onCancel,
+  onDelete,
   onStatusChange,
   onArchiveAndInvoice,
   onPaymentTracking,
@@ -69,6 +71,8 @@ export const EventCard: React.FC<EventCardProps> = ({
   isDragging = false,
   className = ''
 }) => {
+  // Utiliser onDelete comme alias de onCancel si onCancel n'est pas défini
+  const handleCancel = onCancel || onDelete
   const [showFirstConfirm, setShowFirstConfirm] = useState(false)
   const [showSecondConfirm, setShowSecondConfirm] = useState(false)
   
@@ -83,8 +87,8 @@ export const EventCard: React.FC<EventCardProps> = ({
   
   const handleSecondConfirm = () => {
     setShowSecondConfirm(false)
-    if (onCancel) {
-      onCancel(event)
+    if (handleCancel) {
+      handleCancel(event)
     }
   }
   
@@ -96,10 +100,15 @@ export const EventCard: React.FC<EventCardProps> = ({
   const statusColors = getStatusColors(event)
   const paymentIndicator = getPaymentOverdueIndicator(event)
   
+  // BUG #15 FIX: Vérification de la validité de la date avant formatage
   const formatDate = (date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date) : date
-    return d.toLocaleDateString('fr-FR', { 
-      day: 'numeric', 
+    // Vérifier si la date est valide
+    if (!d || isNaN(d.getTime())) {
+      return 'Date non définie'
+    }
+    return d.toLocaleDateString('fr-FR', {
+      day: 'numeric',
       month: 'short',
       year: d.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
     })

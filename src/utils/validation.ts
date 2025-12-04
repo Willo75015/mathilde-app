@@ -2,46 +2,59 @@ import { z } from 'zod'
 import DOMPurify from 'dompurify'
 import { EventStatus } from '@/types'
 
-// Schémas de validation renforcés
-export const EventValidationSchema = z.object({
+// BUG #8 FIX: Schéma de base sans contrainte de date pour l'édition
+const BaseEventSchema = {
   id: z.string().uuid().optional(),
   title: z.string()
     .min(1, 'Le titre est requis')
     .max(100, 'Le titre ne peut pas dépasser 100 caractères')
     .refine(val => DOMPurify.sanitize(val) === val, 'Titre contient des caractères interdits'),
-  
+
   description: z.string()
     .max(1000, 'La description ne peut pas dépasser 1000 caractères')
     .refine(val => DOMPurify.sanitize(val) === val, 'Description contient des caractères interdits'),
-  
-  date: z.date()
-    .min(new Date(), 'La date ne peut pas être dans le passé'),
-  
+
   time: z.string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Format d\'heure invalide (HH:MM)'),
-  
+
   location: z.string()
     .min(1, 'Le lieu est requis')
     .max(200, 'Le lieu ne peut pas dépasser 200 caractères'),
-  
+
   clientId: z.string().uuid('ID client invalide'),
-  
+
   budget: z.number()
     .positive('Le budget doit être positif')
     .max(100000, 'Budget trop élevé')
     .multipleOf(0.01, 'Budget doit avoir au maximum 2 décimales'),
-  
+
   status: z.nativeEnum(EventStatus),
-  
+
   flowers: z.array(z.object({
     flowerId: z.string().uuid(),
     quantity: z.number().positive().int().max(1000)
   })).max(50, 'Trop de types de fleurs sélectionnés'),
-  
+
   notes: z.string().max(500).optional(),
-  
+
   images: z.array(z.string().url()).max(10, 'Maximum 10 images').optional()
+}
+
+// Schéma pour la CRÉATION d'événements (dates futures uniquement)
+export const EventCreateValidationSchema = z.object({
+  ...BaseEventSchema,
+  date: z.date()
+    .min(new Date(), 'La date ne peut pas être dans le passé'),
 })
+
+// BUG #8 FIX: Schéma pour l'ÉDITION d'événements (toutes dates acceptées)
+export const EventEditValidationSchema = z.object({
+  ...BaseEventSchema,
+  date: z.date(), // Pas de contrainte de date pour l'édition
+})
+
+// Schéma par défaut (pour compatibilité ascendante) - utilise le schéma d'édition
+export const EventValidationSchema = EventEditValidationSchema
 
 export const ClientValidationSchema = z.object({
   firstName: z.string()
@@ -59,8 +72,9 @@ export const ClientValidationSchema = z.object({
     .max(100, 'Email trop long')
     .refine(val => !val.includes('<script'), 'Email suspect'),
   
+  // BUG #14 FIX: Regex téléphone accepte les espaces, points et tirets
   phone: z.string()
-    .regex(/^(\+33|0)[1-9](\d{8})$/, 'Numéro de téléphone français invalide'),
+    .regex(/^(\+33|0)[\s.-]?[1-9]([\s.-]?\d{2}){4}$/, 'Numéro de téléphone français invalide (ex: 06 12 34 56 78)'),
   
   address: z.object({
     street: z.string().min(1, 'Adresse requise').max(100),

@@ -1,9 +1,9 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { 
+import {
   BarChart3, TrendingUp, RefreshCw, Calendar,
   Users, Euro, Flower2, Filter, CalendarDays, Home, Shield,
-  Clock, CreditCard, Target, Award
+  Clock, CreditCard, Target, Award, Download, FileText
 } from 'lucide-react'
 import { useEvents, useClients } from '@/contexts/AppContext'
 import { useEventTimeSync } from '@/hooks/useEventTimeSync'
@@ -16,6 +16,7 @@ import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Tabs from '@/components/ui/Tabs'
+import { AnalyticsExporter } from '@/lib/export'
 
 // 🔧 TYPES POUR LES 4 ONGLETS 
 type AnalyticsTheme = 'missions' | 'top-clients' | 'facturation' | 'paiement'
@@ -609,6 +610,33 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ navigate }) => {
   // Get current theme config
   const currentTheme = analyticsThemes.find(theme => theme.id === activeTheme) || analyticsThemes[0]
 
+  // 📊 Fonction d'export du rapport
+  const handleExportReport = useCallback(async (format: 'csv' | 'json') => {
+    const periodLabel = dateRange === 'custom'
+      ? `${customStartDate} au ${customEndDate}`
+      : dateRangeOptions.find(o => o.value === dateRange)?.label || 'Mois'
+
+    const analyticsData = {
+      totalEvents: themeAnalytics.newMissions,
+      totalRevenue: themeAnalytics.totalRevenue,
+      activeClients: themeAnalytics.newClients,
+      averageOrderValue: themeAnalytics.averageBasket,
+      eventsChange: themeAnalytics.missionGrowth,
+      revenueChange: themeAnalytics.revenueGrowth,
+      clientsChange: themeAnalytics.clientGrowth,
+      aovChange: themeAnalytics.basketGrowth,
+      avgInvoicingTime: themeAnalytics.avgInvoicingTime,
+      paymentMetrics: themeAnalytics.paymentMetrics
+    }
+
+    try {
+      await AnalyticsExporter.exportAnalytics(analyticsData, periodLabel, { format })
+      console.log(`✅ Rapport exporté en ${format.toUpperCase()}`)
+    } catch (error) {
+      console.error('❌ Erreur export:', error)
+    }
+  }, [dateRange, customStartDate, customEndDate, themeAnalytics, dateRangeOptions])
+
   // 🆕 Fonction pour obtenir l'affichage d'évolution par thème
   const getThemeGrowthDisplay = (theme: AnalyticsTheme): string => {
     switch (theme) {
@@ -679,7 +707,29 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ navigate }) => {
             </p>
           </div>
           
-          <div className="mt-4 sm:mt-0">
+          <div className="mt-4 sm:mt-0 flex items-center space-x-2">
+            {/* Boutons d'export */}
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Download className="w-4 h-4" />}
+                onClick={() => handleExportReport('csv')}
+                title="Exporter en CSV"
+              >
+                CSV
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<FileText className="w-4 h-4" />}
+                onClick={() => handleExportReport('json')}
+                title="Exporter en JSON"
+              >
+                JSON
+              </Button>
+            </div>
+
             <Button
               variant="outline"
               leftIcon={<RefreshCw className="w-4 h-4" />}

@@ -110,7 +110,7 @@ export default defineConfig({
   server: {
     // Configuration ANTI-REFRESH optimisée
     port: 3026,
-    host: '127.0.0.1',
+    host: '0.0.0.0', // Accessible depuis le réseau local (téléphone)
     strictPort: true,
     
     // HMR Configuration pour éviter les reloads intempestifs

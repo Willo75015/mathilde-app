@@ -4,7 +4,9 @@ import { useApp } from '@/contexts/AppContext'
 
 // Hook spécialisé pour la gestion du workflow de facturation
 export const useBillingWorkflow = () => {
-  const { events, updateEvent, updateEventWithStatusDates } = useApp()
+  const { state, actions } = useApp()
+  const events = state.events
+  const { updateEvent, updateEventWithStatusDates } = actions
 
   // Archiver un événement et le marquer comme facturé
   const archiveAndInvoiceEvent = useCallback(async (eventId: string) => {
@@ -22,6 +24,16 @@ export const useBillingWorkflow = () => {
 
     if (event.status !== EventStatus.COMPLETED) {
       throw new Error('L\'événement doit être terminé pour être facturé')
+    }
+
+    // BUG #7 FIX: Vérifier que l'équipe de fleuristes est complète avant facturation
+    const requiredFlorists = event.floristsRequired || 1
+    const confirmedFlorists = event.assignedFlorists?.filter(
+      af => af.status === 'confirmed' || af.isConfirmed
+    ).length || 0
+
+    if (confirmedFlorists < requiredFlorists) {
+      throw new Error(`L'équipe de fleuristes est incomplète (${confirmedFlorists}/${requiredFlorists} confirmés)`)
     }
 
     // ✅ UTILISER LA NOUVELLE FONCTION SMART QUI GÈRE LES DATES AUTOMATIQUEMENT
@@ -182,8 +194,19 @@ export const useBillingWorkflow = () => {
     getBillingStats,
     
     // Getters utiles
-    getEventsToInvoice: useCallback(() => 
-      events.filter(e => e.status === EventStatus.COMPLETED && !e.invoiced), 
+    // BUG #7 FIX: Vérifier que l'équipe est complète avant de permettre la facturation
+    getEventsToInvoice: useCallback(() =>
+      events.filter(e => {
+        if (e.status !== EventStatus.COMPLETED || e.invoiced) return false
+
+        // Vérifier que l'équipe de fleuristes est complète
+        const requiredFlorists = e.floristsRequired || 1
+        const confirmedFlorists = e.assignedFlorists?.filter(
+          af => af.status === 'confirmed' || af.isConfirmed
+        ).length || 0
+
+        return confirmedFlorists >= requiredFlorists
+      }),
       [events]
     ),
     

@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  AlertTriangle, Clock, Users, DollarSign, 
-  Edit, Calendar, User, MapPin, Check, X, ArrowRight
+import { motion } from 'framer-motion'
+import {
+  AlertTriangle, Users,
+  Calendar, User, MapPin, X, ArrowRight
 } from 'lucide-react'
 import { Event, EventStatus } from '@/types'
 import Button from '@/components/ui/Button'
@@ -25,8 +25,6 @@ const UrgentEventsSection: React.FC<UrgentEventsSectionProps> = ({
   totalUrgentCount,
   showMoreUrgent,
   onToggleShowMore,
-  onEventSelect,
-  onEventEdit,
   onAssignFlorist,
   onCancelEvent,
   navigate
@@ -35,8 +33,8 @@ const UrgentEventsSection: React.FC<UrgentEventsSectionProps> = ({
   const [eventToCancel, setEventToCancel] = useState<Event | null>(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+  const formatDate = (dateInput: string | Date) => {
+    const date = dateInput instanceof Date ? dateInput : new Date(dateInput)
     const today = new Date()
     const tomorrow = new Date(today)
     tomorrow.setDate(tomorrow.getDate() + 1)
@@ -68,12 +66,6 @@ const UrgentEventsSection: React.FC<UrgentEventsSectionProps> = ({
       [EventStatus.CANCELLED]: { label: '❌ Annulé', color: 'bg-red-100 text-red-800' }
     }
     return statusConfig[status] || statusConfig[EventStatus.DRAFT]
-  }
-
-  const getUrgencyColor = (level: number) => {
-    if (level >= 5) return 'border-red-300 bg-red-50 dark:bg-red-900/10'
-    if (level >= 4) return 'border-orange-300 bg-orange-50 dark:bg-orange-900/10'
-    return 'border-yellow-300 bg-yellow-50 dark:bg-yellow-900/10'
   }
 
   // Gérer l'assignation de fleuriste
@@ -121,8 +113,8 @@ const UrgentEventsSection: React.FC<UrgentEventsSectionProps> = ({
     const pendingFlorists = allAssigned.filter(f => 
       f.status === 'pending' || (!f.status && !f.isConfirmed)
     )
-    const refusedFlorists = allAssigned.filter(f => 
-      f.status === 'refused' || f.status === 'rejected'
+    const refusedFlorists = allAssigned.filter(f =>
+      f.status === 'refused'
     )
     
     const confirmed = confirmedFlorists.length

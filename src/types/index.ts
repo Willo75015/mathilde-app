@@ -78,6 +78,7 @@ export interface Event extends BaseEntity {
   archived?: boolean // Événement archivé après facturation
   cancelledAt?: Date // Date d'annulation
   archivedAt?: Date // Date d'archivage
+  expenses?: Expense[] // 🆕 Dépenses liées à l'événement
 }
 
 // Association Événement-Fleuriste
@@ -115,6 +116,97 @@ export interface InvoiceWorkflow {
   paymentMethod?: 'cash' | 'card' | 'transfer' | 'check'
   daysToInvoice?: number // Calculé automatiquement
   daysToPay?: number // Calculé automatiquement
+}
+
+// 🆕 Types pour le suivi des dépenses
+export enum ExpenseCategory {
+  FLOWERS = 'flowers',           // Achat de fleurs
+  MATERIALS = 'materials',       // Matériel (vases, rubans, etc.)
+  TRANSPORT = 'transport',       // Frais de déplacement
+  FLORIST_FEES = 'florist_fees', // Paiement des fleuristes
+  OTHER = 'other'                // Autres dépenses
+}
+
+export interface Expense {
+  id: string
+  category: ExpenseCategory
+  description: string
+  amount: number
+  date: Date
+  receipt?: string // URL ou référence du justificatif
+}
+
+// Calcul de rentabilité d'un événement
+export interface EventProfitability {
+  eventId: string
+  budget: number           // Montant facturé au client
+  totalExpenses: number    // Total des dépenses
+  margin: number           // Budget - Dépenses
+  marginPercent: number    // (Marge / Budget) * 100
+}
+
+// 🆕 Types pour le système de rappels
+export enum ReminderType {
+  EVENT_UPCOMING = 'event_upcoming',       // Événement dans X jours
+  FLORIST_PENDING = 'florist_pending',     // Fleuriste en attente de confirmation
+  INVOICE_OVERDUE = 'invoice_overdue',     // Facturation en retard
+  PAYMENT_PENDING = 'payment_pending',     // Paiement en attente
+  CLIENT_FOLLOWUP = 'client_followup',     // Suivi client post-événement
+  TEAM_INCOMPLETE = 'team_incomplete'      // Équipe incomplète
+}
+
+export enum ReminderPriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  URGENT = 'urgent'
+}
+
+export interface Reminder {
+  id: string
+  type: ReminderType
+  priority: ReminderPriority
+  title: string
+  description: string
+  eventId?: string           // Lié à un événement
+  clientId?: string          // Lié à un client
+  dueDate: Date              // Date limite/échéance
+  createdAt: Date
+  isRead: boolean            // Marqué comme lu
+  isDismissed: boolean       // Masqué par l'utilisateur
+  actionLabel?: string       // Texte du bouton d'action
+  actionType?: 'navigate' | 'call' | 'whatsapp' | 'email' // Type d'action
+  actionData?: string        // Données pour l'action (page, numéro, etc.)
+}
+
+// 🆕 Types pour les templates d'événements
+export enum EventTemplateCategory {
+  WEDDING = 'wedding',           // Mariage
+  CORPORATE = 'corporate',       // Événement d'entreprise
+  BIRTHDAY = 'birthday',         // Anniversaire
+  FUNERAL = 'funeral',           // Funérailles
+  BAPTISM = 'baptism',           // Baptême
+  RECEPTION = 'reception',       // Réception
+  CUSTOM = 'custom'              // Personnalisé
+}
+
+export interface EventTemplate {
+  id: string
+  name: string
+  category: EventTemplateCategory
+  description: string
+  icon: string                   // Emoji ou nom d'icône
+  defaultBudget: number
+  defaultDuration: number        // En heures
+  defaultFloristsRequired: number
+  suggestedFlowers?: string[]    // IDs ou noms de fleurs suggérées
+  suggestedMaterials?: string[]  // Matériel suggéré
+  checklistItems?: string[]      // Liste de contrôle par défaut
+  notes?: string                 // Notes par défaut
+  isCustom: boolean              // True si créé par l'utilisateur
+  usageCount: number             // Nombre de fois utilisé
+  createdAt: Date
+  updatedAt: Date
 }
 
 // Clients

@@ -4,6 +4,16 @@ import { Event, EventStatus } from '@/types'
  * Utilitaires pour la gestion des événements
  */
 
+// Type partiel pour les helpers qui n'ont besoin que de certaines propriétés
+type PartialEvent = {
+  status: EventStatus
+  invoiceDate?: Date
+  completedDate?: Date
+  paidDate?: Date
+  cancelledAt?: Date
+  archived?: boolean
+}
+
 // Nombre de jours après lesquels un événement est considéré en retard
 const PAYMENT_DELAY_DAYS = 30
 const ARCHIVE_DELAY_DAYS = 30
@@ -11,7 +21,7 @@ const ARCHIVE_DELAY_DAYS = 30
 /**
  * Vérifie si un événement facturé est en retard de paiement
  */
-export function isPaymentOverdue(event: Event): boolean {
+export function isPaymentOverdue(event: PartialEvent): boolean {
   if (event.status !== EventStatus.INVOICED || !event.invoiceDate) {
     return false
   }
@@ -26,7 +36,7 @@ export function isPaymentOverdue(event: Event): boolean {
 /**
  * Obtient le nombre de jours depuis la facturation
  */
-export function getDaysSinceInvoice(event: Event): number {
+export function getDaysSinceInvoice(event: PartialEvent): number {
   if (!event.invoiceDate) return 0
   
   return Math.floor(
@@ -37,7 +47,7 @@ export function getDaysSinceInvoice(event: Event): number {
 /**
  * Vérifie si un événement doit être archivé automatiquement
  */
-export function shouldBeArchived(event: Event): boolean {
+export function shouldBeArchived(event: PartialEvent): boolean {
   const now = Date.now()
   
   // Événements terminés depuis plus de 30 jours
@@ -78,7 +88,7 @@ export function shouldBeArchived(event: Event): boolean {
 /**
  * Obtient les couleurs de statut pour l'EventCard
  */
-export function getStatusColors(event: Event): {
+export function getStatusColors(event: PartialEvent): {
   bgColor: string
   borderColor: string
   textColor: string
@@ -155,7 +165,7 @@ export function getStatusColors(event: Event): {
 /**
  * Obtient l'indicateur de retard de paiement pour affichage
  */
-export function getPaymentOverdueIndicator(event: Event): {
+export function getPaymentOverdueIndicator(event: PartialEvent): {
   show: boolean
   text: string
   icon: string

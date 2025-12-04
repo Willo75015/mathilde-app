@@ -1,6 +1,26 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react'
-import { AppState, Event, Client, EventStatus, Theme, Florist } from '@/types'
+import { AppState, Event, Client, EventStatus, Theme, FloristAvailability } from '@/types'
 import { mockEvents, mockClients } from '@/lib/mockData'
+
+// Type local pour les fleuristes de l'application (compatible avec l'UI existante)
+interface AppFlorist {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  specialties: string[]
+  experience: string
+  availability: FloristAvailability | 'available' | 'on_mission' | 'unavailable'
+  rating: number
+  isMainFlorist: boolean
+  unavailabilityPeriods: Array<{
+    id: string
+    startDate: Date
+    endDate: Date
+    reason?: string
+  }>
+}
 
 // Interface du contexte ULTRA-STABLE
 interface AppContextType {
@@ -24,7 +44,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | null>(null)
 
 // Fleuristes par défaut
-const defaultFlorists: Florist[] = [
+const defaultFlorists: AppFlorist[] = [
   {
     id: 'main-florist-bill',
     firstName: 'Bill',
@@ -118,38 +138,63 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     if (!initRef.current) {
       initRef.current = true
-      
+
       // Essayer de charger depuis localStorage
       const storedEvents = localStorage.getItem('mathilde-events')
       const storedClients = localStorage.getItem('mathilde-clients')
-      
+
+      // BUG #2 FIX: Gestion robuste du parsing JSON avec try-catch
       if (storedEvents) {
-        const parsedEvents = JSON.parse(storedEvents).map((event: any) => ({
-          ...event,
-          date: new Date(event.date),
-          createdAt: new Date(event.createdAt),
-          updatedAt: new Date(event.updatedAt)
-        }))
-        setEvents(parsedEvents)
-        console.log('✅ Événements chargés depuis localStorage:', parsedEvents.length)
+        try {
+          const parsed = JSON.parse(storedEvents)
+          if (Array.isArray(parsed)) {
+            const parsedEvents = parsed.map((event: any) => ({
+              ...event,
+              date: new Date(event.date),
+              createdAt: new Date(event.createdAt),
+              updatedAt: new Date(event.updatedAt)
+            }))
+            setEvents(parsedEvents)
+            console.log('✅ Événements chargés depuis localStorage:', parsedEvents.length)
+          } else {
+            throw new Error('Format invalide: attendu un tableau')
+          }
+        } catch (error) {
+          console.error('❌ Erreur parsing événements localStorage:', error)
+          localStorage.removeItem('mathilde-events')
+          setEvents(mockEvents)
+          console.log('✅ Événements mockés chargés (fallback après erreur)')
+        }
       } else {
         setEvents(mockEvents)
         console.log('✅ Événements mockés chargés')
       }
-      
+
       if (storedClients) {
-        const parsedClients = JSON.parse(storedClients).map((client: any) => ({
-          ...client,
-          createdAt: new Date(client.createdAt),
-          updatedAt: new Date(client.updatedAt)
-        }))
-        setClients(parsedClients)
-        console.log('✅ Clients chargés depuis localStorage:', parsedClients.length)
+        try {
+          const parsed = JSON.parse(storedClients)
+          if (Array.isArray(parsed)) {
+            const parsedClients = parsed.map((client: any) => ({
+              ...client,
+              createdAt: new Date(client.createdAt),
+              updatedAt: new Date(client.updatedAt)
+            }))
+            setClients(parsedClients)
+            console.log('✅ Clients chargés depuis localStorage:', parsedClients.length)
+          } else {
+            throw new Error('Format invalide: attendu un tableau')
+          }
+        } catch (error) {
+          console.error('❌ Erreur parsing clients localStorage:', error)
+          localStorage.removeItem('mathilde-clients')
+          setClients(mockClients)
+          console.log('✅ Clients mockés chargés (fallback après erreur)')
+        }
       } else {
         setClients(mockClients)
         console.log('✅ Clients mockés chargés')
       }
-      
+
       setIsLoading(false)
       console.log('✅ Données initialisées avec persistance')
     }
@@ -241,32 +286,38 @@ Mathilde Fleurs`
   }
   
   const updateEventWithStatusDates = (id: string, newStatus: EventStatus) => {
-    setEvents(prev => prev.map(event => {
-      if (event.id === id) {
-        let updates: Partial<Event> = { status: newStatus, updatedAt: new Date() }
-        
-        switch (newStatus) {
-          case EventStatus.COMPLETED:
-            updates.completedDate = new Date()
-            break
-          case EventStatus.INVOICED:
-            updates.completedDate = event.completedDate || new Date()
-            updates.invoiced = true
-            updates.invoiceDate = new Date()
-            updates.archived = true
-            break
-          case EventStatus.PAID:
-            updates.completedDate = event.completedDate || new Date()
-            updates.paid = true
-            updates.paidDate = new Date()
-            updates.paymentMethod = 'transfer'
-            break
+    setEvents(prev => {
+      const updated = prev.map(event => {
+        if (event.id === id) {
+          let updates: Partial<Event> = { status: newStatus, updatedAt: new Date() }
+
+          switch (newStatus) {
+            case EventStatus.COMPLETED:
+              updates.completedDate = new Date()
+              break
+            case EventStatus.INVOICED:
+              updates.completedDate = event.completedDate || new Date()
+              updates.invoiced = true
+              updates.invoiceDate = new Date()
+              updates.archived = true
+              break
+            case EventStatus.PAID:
+              updates.completedDate = event.completedDate || new Date()
+              updates.paid = true
+              updates.paidDate = new Date()
+              updates.paymentMethod = 'transfer'
+              break
+          }
+
+          return { ...event, ...updates }
         }
-        
-        return { ...event, ...updates }
-      }
-      return event
-    }))
+        return event
+      })
+
+      // BUG #1 FIX: Sauvegarde dans localStorage
+      localStorage.setItem('mathilde-events', JSON.stringify(updated))
+      return updated
+    })
   }
   
   const createEvent = (eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -298,13 +349,21 @@ Mathilde Fleurs`
   }
   
   const deleteEvent = (id: string) => {
-    setEvents(prev => prev.filter(event => event.id !== id))
+    setEvents(prev => {
+      const updated = prev.filter(event => event.id !== id)
+      localStorage.setItem('mathilde-events', JSON.stringify(updated))
+      return updated
+    })
   }
   
   const updateClient = (id: string, clientUpdate: Partial<Client>) => {
-    setClients(prev => prev.map(client => 
-      client.id === id ? { ...client, ...clientUpdate, updatedAt: new Date() } : client
-    ))
+    setClients(prev => {
+      const updated = prev.map(client =>
+        client.id === id ? { ...client, ...clientUpdate, updatedAt: new Date() } : client
+      )
+      localStorage.setItem('mathilde-clients', JSON.stringify(updated))
+      return updated
+    })
   }
   
   const createClient = (clientData: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -322,8 +381,27 @@ Mathilde Fleurs`
     })
   }
   
+  // BUG #3 FIX: Suppression client avec nettoyage des événements associés
   const deleteClient = (id: string) => {
-    setClients(prev => prev.filter(client => client.id !== id))
+    // D'abord, nettoyer les événements associés à ce client
+    setEvents(prevEvents => {
+      const updated = prevEvents.map(event => {
+        if (event.clientId === id) {
+          // Retirer le clientId des événements associés (ne pas les supprimer)
+          return { ...event, clientId: '', clientName: 'Client supprimé', updatedAt: new Date() }
+        }
+        return event
+      })
+      localStorage.setItem('mathilde-events', JSON.stringify(updated))
+      return updated
+    })
+
+    // Ensuite, supprimer le client
+    setClients(prev => {
+      const updated = prev.filter(client => client.id !== id)
+      localStorage.setItem('mathilde-clients', JSON.stringify(updated))
+      return updated
+    })
   }
   
   const generateNotSelectedMessage = (floristName: string, eventTitle: string, eventDate: Date) => {

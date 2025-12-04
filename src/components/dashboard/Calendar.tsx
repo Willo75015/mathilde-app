@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  ChevronLeft, ChevronRight, Plus, 
-  Calendar as CalendarIcon, Clock 
+import {
+  ChevronLeft, ChevronRight, Plus,
+  Calendar as CalendarIcon, Clock
 } from 'lucide-react'
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -10,7 +10,13 @@ import Badge from '@/components/ui/Badge'
 import SimpleDayEventsModal from './SimpleDayEventsModal'
 import EventModal from '@/components/events/EventModal'
 import { useEvents } from '@/contexts/AppContext'
-import { EventStatus } from '@/types'
+import { EventStatus, Event } from '@/types'
+
+interface CalendarDay {
+  date: Date
+  isCurrentMonth: boolean
+  events: Event[]
+}
 
 interface CalendarProps {
   navigate?: (page: string, params?: any) => void
@@ -27,15 +33,15 @@ const Calendar: React.FC<CalendarProps> = ({ navigate, onCreateEvent }) => {
   const [selectedEvent, setSelectedEvent] = useState<any>(null)
   
   // Fonctions utilitaires pour le calendrier
-  const getDaysInMonth = (date: Date) => {
+  const getDaysInMonth = (date: Date): CalendarDay[] => {
     const year = date.getFullYear()
     const month = date.getMonth()
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
     const startingDayOfWeek = firstDay.getDay()
-    
-    const days = []
+
+    const days: CalendarDay[] = []
     
     // Jours du mois précédent
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
