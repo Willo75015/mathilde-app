@@ -597,6 +597,60 @@ npm run test
 
 ---
 
+## GUIDE DE PASSATION - Pour reprendre le projet
+
+> **Ce guide permet à n'importe qui (humain ou IA) de reprendre le travail à tout moment.**
+
+### Étape 1 : Comprendre le contexte
+1. Lire ce fichier en entier (`CLAUDE_SESSION_TRACKER.md`)
+2. Lire `CLAUDE.md` pour les règles obligatoires
+3. Consulter la section "ÉTAT ACTUEL" pour voir où en est le projet
+
+### Étape 2 : Préparer l'environnement
+```bash
+cd "C:\Users\Bill\Desktop\Github mathilde-app"
+npm install
+npm run dev           # Pour tester localement
+```
+
+### Étape 3 : Identifier la prochaine tâche
+1. Chercher le premier ⬜ dans les tableaux de tâches
+2. Ou consulter la section "PROCHAINES ÉTAPES"
+3. Ou demander à l'utilisateur ce qu'il veut faire
+
+### Étape 4 : Travailler sur la tâche
+1. Faire les modifications
+2. Tester (`npm run build`)
+3. Mettre à jour ce fichier (statuts, historique)
+
+### Étape 5 : OBLIGATOIRE - Sauvegarder et synchroniser
+```bash
+git add -A ':!nul'
+git commit -m "Description claire de ce qui a été fait"
+git push
+```
+
+### Ressources clés
+
+| Fichier | Description |
+|---------|-------------|
+| `CLAUDE.md` | Instructions et règles pour Claude Code |
+| `CLAUDE_SESSION_TRACKER.md` | Ce fichier - suivi complet du projet |
+| `src/contexts/AppContext.tsx` | État global de l'app |
+| `src/types/index.ts` | Tous les types TypeScript |
+| `src/lib/supabase.ts` | Client Supabase (à utiliser pour sync) |
+
+### URLs importantes
+
+| Service | URL |
+|---------|-----|
+| App en production | https://mathilde-fleurs-three.vercel.app |
+| GitHub | https://github.com/Willo75015/mathilde-app |
+| Supabase Dashboard | https://supabase.com/dashboard/project/swaqyrgffqqexnnklner |
+| Vercel Dashboard | https://vercel.com/bills-projects-1aa30af1/mathilde-fleurs |
+
+---
+
 ## LÉGENDE
 
 | Symbole | Signification |

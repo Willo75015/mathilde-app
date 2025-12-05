@@ -1,6 +1,6 @@
 # Instructions Claude Code - Mathilde Fleurs
 
-## RÈGLE ABSOLUE
+## RÈGLE ABSOLUE N°1 : NE PAS CASSER L'EXISTANT
 
 > **NE JAMAIS PERTURBER LE BON FONCTIONNEMENT DE L'APPLICATION EXISTANTE**
 >
@@ -10,6 +10,43 @@
 > 3. Faire des modifications incrémentales
 > 4. Tester après chaque modification
 > 5. Si quelque chose casse → revenir en arrière immédiatement
+
+## RÈGLE ABSOLUE N°2 : DOCUMENTATION ET PUSH OBLIGATOIRES
+
+> **APRÈS CHAQUE INTERVENTION, METTRE À JOUR LA DOCUMENTATION ET PUSHER SUR GITHUB**
+>
+> Cette règle est **NON-NÉGOCIABLE**. À la fin de CHAQUE action (bug fix, fonctionnalité, modification) :
+>
+> 1. **Mettre à jour `CLAUDE_SESSION_TRACKER.md`** avec ce qui a été fait
+> 2. **Commit avec message descriptif**
+> 3. **Push sur GitHub**
+>
+> **Pourquoi ?** Pour que n'importe qui puisse reprendre le travail à tout moment.
+
+---
+
+## CHECKLIST DE FIN D'INTERVENTION (OBLIGATOIRE)
+
+À exécuter **SYSTÉMATIQUEMENT** avant de terminer une session ou après chaque tâche significative :
+
+```bash
+# 1. Vérifier que le build passe
+npm run build
+
+# 2. Mettre à jour la documentation (CLAUDE_SESSION_TRACKER.md)
+#    - Ajouter/mettre à jour l'historique de session
+#    - Mettre à jour les statuts des tâches
+#    - Mettre à jour la date
+
+# 3. Commit et push
+git add -A ':!nul'
+git commit -m "Description de ce qui a été fait"
+git push
+```
+
+**Si le push échoue** → Résoudre le problème AVANT de terminer.
+
+---
 
 ## IMPORTANT : À faire en début de chaque session
 
