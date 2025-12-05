@@ -189,7 +189,11 @@ const Layout: React.FC<LayoutProps> = ({ children, navigate, currentPage: propCu
               {isDark ? '🌞 Clair' : '🌙 Sombre'}
             </button>
             
-            <button className="px-3 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded transition-colors">
+            <button
+              onClick={() => navigate?.('settings')}
+              className="px-3 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded transition-colors"
+              title="Paramètres"
+            >
               <Settings className="w-4 h-4" />
             </button>
           </div>
@@ -264,7 +268,14 @@ const Layout: React.FC<LayoutProps> = ({ children, navigate, currentPage: propCu
                   {isDark ? '🌞' : '🌙'}
                 </button>
                 
-                <button className="px-3 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded transition-colors">
+                <button
+                  onClick={() => {
+                    navigate?.('settings')
+                    setSidebarOpen(false)
+                  }}
+                  className="px-3 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded transition-colors"
+                  title="Paramètres"
+                >
                   <Settings className="w-4 h-4" />
                 </button>
               </div>
