@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Plus } from 'lucide-react'
+import { Plus, Cloud, CloudOff, RefreshCw } from 'lucide-react'
 import { useApp } from '@/contexts/AppContext'
 import { Event, EventStatus } from '@/types'
 import EventModal from '../components/events/EventModal'
@@ -20,20 +20,45 @@ import { useReminders } from '@/hooks/useReminders'
 // 🚨 Nouveau système d'urgence intelligent
 import { SmartUrgencyCalculator } from '@/lib/smart-urgency'
 
+// Vérifier si Supabase est configuré
+import { isSupabaseEnabled } from '@/lib/supabase'
+
 interface HomeProps {
   navigate?: (page: string, params?: any) => void
 }
 
 const Home: React.FC<HomeProps> = ({ navigate }) => {
-  const { state, actions } = useApp()
+  const { state, actions, isSupabaseMode } = useApp()
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [selectedEventForEdit, setSelectedEventForEdit] = useState<Event | null>(null)
   const [selectedEventForFlorist, setSelectedEventForFlorist] = useState<Event | null>(null)
   const [showMoreUrgent, setShowMoreUrgent] = useState(false)
   const [isCreateEventModalOpen, setIsCreateEventModalOpen] = useState(false)
+  const [isMigrating, setIsMigrating] = useState(false)
+  const [migrationMessage, setMigrationMessage] = useState<string | null>(null)
 
   // Hook pour les rappels automatiques
   const remindersData = useReminders(state.events, state.clients)
+
+  // Fonction de migration vers Supabase
+  const handleMigrateToCloud = async () => {
+    if (isMigrating) return
+    setIsMigrating(true)
+    setMigrationMessage(null)
+
+    try {
+      const result = await actions.migrateToSupabase()
+      setMigrationMessage(result.message)
+      if (result.success) {
+        // Rafraîchir après migration
+        setTimeout(() => setMigrationMessage(null), 5000)
+      }
+    } catch (error) {
+      setMigrationMessage(`Erreur: ${error}`)
+    } finally {
+      setIsMigrating(false)
+    }
+  }
 
   // 🚨 Événements urgents : Affichage intelligent selon la demande de Bill
   const urgentEvents = useMemo(() => {
@@ -215,8 +240,34 @@ const Home: React.FC<HomeProps> = ({ navigate }) => {
               Gestion intelligente de vos événements par priorité
             </p>
           </div>
-          <div className="mt-4 lg:mt-0">
-            <button 
+          <div className="mt-4 lg:mt-0 flex items-center gap-3">
+            {/* Indicateur de synchronisation */}
+            {isSupabaseEnabled() && (
+              <div className="flex items-center gap-2">
+                {isSupabaseMode ? (
+                  <span className="flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm">
+                    <Cloud className="w-4 h-4" />
+                    <span className="hidden sm:inline">Sync Cloud</span>
+                  </span>
+                ) : (
+                  <button
+                    onClick={handleMigrateToCloud}
+                    disabled={isMigrating}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-yellow-100 text-yellow-700 hover:bg-yellow-200 rounded-full text-sm transition-colors"
+                  >
+                    {isMigrating ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <CloudOff className="w-4 h-4" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {isMigrating ? 'Migration...' : 'Migrer vers Cloud'}
+                    </span>
+                  </button>
+                )}
+              </div>
+            )}
+            <button
               className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg flex items-center space-x-2 transition-colors"
               onClick={handleCreateEvent}
             >
@@ -225,6 +276,21 @@ const Home: React.FC<HomeProps> = ({ navigate }) => {
             </button>
           </div>
         </motion.section>
+
+        {/* Message de migration */}
+        {migrationMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`p-4 rounded-lg ${
+              migrationMessage.includes('réussie')
+                ? 'bg-green-100 text-green-800 border border-green-200'
+                : 'bg-red-100 text-red-800 border border-red-200'
+            }`}
+          >
+            {migrationMessage}
+          </motion.div>
+        )}
 
         {/* RAPPELS & ALERTES - Nouveau système de notifications */}
         {remindersData.reminders.length > 0 && (
