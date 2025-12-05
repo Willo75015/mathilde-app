@@ -1,7 +1,7 @@
 # MATHILDE FLEURS - Suivi de Session Claude Code
 
-> **Dernière mise à jour :** 4 décembre 2025
-> **Statut global :** TOUTES LES PHASES TERMINÉES (1-5) + Nouvelles fonctionnalités (100%)
+> **Dernière mise à jour :** 5 décembre 2025
+> **Statut global :** TOUTES LES PHASES TERMINÉES (1-5) + Nouvelles fonctionnalités (100%) + Déploiement cloud
 
 ---
 
@@ -29,6 +29,63 @@
 | Corrections Phase 4 (Formulaires) | ✅ Terminé | 100% |
 | Corrections Phase 5 (Performance) | ✅ Terminé | 100% |
 | **Nouvelles fonctionnalités** | ✅ Terminé | 100% |
+| **Déploiement cloud** | ✅ Terminé | 100% |
+| **Migration Supabase (sync)** | 🔄 En cours | 0% |
+
+---
+
+## INFRASTRUCTURE & DÉPLOIEMENT
+
+### Services en production
+
+| Service | URL | Rôle |
+|---------|-----|------|
+| **GitHub** | https://github.com/Willo75015/mathilde-app | Code source |
+| **Vercel** | https://mathilde-fleurs-three.vercel.app | Hébergement app |
+| **Supabase** | https://swaqyrgffqqexnnklner.supabase.co | Base de données (à migrer) |
+
+### Variables d'environnement Vercel
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_SUPABASE_URL` | URL du projet Supabase |
+| `VITE_SUPABASE_ANON_KEY` | Clé publique Supabase |
+
+### Commandes utiles
+
+```bash
+# Développement local
+npm run dev              # Serveur local (localhost uniquement)
+npm run dev:mobile       # Serveur local (accessible réseau - pour tester sur téléphone)
+
+# Déploiement
+git add . && git commit -m "message" && git push   # Push sur GitHub
+vercel --prod --yes      # Déployer sur Vercel (auto si push GitHub)
+
+# Vérifications
+npm run build            # Build production
+npm run type-check       # Vérification TypeScript
+```
+
+### Workflow de déploiement
+
+1. Modifier le code localement
+2. `git add . && git commit -m "description" && git push`
+3. Vercel détecte le push et redéploie automatiquement
+4. L'app est mise à jour sur https://mathilde-fleurs-three.vercel.app
+
+---
+
+## PROCHAINES ÉTAPES - Migration Supabase
+
+> **Objectif :** Synchroniser les données entre tous les appareils (PC, téléphone)
+
+| # | Tâche | Statut | Description |
+|---|-------|--------|-------------|
+| 1 | Créer les tables Supabase | ⬜ | events, clients, florists, etc. |
+| 2 | Migrer AppContext | ⬜ | Remplacer localStorage par Supabase |
+| 3 | Sync temps réel | ⬜ | Abonnements Supabase Realtime |
+| 4 | Tester et déployer | ⬜ | Vérifier sync PC ↔ téléphone |
 
 ---
 
@@ -377,6 +434,32 @@ npm run test
 ---
 
 ## HISTORIQUE DES SESSIONS
+
+### Session 8 - 5 décembre 2025
+- ✅ **Déploiement complet de l'infrastructure cloud**
+- ✅ Création repo GitHub : https://github.com/Willo75015/mathilde-app
+- ✅ Configuration Vercel + déploiement automatique
+- ✅ App accessible : https://mathilde-fleurs-three.vercel.app
+- ✅ Configuration Supabase (client installé, variables d'environnement)
+- ✅ Ajout commande `npm run dev:mobile` pour accès réseau local
+- ✅ Fix compatibilité cross-platform (suppression @rollup/rollup-win32-x64-msvc)
+- 🔄 Migration Supabase planifiée (sync données entre appareils)
+
+**Fichiers créés/modifiés :**
+- `src/lib/supabase.ts` (client Supabase)
+- `.env` (variables locales - non commité)
+- `.env.example` (template avec Supabase)
+- `package.json` (ajout dev:mobile, @supabase/supabase-js)
+- `vite.config.ts` (host 0.0.0.0 pour mobile)
+
+**Infrastructure déployée :**
+| Service | Statut | URL |
+|---------|--------|-----|
+| GitHub | ✅ | https://github.com/Willo75015/mathilde-app |
+| Vercel | ✅ | https://mathilde-fleurs-three.vercel.app |
+| Supabase | ✅ (client) | https://swaqyrgffqqexnnklner.supabase.co |
+
+---
 
 ### Session 7 - 4 décembre 2025
 - ✅ Ajout règle "MISE À JOUR SYSTÉMATIQUE" dans le tracker
