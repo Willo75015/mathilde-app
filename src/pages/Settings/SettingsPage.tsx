@@ -389,14 +389,17 @@ const SettingsPage: React.FC = () => {
                       Supprime définitivement tous les événements, clients et fleuristes
                     </p>
                   </div>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    leftIcon={<Trash2 className="w-4 h-4" />}
-                    onClick={() => setShowResetModal(true)}
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
+                    onClick={() => {
+                      console.log('🔴 Bouton Réinitialiser cliqué')
+                      setShowResetModal(true)
+                    }}
                   >
+                    <Trash2 className="w-4 h-4" />
                     Réinitialiser
-                  </Button>
+                  </button>
                 </div>
               </div>
             </Card>
