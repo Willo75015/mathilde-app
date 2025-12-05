@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react'
-import { AppState, Event, Client, EventStatus, Theme, FloristAvailability } from '@/types'
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
+import { AppState, Event, Client, EventStatus, Theme, FloristAvailability, Florist } from '@/types'
 import { mockEvents, mockClients } from '@/lib/mockData'
+import { isSupabaseEnabled } from '@/lib/supabase'
+import { supabaseService } from '@/lib/supabase-service'
 
 // Type local pour les fleuristes de l'application (compatible avec l'UI existante)
 interface AppFlorist {
@@ -38,7 +40,12 @@ interface AppContextType {
     setLoading: (loading: boolean) => void
     generateNotSelectedMessage: (floristName: string, eventTitle: string, eventDate: Date) => string
     syncClientNames: () => void
+    // Nouvelles actions pour Supabase
+    migrateToSupabase: () => Promise<{ success: boolean, message: string }>
+    refreshFromSupabase: () => Promise<void>
   }
+  // Info sur le mode de stockage
+  isSupabaseMode: boolean
 }
 
 const AppContext = createContext<AppContextType | null>(null)
@@ -125,128 +132,235 @@ const defaultFlorists: AppFlorist[] = [
   }
 ]
 
-// PROVIDER ULTRA-STABLE - AUCUN EFFET DE BORD POSSIBLE
+// PROVIDER ULTRA-STABLE - AVEC SUPPORT SUPABASE
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // États simples
   const [events, setEvents] = useState<Event[]>([])
   const [clients, setClients] = useState<Client[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [florists, setFlorists] = useState<Florist[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isSupabaseMode, setIsSupabaseMode] = useState(false)
   const initRef = useRef(false)
-  
-  // INITIALISATION AVEC LOCALSTORAGE
+  const unsubscribeRef = useRef<(() => void)[]>([])
+
+  // Fonction pour charger depuis localStorage
+  const loadFromLocalStorage = useCallback(() => {
+    const storedEvents = localStorage.getItem('mathilde-events')
+    const storedClients = localStorage.getItem('mathilde-clients')
+
+    // BUG #2 FIX: Gestion robuste du parsing JSON avec try-catch
+    if (storedEvents) {
+      try {
+        const parsed = JSON.parse(storedEvents)
+        if (Array.isArray(parsed)) {
+          const parsedEvents = parsed.map((event: any) => ({
+            ...event,
+            date: new Date(event.date),
+            createdAt: new Date(event.createdAt),
+            updatedAt: new Date(event.updatedAt)
+          }))
+          setEvents(parsedEvents)
+          console.log('✅ Événements chargés depuis localStorage:', parsedEvents.length)
+        } else {
+          throw new Error('Format invalide: attendu un tableau')
+        }
+      } catch (error) {
+        console.error('❌ Erreur parsing événements localStorage:', error)
+        localStorage.removeItem('mathilde-events')
+        setEvents(mockEvents)
+        console.log('✅ Événements mockés chargés (fallback après erreur)')
+      }
+    } else {
+      setEvents(mockEvents)
+      console.log('✅ Événements mockés chargés')
+    }
+
+    if (storedClients) {
+      try {
+        const parsed = JSON.parse(storedClients)
+        if (Array.isArray(parsed)) {
+          const parsedClients = parsed.map((client: any) => ({
+            ...client,
+            createdAt: new Date(client.createdAt),
+            updatedAt: new Date(client.updatedAt)
+          }))
+          setClients(parsedClients)
+          console.log('✅ Clients chargés depuis localStorage:', parsedClients.length)
+        } else {
+          throw new Error('Format invalide: attendu un tableau')
+        }
+      } catch (error) {
+        console.error('❌ Erreur parsing clients localStorage:', error)
+        localStorage.removeItem('mathilde-clients')
+        setClients(mockClients)
+        console.log('✅ Clients mockés chargés (fallback après erreur)')
+      }
+    } else {
+      setClients(mockClients)
+      console.log('✅ Clients mockés chargés')
+    }
+  }, [])
+
+  // Fonction pour charger depuis Supabase
+  const loadFromSupabase = useCallback(async () => {
+    if (!isSupabaseEnabled()) {
+      console.log('⚠️ Supabase non configuré, fallback localStorage')
+      return false
+    }
+
+    try {
+      console.log('🔄 Chargement depuis Supabase...')
+      const [supabaseEvents, supabaseClients, supabaseFlorists] = await Promise.all([
+        supabaseService.getEvents(),
+        supabaseService.getClients(),
+        supabaseService.getFlorists()
+      ])
+
+      // Si Supabase a des données, les utiliser
+      if (supabaseEvents.length > 0 || supabaseClients.length > 0) {
+        setEvents(supabaseEvents)
+        setClients(supabaseClients)
+        if (supabaseFlorists.length > 0) {
+          setFlorists(supabaseFlorists)
+        }
+        setIsSupabaseMode(true)
+        console.log('✅ Données chargées depuis Supabase:', {
+          events: supabaseEvents.length,
+          clients: supabaseClients.length,
+          florists: supabaseFlorists.length
+        })
+        return true
+      } else {
+        console.log('📭 Supabase vide, utilisation localStorage')
+        return false
+      }
+    } catch (error) {
+      console.error('❌ Erreur chargement Supabase:', error)
+      return false
+    }
+  }, [])
+
+  // Configurer les abonnements temps réel
+  const setupRealtimeSubscriptions = useCallback(() => {
+    if (!isSupabaseEnabled()) return
+
+    console.log('📡 Configuration des abonnements temps réel...')
+
+    const unsubEvents = supabaseService.subscribeToEvents((newEvents) => {
+      console.log('🔄 Mise à jour temps réel des événements:', newEvents.length)
+      setEvents(newEvents)
+    })
+
+    const unsubClients = supabaseService.subscribeToClients((newClients) => {
+      console.log('🔄 Mise à jour temps réel des clients:', newClients.length)
+      setClients(newClients)
+    })
+
+    const unsubFlorists = supabaseService.subscribeToFlorists((newFlorists) => {
+      console.log('🔄 Mise à jour temps réel des fleuristes:', newFlorists.length)
+      setFlorists(newFlorists)
+    })
+
+    if (unsubEvents) unsubscribeRef.current.push(unsubEvents)
+    if (unsubClients) unsubscribeRef.current.push(unsubClients)
+    if (unsubFlorists) unsubscribeRef.current.push(unsubFlorists)
+
+    console.log('✅ Abonnements temps réel configurés')
+  }, [])
+
+  // INITIALISATION AVEC SUPABASE OU LOCALSTORAGE
   useEffect(() => {
     if (!initRef.current) {
       initRef.current = true
 
-      // Essayer de charger depuis localStorage
-      const storedEvents = localStorage.getItem('mathilde-events')
-      const storedClients = localStorage.getItem('mathilde-clients')
+      const initialize = async () => {
+        setIsLoading(true)
 
-      // BUG #2 FIX: Gestion robuste du parsing JSON avec try-catch
-      if (storedEvents) {
-        try {
-          const parsed = JSON.parse(storedEvents)
-          if (Array.isArray(parsed)) {
-            const parsedEvents = parsed.map((event: any) => ({
-              ...event,
-              date: new Date(event.date),
-              createdAt: new Date(event.createdAt),
-              updatedAt: new Date(event.updatedAt)
-            }))
-            setEvents(parsedEvents)
-            console.log('✅ Événements chargés depuis localStorage:', parsedEvents.length)
-          } else {
-            throw new Error('Format invalide: attendu un tableau')
-          }
-        } catch (error) {
-          console.error('❌ Erreur parsing événements localStorage:', error)
-          localStorage.removeItem('mathilde-events')
-          setEvents(mockEvents)
-          console.log('✅ Événements mockés chargés (fallback après erreur)')
+        // Essayer Supabase en premier
+        const supabaseLoaded = await loadFromSupabase()
+
+        if (!supabaseLoaded) {
+          // Fallback vers localStorage
+          loadFromLocalStorage()
+          setIsSupabaseMode(false)
+        } else {
+          // Configurer les abonnements temps réel
+          setupRealtimeSubscriptions()
         }
-      } else {
-        setEvents(mockEvents)
-        console.log('✅ Événements mockés chargés')
+
+        setIsLoading(false)
+        console.log('✅ Données initialisées', isSupabaseEnabled() ? '(mode Supabase)' : '(mode localStorage)')
       }
 
-      if (storedClients) {
-        try {
-          const parsed = JSON.parse(storedClients)
-          if (Array.isArray(parsed)) {
-            const parsedClients = parsed.map((client: any) => ({
-              ...client,
-              createdAt: new Date(client.createdAt),
-              updatedAt: new Date(client.updatedAt)
-            }))
-            setClients(parsedClients)
-            console.log('✅ Clients chargés depuis localStorage:', parsedClients.length)
-          } else {
-            throw new Error('Format invalide: attendu un tableau')
-          }
-        } catch (error) {
-          console.error('❌ Erreur parsing clients localStorage:', error)
-          localStorage.removeItem('mathilde-clients')
-          setClients(mockClients)
-          console.log('✅ Clients mockés chargés (fallback après erreur)')
-        }
-      } else {
-        setClients(mockClients)
-        console.log('✅ Clients mockés chargés')
-      }
-
-      setIsLoading(false)
-      console.log('✅ Données initialisées avec persistance')
+      initialize()
     }
-  }, [])
+
+    // Cleanup des abonnements
+    return () => {
+      unsubscribeRef.current.forEach(unsub => unsub())
+      unsubscribeRef.current = []
+    }
+  }, [loadFromSupabase, loadFromLocalStorage, setupRealtimeSubscriptions])
   
-  // ACTIONS AVEC SAUVEGARDE LOCALE
-  const updateEvent = (id: string, eventUpdate: Partial<Event>) => {
+  // ACTIONS AVEC SAUVEGARDE LOCALE ET SUPABASE
+  const updateEvent = async (id: string, eventUpdate: Partial<Event>) => {
     setEvents(prev => {
-      const updated = prev.map(event => 
+      const updated = prev.map(event =>
         event.id === id ? { ...event, ...eventUpdate, updatedAt: new Date() } : event
       )
       localStorage.setItem('mathilde-events', JSON.stringify(updated))
       return updated
     })
+
+    // Sync avec Supabase si activé
+    if (isSupabaseMode && isSupabaseEnabled()) {
+      try {
+        await supabaseService.updateEvent(id, eventUpdate)
+      } catch (error) {
+        console.error('❌ Erreur sync Supabase updateEvent:', error)
+      }
+    }
   }
   
   // WORKFLOW AVEC SAUVEGARDE
-  const updateEventWithTeamCheck = (id: string, eventUpdate: Partial<Event>) => {
+  const updateEventWithTeamCheck = async (id: string, eventUpdate: Partial<Event>) => {
+    let finalUpdateForSupabase: Partial<Event> = {}
+
     setEvents(prevEvents => {
       const currentEvent = prevEvents.find(e => e.id === id)
       if (!currentEvent) return prevEvents
-      
+
       let finalUpdate = { ...eventUpdate }
-      
+
       // LOGIQUE WORKFLOW SIMPLIFIÉE
       if (eventUpdate.assignedFlorists) {
         console.log('🎯 WORKFLOW - Traitement assignations:', eventUpdate.assignedFlorists.length)
-        
+
         const requiredFlorists = currentEvent.floristsRequired || 2
-        const confirmedFlorists = eventUpdate.assignedFlorists.filter(f => 
+        const confirmedFlorists = eventUpdate.assignedFlorists.filter(f =>
           f.status === 'confirmed' || f.isConfirmed
         )
-        
+
         console.log('📊 WORKFLOW - État:', {
           required: requiredFlorists,
           confirmed: confirmedFlorists.length,
           shouldTrigger: confirmedFlorists.length >= requiredFlorists && confirmedFlorists.length > 0
         })
-        
+
         // Si équipe complète, passer pending → not_selected
         if (confirmedFlorists.length >= requiredFlorists && confirmedFlorists.length > 0) {
           console.log('🔥 WORKFLOW - DÉCLENCHEMENT AUTO-SÉLECTION !')
-          
+
           const updatedFlorists = eventUpdate.assignedFlorists.map(florist => {
             if (florist.status === 'pending') {
               const eventDate = eventUpdate.date || currentEvent.date || new Date()
               const formattedDate = eventDate.toLocaleDateString('fr-FR', {
                 day: 'numeric',
-                month: 'numeric', 
+                month: 'numeric',
                 year: 'numeric'
               })
-              
+
               const preWrittenMessage = `Bonjour ${florist.floristName?.split(' ')[0]},
 
 L'événement "${eventUpdate.title || currentEvent.title}" du ${formattedDate} est pourvu.
@@ -254,18 +368,18 @@ L'événement "${eventUpdate.title || currentEvent.title}" du ${formattedDate} e
 Merci pour votre disponibilité !
 
 Mathilde Fleurs`
-              
+
               console.log('🚫 WORKFLOW - Fleuriste NON RETENU:', florist.floristName)
-              
-              return { 
-                ...florist, 
+
+              return {
+                ...florist,
                 status: 'not_selected' as const,
                 preWrittenMessage
               }
             }
             return florist
           })
-          
+
           finalUpdate = { ...finalUpdate, assignedFlorists: updatedFlorists }
           console.log('✅ WORKFLOW - Fleuristes mis à jour:', updatedFlorists.map(f => `${f.floristName}: ${f.status}`))
         } else {
@@ -274,18 +388,31 @@ Mathilde Fleurs`
       } else {
         console.log('ℹ️ WORKFLOW - Pas d\'assignations à traiter')
       }
-      
-      const updated = prevEvents.map(event => 
+
+      finalUpdateForSupabase = finalUpdate
+
+      const updated = prevEvents.map(event =>
         event.id === id ? { ...event, ...finalUpdate, updatedAt: new Date() } : event
       )
-      
+
       // 🔥 SAUVEGARDE CRITIQUE
       localStorage.setItem('mathilde-events', JSON.stringify(updated))
       return updated
     })
+
+    // Sync avec Supabase si activé
+    if (isSupabaseMode && isSupabaseEnabled()) {
+      try {
+        await supabaseService.updateEvent(id, finalUpdateForSupabase)
+      } catch (error) {
+        console.error('❌ Erreur sync Supabase updateEventWithTeamCheck:', error)
+      }
+    }
   }
   
-  const updateEventWithStatusDates = (id: string, newStatus: EventStatus) => {
+  const updateEventWithStatusDates = async (id: string, newStatus: EventStatus) => {
+    let supabaseUpdates: Partial<Event> = {}
+
     setEvents(prev => {
       const updated = prev.map(event => {
         if (event.id === id) {
@@ -309,6 +436,7 @@ Mathilde Fleurs`
               break
           }
 
+          supabaseUpdates = updates
           return { ...event, ...updates }
         }
         return event
@@ -318,9 +446,18 @@ Mathilde Fleurs`
       localStorage.setItem('mathilde-events', JSON.stringify(updated))
       return updated
     })
+
+    // Sync avec Supabase si activé
+    if (isSupabaseMode && isSupabaseEnabled()) {
+      try {
+        await supabaseService.updateEvent(id, supabaseUpdates)
+      } catch (error) {
+        console.error('❌ Erreur sync Supabase updateEventWithStatusDates:', error)
+      }
+    }
   }
   
-  const createEvent = (eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const createEvent = async (eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => {
     const newEvent: Event = {
       ...eventData,
       id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -338,25 +475,44 @@ Mathilde Fleurs`
       createdAt: new Date(),
       updatedAt: new Date()
     }
-    
+
     console.log('🔥 CONTEXT - Événement créé:', newEvent)
     setEvents(prev => {
       const updated = [...prev, newEvent]
       localStorage.setItem('mathilde-events', JSON.stringify(updated))
       return updated
     })
+
+    // Sync avec Supabase si activé
+    if (isSupabaseMode && isSupabaseEnabled()) {
+      try {
+        await supabaseService.createEvent(eventData)
+      } catch (error) {
+        console.error('❌ Erreur sync Supabase createEvent:', error)
+      }
+    }
+
     return newEvent
   }
   
-  const deleteEvent = (id: string) => {
+  const deleteEvent = async (id: string) => {
     setEvents(prev => {
       const updated = prev.filter(event => event.id !== id)
       localStorage.setItem('mathilde-events', JSON.stringify(updated))
       return updated
     })
+
+    // Sync avec Supabase si activé
+    if (isSupabaseMode && isSupabaseEnabled()) {
+      try {
+        await supabaseService.deleteEvent(id)
+      } catch (error) {
+        console.error('❌ Erreur sync Supabase deleteEvent:', error)
+      }
+    }
   }
   
-  const updateClient = (id: string, clientUpdate: Partial<Client>) => {
+  const updateClient = async (id: string, clientUpdate: Partial<Client>) => {
     setClients(prev => {
       const updated = prev.map(client =>
         client.id === id ? { ...client, ...clientUpdate, updatedAt: new Date() } : client
@@ -364,25 +520,43 @@ Mathilde Fleurs`
       localStorage.setItem('mathilde-clients', JSON.stringify(updated))
       return updated
     })
+
+    // Sync avec Supabase si activé
+    if (isSupabaseMode && isSupabaseEnabled()) {
+      try {
+        await supabaseService.updateClient(id, clientUpdate)
+      } catch (error) {
+        console.error('❌ Erreur sync Supabase updateClient:', error)
+      }
+    }
   }
-  
-  const createClient = (clientData: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>) => {
+
+  const createClient = async (clientData: Omit<Client, 'id' | 'createdAt' | 'updatedAt'>) => {
     const newClient: Client = {
       ...clientData,
       id: `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date(),
       updatedAt: new Date()
     }
-    
+
     setClients(prev => {
       const updated = [...prev, newClient]
       localStorage.setItem('mathilde-clients', JSON.stringify(updated))
       return updated
     })
+
+    // Sync avec Supabase si activé
+    if (isSupabaseMode && isSupabaseEnabled()) {
+      try {
+        await supabaseService.createClient(clientData)
+      } catch (error) {
+        console.error('❌ Erreur sync Supabase createClient:', error)
+      }
+    }
   }
-  
+
   // BUG #3 FIX: Suppression client avec nettoyage des événements associés
-  const deleteClient = (id: string) => {
+  const deleteClient = async (id: string) => {
     // D'abord, nettoyer les événements associés à ce client
     setEvents(prevEvents => {
       const updated = prevEvents.map(event => {
@@ -402,6 +576,15 @@ Mathilde Fleurs`
       localStorage.setItem('mathilde-clients', JSON.stringify(updated))
       return updated
     })
+
+    // Sync avec Supabase si activé
+    if (isSupabaseMode && isSupabaseEnabled()) {
+      try {
+        await supabaseService.deleteClient(id)
+      } catch (error) {
+        console.error('❌ Erreur sync Supabase deleteClient:', error)
+      }
+    }
   }
   
   const generateNotSelectedMessage = (floristName: string, eventTitle: string, eventDate: Date) => {
@@ -424,6 +607,75 @@ Mathilde Fleurs`
     // Pour l'instant, ne rien faire pour éviter les boucles
     console.log('🔄 Sync demandée (désactivée temporairement)')
   }
+
+  // Fonction pour migrer les données localStorage vers Supabase
+  const migrateToSupabase = async (): Promise<{ success: boolean, message: string }> => {
+    if (!isSupabaseEnabled()) {
+      return { success: false, message: 'Supabase non configuré' }
+    }
+
+    console.log('🚀 Début de la migration vers Supabase...')
+
+    try {
+      const result = await supabaseService.migrateFromLocalStorage({
+        events,
+        clients,
+        florists: florists.length > 0 ? florists : defaultFlorists.map(f => ({
+          ...f,
+          hourlyRate: 0,
+          experience: 0,
+          completedEvents: 0,
+          skills: f.specialties || [],
+          languages: ['Français'],
+          certifications: [],
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })) as Florist[]
+      })
+
+      if (result.success) {
+        setIsSupabaseMode(true)
+        setupRealtimeSubscriptions()
+        console.log('✅ Migration réussie:', result.message)
+      }
+
+      return result
+    } catch (error) {
+      console.error('❌ Erreur migration:', error)
+      return { success: false, message: `Erreur: ${error}` }
+    }
+  }
+
+  // Fonction pour rafraîchir les données depuis Supabase
+  const refreshFromSupabase = async (): Promise<void> => {
+    if (!isSupabaseEnabled()) {
+      console.log('⚠️ Supabase non configuré')
+      return
+    }
+
+    console.log('🔄 Rafraîchissement depuis Supabase...')
+    setIsLoading(true)
+
+    try {
+      const [supabaseEvents, supabaseClients, supabaseFlorists] = await Promise.all([
+        supabaseService.getEvents(),
+        supabaseService.getClients(),
+        supabaseService.getFlorists()
+      ])
+
+      setEvents(supabaseEvents)
+      setClients(supabaseClients)
+      if (supabaseFlorists.length > 0) {
+        setFlorists(supabaseFlorists)
+      }
+
+      console.log('✅ Données rafraîchies depuis Supabase')
+    } catch (error) {
+      console.error('❌ Erreur rafraîchissement:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
   
   // ÉTAT ET ACTIONS ULTRA-SIMPLES
   const state: AppState = {
@@ -431,12 +683,12 @@ Mathilde Fleurs`
     events,
     clients,
     flowers: [],
-    florists: defaultFlorists,
+    florists: florists.length > 0 ? florists : defaultFlorists,
     isLoading,
     error,
     theme: Theme.LIGHT
   }
-  
+
   const actions = {
     updateEvent,
     updateEventWithTeamCheck,
@@ -449,11 +701,14 @@ Mathilde Fleurs`
     setError,
     setLoading: setIsLoading,
     generateNotSelectedMessage,
-    syncClientNames
+    syncClientNames,
+    // Nouvelles actions Supabase
+    migrateToSupabase,
+    refreshFromSupabase
   }
-  
+
   return (
-    <AppContext.Provider value={{ state, actions }}>
+    <AppContext.Provider value={{ state, actions, isSupabaseMode }}>
       {children}
     </AppContext.Provider>
   )
