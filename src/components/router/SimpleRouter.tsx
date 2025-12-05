@@ -5,8 +5,9 @@ import ClientsPage from '@/pages/Clients/ClientsPage'
 import CalendarPage from '@/pages/Calendar/CalendarPage'
 import AnalyticsPage from '@/pages/Analytics/AnalyticsPage'
 import FleuristePage from '@/pages/Fleuriste/FleuristePage'
+import SettingsPage from '@/pages/Settings/SettingsPage'
 
-export type PageName = 'home' | 'events' | 'clients' | 'calendar' | 'analytics' | 'fleuriste'
+export type PageName = 'home' | 'events' | 'clients' | 'calendar' | 'analytics' | 'fleuriste' | 'settings'
 
 interface SimpleRouterProps {
   currentPage: PageName
@@ -26,6 +27,8 @@ const SimpleRouter: React.FC<SimpleRouterProps> = ({ currentPage }) => {
       return <AnalyticsPage />
     case 'fleuriste':
       return <FleuristePage />
+    case 'settings':
+      return <SettingsPage />
     default:
       return <Home />
   }
