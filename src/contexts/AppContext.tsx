@@ -217,24 +217,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         supabaseService.getFlorists()
       ])
 
-      // Si Supabase a des données, les utiliser
-      if (supabaseEvents.length > 0 || supabaseClients.length > 0) {
-        setEvents(supabaseEvents)
-        setClients(supabaseClients)
-        if (supabaseFlorists.length > 0) {
-          setFlorists(supabaseFlorists)
-        }
-        setIsSupabaseMode(true)
-        console.log('✅ Données chargées depuis Supabase:', {
-          events: supabaseEvents.length,
-          clients: supabaseClients.length,
-          florists: supabaseFlorists.length
-        })
-        return true
-      } else {
-        console.log('📭 Supabase vide, utilisation localStorage')
-        return false
+      // TOUJOURS utiliser Supabase si configuré (même si vide)
+      setEvents(supabaseEvents)
+      setClients(supabaseClients)
+      if (supabaseFlorists.length > 0) {
+        setFlorists(supabaseFlorists)
       }
+      setIsSupabaseMode(true)
+      console.log('✅ Mode Supabase activé - Données:', {
+        events: supabaseEvents.length,
+        clients: supabaseClients.length,
+        florists: supabaseFlorists.length
+      })
+      return true
     } catch (error) {
       console.error('❌ Erreur chargement Supabase:', error)
       return false
@@ -313,8 +308,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return updated
     })
 
-    // Sync avec Supabase si activé
-    if (isSupabaseMode && isSupabaseEnabled()) {
+    // Sync avec Supabase (toujours si configuré)
+    if (isSupabaseEnabled()) {
       try {
         await supabaseService.updateEvent(id, eventUpdate)
       } catch (error) {
@@ -401,7 +396,7 @@ Mathilde Fleurs`
     })
 
     // Sync avec Supabase si activé
-    if (isSupabaseMode && isSupabaseEnabled()) {
+    if (isSupabaseEnabled()) {
       try {
         await supabaseService.updateEvent(id, finalUpdateForSupabase)
       } catch (error) {
@@ -448,7 +443,7 @@ Mathilde Fleurs`
     })
 
     // Sync avec Supabase si activé
-    if (isSupabaseMode && isSupabaseEnabled()) {
+    if (isSupabaseEnabled()) {
       try {
         await supabaseService.updateEvent(id, supabaseUpdates)
       } catch (error) {
@@ -483,10 +478,12 @@ Mathilde Fleurs`
       return updated
     })
 
-    // Sync avec Supabase si activé
-    if (isSupabaseMode && isSupabaseEnabled()) {
+    // Sync avec Supabase (toujours si configuré)
+    if (isSupabaseEnabled()) {
       try {
+        console.log('☁️ Sync Supabase: création événement...')
         await supabaseService.createEvent(eventData)
+        console.log('✅ Événement synchronisé avec Supabase')
       } catch (error) {
         console.error('❌ Erreur sync Supabase createEvent:', error)
       }
@@ -503,7 +500,7 @@ Mathilde Fleurs`
     })
 
     // Sync avec Supabase si activé
-    if (isSupabaseMode && isSupabaseEnabled()) {
+    if (isSupabaseEnabled()) {
       try {
         await supabaseService.deleteEvent(id)
       } catch (error) {
@@ -522,7 +519,7 @@ Mathilde Fleurs`
     })
 
     // Sync avec Supabase si activé
-    if (isSupabaseMode && isSupabaseEnabled()) {
+    if (isSupabaseEnabled()) {
       try {
         await supabaseService.updateClient(id, clientUpdate)
       } catch (error) {
@@ -546,7 +543,7 @@ Mathilde Fleurs`
     })
 
     // Sync avec Supabase si activé
-    if (isSupabaseMode && isSupabaseEnabled()) {
+    if (isSupabaseEnabled()) {
       try {
         await supabaseService.createClient(clientData)
       } catch (error) {
@@ -578,7 +575,7 @@ Mathilde Fleurs`
     })
 
     // Sync avec Supabase si activé
-    if (isSupabaseMode && isSupabaseEnabled()) {
+    if (isSupabaseEnabled()) {
       try {
         await supabaseService.deleteClient(id)
       } catch (error) {
